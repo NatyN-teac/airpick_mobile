@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\\\\\.dart$\")",
+      "Bash(cp /Users/nate/Documents/airdash/assets/fonts/Manrope-ExtraLight.ttf /Users/nate/Documents/airpick_mobile/airpick/assets/fonts/)",
+      "Bash(cp /Users/nate/Documents/airdash/assets/fonts/Manrope-Light.ttf /Users/nate/Documents/airpick_mobile/airpick/assets/fonts/)",
+      "Bash(cp /Users/nate/Documents/airdash/assets/fonts/Manrope-Regular.ttf /Users/nate/Documents/airpick_mobile/airpick/assets/fonts/)",
+      "Bash(cp /Users/nate/Documents/airdash/assets/fonts/Manrope-SemiBold.ttf /Users/nate/Documents/airpick_mobile/airpick/assets/fonts/)",
+      "Bash(cp /Users/nate/Documents/airdash/assets/fonts/Manrope-Bold.ttf /Users/nate/Documents/airpick_mobile/airpick/assets/fonts/)",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter test *)"
+    ]
+  }
+}

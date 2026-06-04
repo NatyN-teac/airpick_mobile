@@ -1,0 +1,77 @@
+{
+  "@@locale": "en",
+
+  "appName": "Airpick",
+  "@appName": { "description": "Application name" },
+
+  "skip": "Skip",
+  "@skip": {},
+
+  "next": "Next",
+  "@next": {},
+
+  "getStarted": "Get Started",
+  "@getStarted": {},
+
+  "onboardingTitle1": "A trusted community",
+  "@onboardingTitle1": {},
+  "onboardingSubtitle1": "Join a verified network of travelers and senders with confidence.",
+  "@onboardingSubtitle1": {},
+
+  "onboardingTitle2": "Fast & reliable delivery",
+  "@onboardingTitle2": {},
+  "onboardingSubtitle2": "Match with travelers headed your way and get items delivered on time.",
+  "@onboardingSubtitle2": {},
+
+  "onboardingTitle3": "Simple & secure",
+  "@onboardingTitle3": {},
+  "onboardingSubtitle3": "Track progress, and complete delivery with peace of mind.",
+  "@onboardingSubtitle3": {},
+
+  "authTitle": "Sign in or\ncreate account",
+  "@authTitle": {},
+
+  "authSubtitle": "Continue with a social account to get started.",
+  "@authSubtitle": {},
+
+  "continueWithGoogle": "Continue with Google",
+  "@continueWithGoogle": {},
+
+  "continueWithApple": "Continue with Apple",
+  "@continueWithApple": {},
+
+  "peerToPeerDelivery": "Peer-to-peer delivery",
+  "@peerToPeerDelivery": {},
+
+  "termsPrefix": "By continuing you agree to our ",
+  "@termsPrefix": {},
+
+  "termsOfService": "Terms of Service",
+  "@termsOfService": {},
+
+  "and": " and ",
+  "@and": {},
+
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {},
+
+  "signInCancelledTitle": "{provider} sign-in cancelled",
+  "@signInCancelledTitle": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+
+  "signInCancelledBody": "You closed the sign-in window before finishing. No changes were made.",
+  "@signInCancelledBody": {},
+
+  "tryAgain": "Try {provider} again",
+  "@tryAgain": {
+    "placeholders": {
+      "provider": { "type": "String" }
+    }
+  },
+
+  "maybeLater": "Maybe later",
+  "@maybeLater": {}
+}

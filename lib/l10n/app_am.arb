@@ -1,0 +1,36 @@
+{
+  "@@locale": "am",
+
+  "appName": "Airpick",
+
+  "skip": "ዝለል",
+  "next": "ቀጣይ",
+  "getStarted": "ጀምር",
+
+  "onboardingTitle1": "የታመነ ማህበረሰብ",
+  "onboardingSubtitle1": "በእምነት ወደ ተረጋገጠ የተጓዦችና ላኪዎች ትስስር ይቀላቀሉ።",
+
+  "onboardingTitle2": "ፈጣን እና አስተማማኝ ዴሊቨሪ",
+  "onboardingSubtitle2": "ወደ አካባቢዎ ከሚጓዙ ተጓዦች ጋር ይገናኙ እና እቃዎን ወቅቱን ጠብቆ ያድርሱ።",
+
+  "onboardingTitle3": "ቀላል እና ደህንነቱ የተጠበቀ",
+  "onboardingSubtitle3": "ሂደቱን ይከታተሉ፣ ዴሊቨሪውን በሰላም ያጠናቅቁ።",
+
+  "authTitle": "ይግቡ ወይም\nመለያ ይፍጠሩ",
+  "authSubtitle": "ለመጀመር ከማህበራዊ መለያ ጋር ይቀጥሉ።",
+
+  "continueWithGoogle": "ከGoogle ጋር ይቀጥሉ",
+  "continueWithApple": "ከApple ጋር ይቀጥሉ",
+
+  "peerToPeerDelivery": "አቻ-ለ-አቻ ዴሊቨሪ",
+
+  "termsPrefix": "በመቀጠልዎ ከ",
+  "termsOfService": "የአገልግሎት ውሎቻችን",
+  "and": " እና ",
+  "privacyPolicy": "የግላዊነት ፖሊሲያችን",
+
+  "signInCancelledTitle": "የ{provider} መግቢያ ተሰርዟል",
+  "signInCancelledBody": "የመግቢያ መስኮቱን ከመዝጋትዎ በፊት ሂደቱ አልተጠናቀቀም። ምንም ለውጥ አልተደረገም።",
+  "tryAgain": "{provider}ን እንደገና ሞክሩ",
+  "maybeLater": "ሌላ ጊዜ"
+}
