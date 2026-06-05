@@ -235,6 +235,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Maybe later'**
   String get maybeLater;
+
+  /// No description provided for @createOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Offer'**
+  String get createOffer;
+
+  /// No description provided for @createAsCarrier.
+  ///
+  /// In en, this message translates to:
+  /// **'Create as Carrier'**
+  String get createAsCarrier;
+
+  /// No description provided for @createAsSender.
+  ///
+  /// In en, this message translates to:
+  /// **'Create as Sender'**
+  String get createAsSender;
+
+  /// No description provided for @stepFlightDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Flight Details'**
+  String get stepFlightDetails;
+
+  /// No description provided for @stepOfferDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer Details'**
+  String get stepOfferDetails;
+
+  /// No description provided for @step1of2.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 2'**
+  String get step1of2;
+
+  /// No description provided for @step2of2.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2 of 2'**
+  String get step2of2;
+
+  /// No description provided for @flightType.
+  ///
+  /// In en, this message translates to:
+  /// **'Flight Type'**
+  String get flightType;
+
+  /// No description provided for @oneWay.
+  ///
+  /// In en, this message translates to:
+  /// **'One Way'**
+  String get oneWay;
+
+  /// No description provided for @roundTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Round Trip'**
+  String get roundTrip;
+
+  /// No description provided for @fromAirport.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get fromAirport;
+
+  /// No description provided for @toAirport.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get toAirport;
+
+  /// No description provided for @searchAirport.
+  ///
+  /// In en, this message translates to:
+  /// **'Search airport or city…'**
+  String get searchAirport;
+
+  /// No description provided for @departureDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Departure Date'**
+  String get departureDate;
+
+  /// No description provided for @departureTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Departure Time'**
+  String get departureTime;
+
+  /// No description provided for @arrivalDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrival Date'**
+  String get arrivalDate;
+
+  /// No description provided for @arrivalTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrival Time'**
+  String get arrivalTime;
+
+  /// No description provided for @returnLeg.
+  ///
+  /// In en, this message translates to:
+  /// **'Return Flight'**
+  String get returnLeg;
+
+  /// No description provided for @continueToOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueToOffer;
+
+  /// No description provided for @pickupArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup Area'**
+  String get pickupArea;
+
+  /// No description provided for @deliveryArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Area'**
+  String get deliveryArea;
+
+  /// No description provided for @urgencyLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgency'**
+  String get urgencyLevel;
+
+  /// No description provided for @urgencyNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get urgencyNormal;
+
+  /// No description provided for @urgencyExpress.
+  ///
+  /// In en, this message translates to:
+  /// **'Express'**
+  String get urgencyExpress;
+
+  /// No description provided for @discount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount (%)'**
+  String get discount;
+
+  /// No description provided for @specialNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Note'**
+  String get specialNote;
+
+  /// No description provided for @meetupPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Meetup Places'**
+  String get meetupPlaces;
+
+  /// No description provided for @addMeetupPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Add meetup place'**
+  String get addMeetupPlace;
+
+  /// No description provided for @paymentMethods.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Methods'**
+  String get paymentMethods;
+
+  /// No description provided for @offerItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get offerItems;
+
+  /// No description provided for @addItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Item'**
+  String get addItem;
+
+  /// No description provided for @pricePerItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Price per item'**
+  String get pricePerItem;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// No description provided for @createOfferButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Offer'**
+  String get createOfferButton;
+
+  /// No description provided for @selectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get selectDate;
+
+  /// No description provided for @selectTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select time'**
+  String get selectTime;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @errorLoadingAirports.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load airports'**
+  String get errorLoadingAirports;
+
+  /// No description provided for @errorCreatingFlight.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create flight'**
+  String get errorCreatingFlight;
+
+  /// No description provided for @errorCreatingOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create offer'**
+  String get errorCreatingOffer;
+
+  /// No description provided for @offerCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer created successfully!'**
+  String get offerCreatedSuccess;
 }
 
 class _AppLocalizationsDelegate

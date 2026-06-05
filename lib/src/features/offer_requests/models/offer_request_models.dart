@@ -1,0 +1,249 @@
+import '../../offers/models/offer_models.dart';
+
+// ── Request ───────────────────────────────────────────────────────────────────
+
+class OfferRequestItemRequest {
+  final String itemId;
+  final int quantity;
+
+  const OfferRequestItemRequest({
+    required this.itemId,
+    required this.quantity,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'itemId': itemId,
+        'quantity': quantity,
+      };
+}
+
+class CreateOfferRequestRequest {
+  final String sourceCountry;
+  final String sourceCity;
+  final String destinationCountry;
+  final String preferredDate;
+  final UrgencyLevel urgencyLevel;
+  final String? specialNote;
+  final bool partialProposalAccepted;
+  final List<OfferRequestItemRequest> items;
+  final bool hasManualItem;
+
+  const CreateOfferRequestRequest({
+    required this.sourceCountry,
+    required this.sourceCity,
+    required this.destinationCountry,
+    required this.preferredDate,
+    required this.urgencyLevel,
+    required this.items,
+    this.partialProposalAccepted = false,
+    this.specialNote,
+    this.hasManualItem = false,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'sourceCountry': sourceCountry,
+        'sourceCity': sourceCity,
+        'destinationCountry': destinationCountry,
+        'preferredDate': preferredDate,
+        'urgencyLevel': urgencyLevel.apiValue,
+        'partialProposalAccepted': partialProposalAccepted,
+        if (specialNote != null && specialNote!.isNotEmpty)
+          'specialNote': specialNote,
+        'items': items.map((i) => i.toJson()).toList(),
+        if (hasManualItem) 'hasManualItem': true,
+      };
+}
+
+// ── Update request ────────────────────────────────────────────────────────────
+// All fields optional — only non-null are sent. Source/destination country
+// cannot be changed after creation, so they're intentionally excluded.
+
+class UpdateOfferRequestRequest {
+  final String? sourceCity;
+  final String? preferredDate;
+  final UrgencyLevel? urgencyLevel;
+  final String? specialNote;
+  final bool? partialProposalAccepted;
+  final List<OfferRequestItemRequest>? items;
+  final bool? hasManualItem;
+
+  const UpdateOfferRequestRequest({
+    this.sourceCity,
+    this.preferredDate,
+    this.urgencyLevel,
+    this.specialNote,
+    this.partialProposalAccepted,
+    this.items,
+    this.hasManualItem,
+  });
+
+  Map<String, dynamic> toJson() => {
+        if (sourceCity != null) 'sourceCity': sourceCity,
+        if (preferredDate != null) 'preferredDate': preferredDate,
+        if (urgencyLevel != null) 'urgencyLevel': urgencyLevel!.apiValue,
+        if (specialNote != null) 'specialNote': specialNote,
+        if (partialProposalAccepted != null)
+          'partialProposalAccepted': partialProposalAccepted,
+        if (items != null) 'items': items!.map((i) => i.toJson()).toList(),
+        if (hasManualItem != null) 'hasManualItem': hasManualItem,
+      };
+}
+
+// ── Response item ─────────────────────────────────────────────────────────────
+// Parsed defensively — the backend may nest the full item or flatten its fields.
+
+class OfferRequestItem {
+  final String itemId;
+  final String name;
+  final int quantity;
+  final String? measurementUnit;
+
+  const OfferRequestItem({
+    required this.itemId,
+    required this.name,
+    required this.quantity,
+    this.measurementUnit,
+  });
+
+  factory OfferRequestItem.fromJson(Map<String, dynamic> json) {
+    // Item details may be nested under `item`, flattened, or use `itemName`.
+    final nested = json['item'] as Map<String, dynamic>?;
+    final source = nested ?? json;
+    return OfferRequestItem(
+      itemId: (json['itemId'] ?? source['id'] ?? '') as String,
+      name: (json['itemName'] ?? source['name'] ?? json['name'] ?? 'Item')
+          as String,
+      quantity: (json['quantity'] as num?)?.toInt() ?? 1,
+      measurementUnit:
+          (source['measurementUnit'] ?? json['measurementUnit']) as String?,
+    );
+  }
+}
+
+// ── Response ──────────────────────────────────────────────────────────────────
+
+class OfferRequestResponse {
+  final String id;
+  final String shipperId;
+  final String sourceCountry;
+  final String sourceCity;
+  final String destinationCountry;
+  final String preferredDate;
+  final String urgencyLevel;
+  final String? specialNote;
+  final String status;
+  final bool partialProposalAccepted;
+  final bool hasManualItem;
+  final int proposalCount;
+  final List<OfferRequestItem> items;
+  final String createdAt;
+  final String updatedAt;
+
+  const OfferRequestResponse({
+    required this.id,
+    required this.shipperId,
+    required this.sourceCountry,
+    required this.sourceCity,
+    required this.destinationCountry,
+    required this.preferredDate,
+    required this.urgencyLevel,
+    required this.status,
+    required this.partialProposalAccepted,
+    required this.hasManualItem,
+    required this.proposalCount,
+    required this.items,
+    required this.createdAt,
+    required this.updatedAt,
+    this.specialNote,
+  });
+
+  factory OfferRequestResponse.fromJson(Map<String, dynamic> json) =>
+      OfferRequestResponse(
+        id: json['id'] as String,
+        shipperId: json['shipperId'] as String? ?? '',
+        sourceCountry: json['sourceCountry'] as String,
+        sourceCity: json['sourceCity'] as String,
+        destinationCountry: json['destinationCountry'] as String,
+        preferredDate: json['preferredDate'] as String,
+        urgencyLevel: json['urgencyLevel'] as String,
+        specialNote: json['specialNote'] as String?,
+        status: json['status'] as String? ?? 'OPEN',
+        partialProposalAccepted:
+            json['partialProposalAccepted'] as bool? ?? false,
+        hasManualItem: json['hasManualItem'] as bool? ?? false,
+        proposalCount: json['proposalCount'] as int? ?? 0,
+        items: (json['items'] as List<dynamic>? ?? [])
+            .map((e) => OfferRequestItem.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        createdAt: json['createdAt'] as String? ?? '',
+        updatedAt: json['updatedAt'] as String? ?? '',
+      );
+
+  // Display helpers
+  String get urgencyLabel {
+    switch (urgencyLevel) {
+      case 'URGENT':
+        return 'Urgent';
+      case 'FLEXIBLE':
+        return 'Flexible';
+      default:
+        return 'Normal';
+    }
+  }
+
+  String get statusLabel {
+    switch (status) {
+      case 'OPEN':
+        return 'Open';
+      case 'PENDING_ITEM_APPROVAL':
+        return 'Pending approval';
+      case 'CLOSED':
+        return 'Closed';
+      case 'ACCEPTED':
+        return 'Accepted';
+      case 'CANCELLED':
+        return 'Cancelled';
+      default:
+        return status;
+    }
+  }
+
+  // Deletable only when no proposals and not already accepted/cancelled.
+  bool get canDelete =>
+      proposalCount == 0 && status != 'ACCEPTED' && status != 'CANCELLED';
+
+  int get totalQuantity => items.fold(0, (sum, i) => sum + i.quantity);
+
+  // Relative "x ago" representation of createdAt.
+  String get createdAgo => _relativeTime(createdAt);
+
+  static String _relativeTime(String iso) {
+    if (iso.isEmpty) return '';
+    final dt = DateTime.tryParse(iso);
+    if (dt == null) return '';
+    final diff = DateTime.now().difference(dt);
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) {
+      final m = diff.inMinutes;
+      return '$m minute${m == 1 ? '' : 's'} ago';
+    }
+    if (diff.inHours < 24) {
+      final h = diff.inHours;
+      return '$h hour${h == 1 ? '' : 's'} ago';
+    }
+    if (diff.inDays < 7) {
+      final d = diff.inDays;
+      return '$d day${d == 1 ? '' : 's'} ago';
+    }
+    if (diff.inDays < 30) {
+      final w = (diff.inDays / 7).floor();
+      return '$w week${w == 1 ? '' : 's'} ago';
+    }
+    if (diff.inDays < 365) {
+      final mo = (diff.inDays / 30).floor();
+      return '$mo month${mo == 1 ? '' : 's'} ago';
+    }
+    final y = (diff.inDays / 365).floor();
+    return '$y year${y == 1 ? '' : 's'} ago';
+  }
+}

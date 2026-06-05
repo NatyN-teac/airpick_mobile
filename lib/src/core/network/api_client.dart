@@ -43,6 +43,27 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> patch(
+    String path,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _dio.patch(path, data: data);
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  // Returns nothing — used for 204 No Content responses.
+  Future<void> delete(String path) async {
+    try {
+      await _dio.delete(path);
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   Exception _mapError(DioException e) {
     final statusCode = e.response?.statusCode;
     final message = e.response?.data?['message'] as String?;
@@ -53,6 +74,7 @@ class ApiClient {
     }
 
     return switch (statusCode) {
+      400 => Exception(message ?? 'Invalid request.'),
       401 => Exception(message ?? 'Unauthorised. Please sign in again.'),
       403 => Exception(message ?? 'Access denied.'),
       404 => Exception(message ?? 'Resource not found.'),

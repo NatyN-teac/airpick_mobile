@@ -14,8 +14,16 @@ import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/bloc/auth_bloc.dart';
 import 'src/features/auth/data/firebase_auth_service.dart';
 import 'src/features/auth/repository/auth_repository.dart';
+import 'src/features/home/cubit/user_mode_cubit.dart';
+import 'src/features/offer_requests/cubit/offer_requests_cubit.dart';
 import 'src/features/onboarding/bloc/onboarding_bloc.dart';
 import 'src/features/onboarding/repository/onboarding_repository.dart';
+import 'src/features/airports/repository/airport_repository.dart';
+import 'src/features/countries/repository/country_repository.dart';
+import 'src/features/flights/repository/flight_repository.dart';
+import 'src/features/items/repository/item_repository.dart';
+import 'src/features/offer_requests/repository/offer_request_repository.dart';
+import 'src/features/offers/repository/offer_repository.dart';
 import 'src/features/settings/cubit/locale_cubit.dart';
 import 'src/features/settings/cubit/theme_cubit.dart';
 import 'src/features/settings/repository/settings_repository.dart';
@@ -74,6 +82,24 @@ class AirpickApp extends StatelessWidget {
         RepositoryProvider<SettingsRepository>(
           create: (_) => settingsRepo,
         ),
+        RepositoryProvider<AirportRepository>(
+          create: (_) => AirportRepository(apiClient),
+        ),
+        RepositoryProvider<FlightRepository>(
+          create: (_) => FlightRepository(apiClient),
+        ),
+        RepositoryProvider<OfferRepository>(
+          create: (_) => OfferRepository(apiClient),
+        ),
+        RepositoryProvider<ItemRepository>(
+          create: (_) => ItemRepository(apiClient),
+        ),
+        RepositoryProvider<OfferRequestRepository>(
+          create: (_) => OfferRequestRepository(apiClient),
+        ),
+        RepositoryProvider<CountryRepository>(
+          create: (_) => CountryRepository(apiClient),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -100,6 +126,14 @@ class AirpickApp extends StatelessWidget {
             create: (context) => AuthBloc(
               context.read<IAuthRepository>(),
             ),
+          ),
+          // App-wide so sender/carrier mode is consistent everywhere
+          BlocProvider<UserModeCubit>(
+            create: (_) => UserModeCubit(),
+          ),
+          BlocProvider<OfferRequestsCubit>(
+            create: (context) =>
+                OfferRequestsCubit(context.read<OfferRequestRepository>()),
           ),
         ],
         child: BlocBuilder<ThemeCubit, ThemeMode>(

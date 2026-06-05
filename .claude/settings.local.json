@@ -9,7 +9,9 @@
       "Bash(cp /Users/nate/Documents/airdash/assets/fonts/Manrope-Bold.ttf /Users/nate/Documents/airpick_mobile/airpick/assets/fonts/)",
       "Bash(flutter pub *)",
       "Bash(flutter analyze *)",
-      "Bash(flutter test *)"
+      "Bash(flutter test *)",
+      "Bash(flutter gen-l10n *)",
+      "Bash(python3 *)"
     ]
   }
 }

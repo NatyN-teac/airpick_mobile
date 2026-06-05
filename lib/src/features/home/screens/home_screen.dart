@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/nav_cubit.dart';
+import '../cubit/user_mode_cubit.dart';
+import '../../items/repository/item_repository.dart';
+import '../../offer_requests/cubit/offer_requests_cubit.dart';
+import '../../offer_requests/models/offer_request_models.dart';
+import '../../offer_requests/repository/offer_request_repository.dart';
+import '../../offer_requests/screens/offer_requests_screen.dart';
+import '../../offer_requests/widgets/create_offer_request_bubble.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/app_nav_bar.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../airports/repository/airport_repository.dart';
+import '../../countries/repository/country_repository.dart';
+import '../../flights/repository/flight_repository.dart';
+import '../../items/repository/item_repository.dart';
+import '../../offers/repository/offer_repository.dart';
+import '../../offers/screens/offers_screen.dart';
+import '../../offers/widgets/create_offer_bubble.dart';
 import '../../search/screens/search_screen.dart';
-
-// ignore: unused_field — carrier mode used when profile role-switching is wired
-enum _UserMode { sender, carrier }
+import 'carrier_offer_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // UserModeCubit + OfferRequestsCubit are provided app-wide in main.dart.
     return BlocProvider(
       create: (_) => NavCubit(),
       child: const _HomeView(),
@@ -21,8 +34,61 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _HomeView extends StatelessWidget {
+class _HomeView extends StatefulWidget {
   const _HomeView();
+
+  @override
+  State<_HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<_HomeView> {
+  final _plusKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    // Warm reference-data caches once (now that we're authenticated) so the
+    // create bubbles open instantly without waiting on the network. The repos
+    // are singletons and cache in-memory, so later reads come from cache.
+    context.read<ItemRepository>().fetchItems().ignore();
+    context.read<CountryRepository>().fetchCountries().ignore();
+  }
+
+  void _onPlusTap(BuildContext context) {
+    // Switch to the activity tab (index 2) so created items land there
+    context.read<NavCubit>().setTab(2);
+
+    final mode = context.read<UserModeCubit>().state;
+    if (mode == UserMode.carrier) {
+      showCreateOfferBubble(
+        context,
+        plusKey: _plusKey,
+        airports: context.read<AirportRepository>(),
+        flights: context.read<FlightRepository>(),
+        offers: context.read<OfferRepository>(),
+        items: context.read<ItemRepository>(),
+      );
+    } else {
+      _openRequestBubble(context);
+    }
+  }
+
+  // Opens the offer-request bubble for create (existing == null) or edit.
+  void _openRequestBubble(BuildContext context,
+      {OfferRequestResponse? existing}) {
+    final listCubit = context.read<OfferRequestsCubit>();
+    showCreateOfferRequestBubble(
+      context,
+      plusKey: _plusKey,
+      items: context.read<ItemRepository>(),
+      offerRequests: context.read<OfferRequestRepository>(),
+      countries: context.read<CountryRepository>(),
+      existing: existing,
+      onSaved: (response) => existing == null
+          ? listCubit.prepend(response)
+          : listCubit.update(response),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,18 +102,31 @@ class _HomeView extends StatelessWidget {
           ),
           body: IndexedStack(
             index: currentIndex,
-            children: const [
-              _HomeTab(),
-              _PlaceholderTab(icon: Icons.chat_bubble_outline_rounded, label: 'Chat'),
-              _PlaceholderTab(icon: Icons.add_circle_outline_rounded, label: 'New'),
-              _PlaceholderTab(icon: Icons.notifications_outlined, label: 'Notifications'),
-              _PlaceholderTab(icon: Icons.person_outline_rounded, label: 'Profile'),
+            children: [
+              const _HomeTab(),
+              const _PlaceholderTab(
+                  icon: Icons.chat_bubble_outline_rounded, label: 'Chat'),
+              // Third tab switches with sender/carrier mode
+              BlocBuilder<UserModeCubit, UserMode>(
+                builder: (context, mode) => mode == UserMode.sender
+                    ? OfferRequestsScreen(
+                        onEdit: (req) =>
+                            _openRequestBubble(context, existing: req),
+                      )
+                    : const OffersScreen(),
+              ),
+              const _PlaceholderTab(
+                  icon: Icons.notifications_outlined, label: 'Notifications'),
+              const _PlaceholderTab(
+                  icon: Icons.person_outline_rounded, label: 'Profile'),
             ],
           ),
           bottomNavigationBar: AppNavBar(
             currentIndex: currentIndex,
             onTap: (index) => context.read<NavCubit>().setTab(index),
             badgeCounts: const {1: 2, 3: 3},
+            plusKey: _plusKey,
+            onPlusTap: () => _onPlusTap(context),
           ),
         );
       },
@@ -65,93 +144,111 @@ class _HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<_HomeTab> {
-  // Mode managed here for now; will move to profile settings later
-  final _UserMode _mode = _UserMode.sender;
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Greeting + mode pill ────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Good to have you back 👋',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: textSecondary,
-                  ),
+    return BlocBuilder<UserModeCubit, UserMode>(
+      builder: (context, mode) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Greeting + mode pill ──────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Good to have you back 👋',
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      "What's happening today?",
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.4,
+                        color: textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _ModePill(
+                      mode: mode,
+                      onTap: () => _showModePicker(context, mode),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'What\'s happening today?',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.4,
-                    color: textPrimary,
-                  ),
+              ),
+
+              // ── In delivery ───────────────────────────────────────────
+              if (_deliveries.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                _SectionHeader(
+                  title: 'In delivery',
+                  isDark: isDark,
+                  onSeeAll: () {},
                 ),
-                const SizedBox(height: 8),
-                _ModePill(mode: _mode),
+                const SizedBox(height: 12),
+                _InDeliveryList(isDark: isDark),
+                const SizedBox(height: 15),
               ],
-            ),
+
+              // ── Engagements ───────────────────────────────────────────
+              if (_engagements.isNotEmpty) ...[
+                _SectionHeader(
+                  title: 'Engagements',
+                  isDark: isDark,
+                  onSeeAll: () {},
+                ),
+                const SizedBox(height: 14),
+                _EngagementList(isDark: isDark),
+                const SizedBox(height: 28),
+              ],
+
+              // ── Available carriers / Offer requests ───────────────────
+              if (_deliveries.isEmpty && _engagements.isEmpty)
+                const SizedBox(height: 20),
+              _SectionHeader(
+                title: mode == UserMode.sender
+                    ? 'Available carriers'
+                    : 'Offer requests',
+                isDark: isDark,
+                onSeeAll: () {},
+              ),
+              const SizedBox(height: 14),
+              if (mode == UserMode.sender)
+                _CarrierOfferList(isDark: isDark)
+              else
+                _OfferRequestList(isDark: isDark),
+            ],
           ),
+        );
+      },
+    );
+  }
 
-          // ── In delivery ─────────────────────────────────────────────
-          if (_deliveries.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            _SectionHeader(
-              title: 'In delivery',
-              isDark: isDark,
-              onSeeAll: () {},
-            ),
-            const SizedBox(height: 12),
-            _InDeliveryList(isDark: isDark),
-            const SizedBox(height: 15),
-          ],
-
-          // ── Engagements ─────────────────────────────────────────────
-          if (_engagements.isNotEmpty) ...[
-            _SectionHeader(
-              title: 'Engagements',
-              isDark: isDark,
-              onSeeAll: () {},
-            ),
-            const SizedBox(height: 14),
-            _EngagementList(isDark: isDark),
-            const SizedBox(height: 28),
-          ],
-
-          // ── Available carriers / Offer requests ─────────────────────
-          if (_deliveries.isEmpty && _engagements.isEmpty)
-            const SizedBox(height: 20),
-          _SectionHeader(
-            title: _mode == _UserMode.sender
-                ? 'Available carriers'
-                : 'Offer requests',
-            isDark: isDark,
-            onSeeAll: () {},
-          ),
-          const SizedBox(height: 14),
-          if (_mode == _UserMode.sender)
-            _CarrierOfferList(isDark: isDark)
-          else
-            _OfferRequestList(isDark: isDark),
-        ],
+  void _showModePicker(BuildContext context, UserMode current) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (_) => _ModePickerDialog(
+        currentMode: current,
+        onSelect: (mode) {
+          context.read<UserModeCubit>().setMode(mode);
+          Navigator.of(context).pop();
+        },
       ),
     );
   }
@@ -160,40 +257,49 @@ class _HomeTabState extends State<_HomeTab> {
 // ── Mode pill ─────────────────────────────────────────────────────────────────
 
 class _ModePill extends StatelessWidget {
-  final _UserMode mode;
-  const _ModePill({required this.mode});
+  final UserMode mode;
+  final VoidCallback onTap;
+  const _ModePill({required this.mode, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final label = mode == _UserMode.sender ? 'Sender mode' : 'Carrier mode';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.success.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: const BoxDecoration(
+                color: AppColors.success,
+                shape: BoxShape.circle,
+              ),
             ),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
+            const SizedBox(width: 5),
+            Text(
+              mode.pillLabel,
+              style: const TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.success,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 3),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 13,
+              color: AppColors.success,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -527,14 +633,15 @@ class _EngagementList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: _engagements.length.clamp(0, 2),
-      separatorBuilder: (context, _) => const SizedBox(height: 6),
-      itemBuilder: (_, i) =>
-          _EngagementCard(item: _engagements[i], isDark: isDark),
+    return SizedBox(
+      height: 88,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: _engagements.length,
+        separatorBuilder: (context, _) => const SizedBox(height: 6),
+        itemBuilder: (_, i) =>
+            _EngagementCard(item: _engagements[i], isDark: isDark),
+      ),
     );
   }
 }
@@ -648,7 +755,8 @@ class _EngagementCard extends StatelessWidget {
 
 class _CarrierOffer {
   final String name, fromCity, fromCode, toCity, toCode, date;
-  final double rating, startingPricePerKg, maxWeightKg;
+  final double rating, startingPrice, maxCapacity;
+  final String priceUnit, capacityUnit;
   final int reviews, itemCount;
   final Color avatarColor;
   final bool isVerified;
@@ -662,8 +770,10 @@ class _CarrierOffer {
     required this.toCity,
     required this.toCode,
     required this.date,
-    required this.startingPricePerKg,
-    required this.maxWeightKg,
+    required this.startingPrice,
+    required this.priceUnit,
+    required this.maxCapacity,
+    required this.capacityUnit,
     required this.itemCount,
     required this.avatarColor,
     this.isVerified = true,
@@ -680,8 +790,10 @@ final _carrierOffers = [
     toCity: 'London',
     toCode: 'LHR',
     date: 'Jun 12',
-    startingPricePerKg: 3.20,
-    maxWeightKg: 12,
+    startingPrice: 3.20,
+    priceUnit: 'kg',
+    maxCapacity: 12,
+    capacityUnit: 'kg',
     itemCount: 4,
     avatarColor: Color(0xFF4299E1),
   ),
@@ -694,8 +806,10 @@ final _carrierOffers = [
     toCity: 'Addis Ababa',
     toCode: 'ADD',
     date: 'Jun 14',
-    startingPricePerKg: 2.80,
-    maxWeightKg: 8,
+    startingPrice: 1.50,
+    priceUnit: 'piece',
+    maxCapacity: 20,
+    capacityUnit: 'pieces',
     itemCount: 3,
     avatarColor: Color(0xFF48BB78),
   ),
@@ -708,8 +822,10 @@ final _carrierOffers = [
     toCity: 'Lagos',
     toCode: 'LOS',
     date: 'Jun 18',
-    startingPricePerKg: 4.50,
-    maxWeightKg: 5,
+    startingPrice: 4.50,
+    priceUnit: 'kg',
+    maxCapacity: 5,
+    capacityUnit: 'kg',
     itemCount: 2,
     avatarColor: Color(0xFF9F7AEA),
     isVerified: false,
@@ -743,127 +859,155 @@ class _CarrierOfferCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final textTertiary =
-        isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
-    final divider =
-        isDark ? AppColors.darkBorder : const Color(0xFFF3F4F6);
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textTertiary = isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
 
     return Container(
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.06),
-            blurRadius: 14,
-            offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.07),
+            blurRadius: 24,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.10 : 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header: avatar + identity ───────────────────────────────
+          // ── Header ─────────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar
-                Stack(
+                Column(
                   children: [
                     Container(
-                      width: 50,
-                      height: 50,
+                      width: 46,
+                      height: 46,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
                             offer.avatarColor,
-                            offer.avatarColor.withValues(alpha: 0.7),
+                            offer.avatarColor.withValues(alpha: 0.65),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(13),
                       ),
                       child: Center(
                         child: Text(
                           offer.name[0],
                           style: const TextStyle(
                             fontFamily: 'Manrope',
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
                             color: Colors.white,
                           ),
                         ),
                       ),
                     ),
-                    if (offer.isVerified)
-                      Positioned(
-                        bottom: -2,
-                        right: -2,
-                        child: Container(
-                          width: 18,
-                          height: 18,
-                          decoration: BoxDecoration(
+                    if (offer.isVerified) ...[
+                      const SizedBox(height: 3),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: const Text(
+                          'Verified',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.success,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: surface, width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            size: 10,
-                            color: Colors.white,
                           ),
                         ),
                       ),
+                    ],
                   ],
                 ),
-
                 const SizedBox(width: 12),
-
-                // Name + rating
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(
-                            offer.name,
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: textPrimary,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          if (offer.isVerified)
-                            Text(
-                              'Verified',
+                          Flexible(
+                            child: Text(
+                              offer.name,
                               style: TextStyle(
                                 fontFamily: 'Manrope',
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.success,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: textPrimary,
+                                letterSpacing: -0.3,
                               ),
                             ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CarrierOfferDetailScreen(
+                                  name: offer.name,
+                                  fromCode: offer.fromCode,
+                                  fromCity: offer.fromCity,
+                                  toCode: offer.toCode,
+                                  toCity: offer.toCity,
+                                  date: offer.date,
+                                  rating: offer.rating,
+                                  reviews: offer.reviews,
+                                  startingPrice: offer.startingPrice,
+                                  priceUnit: offer.priceUnit,
+                                  maxCapacity: offer.maxCapacity,
+                                  capacityUnit: offer.capacityUnit,
+                                  itemCount: offer.itemCount,
+                                  avatarColor: offer.avatarColor,
+                                  isVerified: offer.isVerified,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'View details',
+                                  style: TextStyle(
+                                    fontFamily: 'Manrope',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.info,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(Icons.arrow_forward_ios_rounded,
+                                    size: 10, color: AppColors.info),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           const Icon(Icons.star_rounded,
                               color: Color(0xFFF6AD55), size: 13),
                           const SizedBox(width: 3),
                           Text(
-                            offer.rating.toString(),
+                            offer.rating.toStringAsFixed(1),
                             style: TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 12,
@@ -888,161 +1032,204 @@ class _CarrierOfferCard extends StatelessWidget {
             ),
           ),
 
-          Divider(height: 1, color: divider),
-
-          // ── Route: dotted flight path ───────────────────────────────
+          // ── Route strip ────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-            child: Row(
-              children: [
-                // From
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      offer.fromCode,
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: textPrimary,
-                        letterSpacing: -0.5,
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBackground : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  // Origin
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        offer.fromCode,
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                          color: textPrimary,
+                        ),
                       ),
-                    ),
-                    Text(
-                      offer.fromCity,
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 10,
-                        color: textTertiary,
+                      Text(
+                        offer.fromCity,
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 9,
+                          color: textTertiary,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
 
-                // Dotted path
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  // Flight path + date
+                  Expanded(
+                    child: Column(
                       children: [
-                        const SizedBox(width: 8),
-                        _DottedLine(isDark: isDark),
-                        const SizedBox(width: 4),
-                        Icon(Icons.flight,
-                            size: 16, color: AppColors.primary),
-                        const SizedBox(width: 4),
-                        _DottedLine(isDark: isDark),
-                        const SizedBox(width: 8),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // To
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      offer.toCode,
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: textPrimary,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    Text(
-                      offer.toCity,
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 10,
-                        color: textTertiary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // ── Date ────────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
-            child: Row(
-              children: [
-                Icon(Icons.calendar_today_outlined,
-                    size: 11, color: textTertiary),
-                const SizedBox(width: 4),
-                Text(
-                  offer.date,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 12,
-                    color: textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Divider(height: 1, color: divider),
-
-          // ── Stats row ───────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-            child: Row(
-              children: [
-                _StatCell(
-                  label: 'From',
-                  value:
-                      '\$${offer.startingPricePerKg.toStringAsFixed(2)}/kg',
-                  valueColor: AppColors.primary,
-                  isDark: isDark,
-                ),
-                _StatDivider(isDark: isDark),
-                _StatCell(
-                  label: 'Capacity',
-                  value: '${offer.maxWeightKg} kg',
-                  isDark: isDark,
-                ),
-                _StatDivider(isDark: isDark),
-                _StatCell(
-                  label: 'Offers',
-                  value: '${offer.itemCount} items',
-                  isDark: isDark,
-                ),
-                const Spacer(),
-                // Match CTA
-                GestureDetector(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 9),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.primaryLight],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _DottedLine(isDark: isDark),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(Icons.flight_rounded,
+                                  size: 11, color: AppColors.primary),
+                            ),
+                            _DottedLine(isDark: isDark),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.calendar_today_outlined,
+                                size: 8, color: textTertiary),
+                            const SizedBox(width: 3),
+                            Text(
+                              offer.date,
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 9,
+                                fontWeight: FontWeight.w500,
+                                color: textTertiary,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    child: Text(
-                      'Match',
-                      style: const TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                  ),
+
+                  // Destination
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        offer.toCode,
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                          color: textPrimary,
+                        ),
+                      ),
+                      Text(
+                        offer.toCity,
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 9,
+                          color: textTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Price + CTA ─────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Starting from',
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: textTertiary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                '\$${offer.startingPrice.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: textPrimary,
+                                  letterSpacing: -0.6,
+                                ),
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                '/ ${offer.priceUnit}',
+                                style: TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: textSecondary,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '·',
+                                style: TextStyle(
+                                  fontFamily: 'Manrope',
+                                  fontSize: 11,
+                                  color: textTertiary,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  'Up to ${offer.maxCapacity % 1 == 0 ? offer.maxCapacity.toInt() : offer.maxCapacity} ${offer.capacityUnit}  ·  ${offer.itemCount} ${offer.itemCount == 1 ? 'slot' : 'slots'}',
+                                  style: TextStyle(
+                                    fontFamily: 'Manrope',
+                                    fontSize: 10,
+                                    color: textTertiary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 9),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Match',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1077,66 +1264,6 @@ class _DottedLine extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _StatCell extends StatelessWidget {
-  final String label, value;
-  final Color? valueColor;
-  final bool isDark;
-
-  const _StatCell({
-    required this.label,
-    required this.value,
-    required this.isDark,
-    this.valueColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 10,
-            color: textSecondary,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: valueColor ?? textPrimary,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatDivider extends StatelessWidget {
-  final bool isDark;
-  const _StatDivider({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 28,
-      margin: const EdgeInsets.symmetric(horizontal: 14),
-      color: isDark ? AppColors.darkBorder : const Color(0xFFF3F4F6),
     );
   }
 }
@@ -1394,6 +1521,224 @@ class _PlaceholderTab extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Mode picker dialog ────────────────────────────────────────────────────────
+
+class _ModePickerDialog extends StatelessWidget {
+  final UserMode currentMode;
+  final ValueChanged<UserMode> onSelect;
+
+  const _ModePickerDialog({
+    required this.currentMode,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppColors.darkSurface : Colors.white;
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.88, end: 1.0),
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutBack,
+      builder: (_, scale, child) =>
+          Transform.scale(scale: scale, child: child),
+      child: Dialog(
+        backgroundColor: bg,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.swap_horiz_rounded,
+                        size: 18, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Switch mode',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: textPrimary,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      Text(
+                        'How are you using Airpick today?',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 11,
+                          color: textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Mode cards
+              Row(
+                children: [
+                  Expanded(
+                    child: _ModeCard(
+                      mode: UserMode.sender,
+                      isActive: currentMode == UserMode.sender,
+                      isDark: isDark,
+                      onTap: () => onSelect(UserMode.sender),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _ModeCard(
+                      mode: UserMode.carrier,
+                      isActive: currentMode == UserMode.carrier,
+                      isDark: isDark,
+                      onTap: () => onSelect(UserMode.carrier),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeCard extends StatelessWidget {
+  final UserMode mode;
+  final bool isActive;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ModeCard({
+    required this.mode,
+    required this.isActive,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  IconData get _icon => mode == UserMode.sender
+      ? Icons.inventory_2_rounded
+      : Icons.flight_rounded;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = isDark ? AppColors.darkBackground : AppColors.surface;
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppColors.primary.withValues(alpha: 0.07)
+              : surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isActive
+                ? AppColors.primary
+                : (isDark ? AppColors.darkBorder : AppColors.border),
+            width: isActive ? 1.5 : 1.0,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: isActive
+                    ? AppColors.primary.withValues(alpha: 0.12)
+                    : (isDark ? AppColors.darkSurface : Colors.white),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                _icon,
+                size: 20,
+                color: isActive
+                    ? AppColors.primary
+                    : (isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              mode.label,
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: isActive ? AppColors.primary : textPrimary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              mode.description,
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 10,
+                color: textSecondary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 10),
+            AnimatedOpacity(
+              opacity: isActive ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded,
+                      size: 13, color: AppColors.primary),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Active',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

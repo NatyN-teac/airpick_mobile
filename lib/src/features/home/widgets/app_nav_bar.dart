@@ -7,12 +7,16 @@ class AppNavBar extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
   final Map<int, int> badgeCounts;
+  final VoidCallback? onPlusTap;
+  final GlobalKey? plusKey;
 
   const AppNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     this.badgeCounts = const {},
+    this.onPlusTap,
+    this.plusKey,
   });
 
   @override
@@ -44,7 +48,7 @@ class _AppNavBarState extends State<AppNavBar> with TickerProviderStateMixin {
   void _onPlusTap() {
     HapticFeedback.mediumImpact();
     _plusController.forward().then((_) => _plusController.reverse());
-    widget.onTap(2);
+    widget.onPlusTap?.call();
   }
 
   void _onTabTap(int index) {
@@ -106,6 +110,7 @@ class _AppNavBarState extends State<AppNavBar> with TickerProviderStateMixin {
                         builder: (context, _) => Transform.scale(
                           scale: _plusScale.value,
                           child: Container(
+                            key: widget.plusKey,
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(

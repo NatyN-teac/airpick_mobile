@@ -82,4 +82,133 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get maybeLater => 'ሌላ ጊዜ';
+
+  @override
+  String get createOffer => '';
+
+  @override
+  String get createAsCarrier => '';
+
+  @override
+  String get createAsSender => '';
+
+  @override
+  String get stepFlightDetails => '';
+
+  @override
+  String get stepOfferDetails => '';
+
+  @override
+  String get step1of2 => '';
+
+  @override
+  String get step2of2 => '';
+
+  @override
+  String get flightType => '';
+
+  @override
+  String get oneWay => '';
+
+  @override
+  String get roundTrip => '';
+
+  @override
+  String get fromAirport => '';
+
+  @override
+  String get toAirport => '';
+
+  @override
+  String get searchAirport => '';
+
+  @override
+  String get departureDate => '';
+
+  @override
+  String get departureTime => '';
+
+  @override
+  String get arrivalDate => '';
+
+  @override
+  String get arrivalTime => '';
+
+  @override
+  String get returnLeg => '';
+
+  @override
+  String get continueToOffer => '';
+
+  @override
+  String get pickupArea => '';
+
+  @override
+  String get deliveryArea => '';
+
+  @override
+  String get urgencyLevel => '';
+
+  @override
+  String get urgencyNormal => '';
+
+  @override
+  String get urgencyExpress => '';
+
+  @override
+  String get discount => '';
+
+  @override
+  String get specialNote => '';
+
+  @override
+  String get meetupPlaces => '';
+
+  @override
+  String get addMeetupPlace => '';
+
+  @override
+  String get paymentMethods => '';
+
+  @override
+  String get offerItems => '';
+
+  @override
+  String get addItem => '';
+
+  @override
+  String get pricePerItem => '';
+
+  @override
+  String get quantity => '';
+
+  @override
+  String get createOfferButton => '';
+
+  @override
+  String get selectDate => '';
+
+  @override
+  String get selectTime => '';
+
+  @override
+  String get optional => '';
+
+  @override
+  String get remove => '';
+
+  @override
+  String get retry => '';
+
+  @override
+  String get errorLoadingAirports => '';
+
+  @override
+  String get errorCreatingFlight => '';
+
+  @override
+  String get errorCreatingOffer => '';
+
+  @override
+  String get offerCreatedSuccess => '';
 }
