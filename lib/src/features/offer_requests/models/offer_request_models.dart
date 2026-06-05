@@ -93,12 +93,14 @@ class UpdateOfferRequestRequest {
 // Parsed defensively — the backend may nest the full item or flatten its fields.
 
 class OfferRequestItem {
-  final String itemId;
+  final String id; // the offer-request-item id (used as offerRequestItemId)
+  final String itemId; // the catalog item id
   final String name;
   final int quantity;
   final String? measurementUnit;
 
   const OfferRequestItem({
+    required this.id,
     required this.itemId,
     required this.name,
     required this.quantity,
@@ -110,6 +112,7 @@ class OfferRequestItem {
     final nested = json['item'] as Map<String, dynamic>?;
     final source = nested ?? json;
     return OfferRequestItem(
+      id: (json['id'] ?? '') as String,
       itemId: (json['itemId'] ?? source['id'] ?? '') as String,
       name: (json['itemName'] ?? source['name'] ?? json['name'] ?? 'Item')
           as String,
@@ -120,11 +123,39 @@ class OfferRequestItem {
   }
 }
 
+// ── Shipper (sender summary on browse responses) ──────────────────────────────
+
+class Shipper {
+  final String id;
+  final String firstName;
+  final String lastName;
+  final String? profilePictureUrl;
+
+  const Shipper({
+    required this.id,
+    required this.firstName,
+    required this.lastName,
+    this.profilePictureUrl,
+  });
+
+  factory Shipper.fromJson(Map<String, dynamic> json) => Shipper(
+        id: json['id'] as String? ?? '',
+        firstName: json['firstName'] as String? ?? '',
+        lastName: json['lastName'] as String? ?? '',
+        profilePictureUrl: json['profilePictureUrl'] as String?,
+      );
+
+  String get fullName => '$firstName $lastName'.trim();
+  String get initial =>
+      (firstName.isNotEmpty ? firstName[0] : '?').toUpperCase();
+}
+
 // ── Response ──────────────────────────────────────────────────────────────────
 
 class OfferRequestResponse {
   final String id;
   final String shipperId;
+  final Shipper? shipper;
   final String sourceCountry;
   final String sourceCity;
   final String destinationCountry;
@@ -154,13 +185,19 @@ class OfferRequestResponse {
     required this.items,
     required this.createdAt,
     required this.updatedAt,
+    this.shipper,
     this.specialNote,
   });
 
   factory OfferRequestResponse.fromJson(Map<String, dynamic> json) =>
       OfferRequestResponse(
         id: json['id'] as String,
-        shipperId: json['shipperId'] as String? ?? '',
+        shipperId: (json['shipperId'] ??
+            (json['shipper'] as Map<String, dynamic>?)?['id'] ??
+            '') as String,
+        shipper: json['shipper'] != null
+            ? Shipper.fromJson(json['shipper'] as Map<String, dynamic>)
+            : null,
         sourceCountry: json['sourceCountry'] as String,
         sourceCity: json['sourceCity'] as String,
         destinationCountry: json['destinationCountry'] as String,

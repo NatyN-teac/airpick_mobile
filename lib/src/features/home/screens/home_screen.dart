@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/nav_cubit.dart';
 import '../cubit/user_mode_cubit.dart';
 import '../../items/repository/item_repository.dart';
+import '../../offer_requests/cubit/browse_offer_requests_cubit.dart';
 import '../../offer_requests/cubit/offer_requests_cubit.dart';
 import '../../offer_requests/models/offer_request_models.dart';
 import '../../offer_requests/repository/offer_request_repository.dart';
+import '../../offer_requests/screens/browse_offer_requests_screen.dart';
 import '../../offer_requests/screens/offer_requests_screen.dart';
 import '../../offer_requests/widgets/create_offer_request_bubble.dart';
 import '../widgets/home_app_bar.dart';
@@ -27,8 +29,14 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // UserModeCubit + OfferRequestsCubit are provided app-wide in main.dart.
-    return BlocProvider(
-      create: (_) => NavCubit(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => NavCubit()),
+        BlocProvider(
+          create: (context) =>
+              BrowseOfferRequestsCubit(context.read<OfferRequestRepository>()),
+        ),
+      ],
       child: const _HomeView(),
     );
   }
@@ -225,13 +233,15 @@ class _HomeTabState extends State<_HomeTab> {
                     ? 'Available carriers'
                     : 'Offer requests',
                 isDark: isDark,
-                onSeeAll: () {},
+                onSeeAll: mode == UserMode.carrier
+                    ? () => openBrowseSeeAll(context)
+                    : () {},
               ),
               const SizedBox(height: 14),
               if (mode == UserMode.sender)
                 _CarrierOfferList(isDark: isDark)
               else
-                _OfferRequestList(isDark: isDark),
+                BrowseOfferRequestsPreview(isDark: isDark),
             ],
           ),
         );
@@ -1214,7 +1224,7 @@ class _CarrierOfferCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 28, vertical: 9),
                         decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
+                          color: AppColors.primary.withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
@@ -1223,7 +1233,7 @@ class _CarrierOfferCard extends StatelessWidget {
                             fontFamily: 'Manrope',
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: AppColors.primary,
                             letterSpacing: -0.1,
                           ),
                         ),
@@ -1263,198 +1273,6 @@ class _DottedLine extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ── Offer request list (Carrier mode) ────────────────────────────────────────
-
-final _offerRequests = [
-  _OfferRequest(
-    title: 'Consumer Electronics',
-    icon: Icons.devices_rounded,
-    iconColor: const Color(0xFF4299E1),
-    fromCode: 'LHR',
-    toCode: 'NBO',
-    weightKg: 3.5,
-    deadline: 'Jun 15',
-    budgetUsd: 55,
-  ),
-  _OfferRequest(
-    title: 'Fashion & Clothing',
-    icon: Icons.checkroom_rounded,
-    iconColor: const Color(0xFF9F7AEA),
-    fromCode: 'CDG',
-    toCode: 'ACC',
-    weightKg: 2.0,
-    deadline: 'Jun 20',
-    budgetUsd: 38,
-  ),
-];
-
-class _OfferRequest {
-  final String title, fromCode, toCode, deadline;
-  final IconData icon;
-  final Color iconColor;
-  final double weightKg;
-  final int budgetUsd;
-
-  const _OfferRequest({
-    required this.title,
-    required this.icon,
-    required this.iconColor,
-    required this.fromCode,
-    required this.toCode,
-    required this.weightKg,
-    required this.deadline,
-    required this.budgetUsd,
-  });
-}
-
-class _OfferRequestList extends StatelessWidget {
-  final bool isDark;
-  const _OfferRequestList({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: _offerRequests.length,
-      separatorBuilder: (context, _) => const SizedBox(height: 12),
-      itemBuilder: (_, i) =>
-          _OfferRequestCard(request: _offerRequests[i], isDark: isDark),
-    );
-  }
-}
-
-class _OfferRequestCard extends StatelessWidget {
-  final _OfferRequest request;
-  final bool isDark;
-
-  const _OfferRequestCard({required this.request, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final divider = isDark ? AppColors.darkBorder : const Color(0xFFF1F5F9);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: isDark
-            ? null
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 2),
-                )
-              ],
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: request.iconColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(request.icon, color: request.iconColor, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(request.title,
-                          style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: textPrimary,
-                          )),
-                      const SizedBox(height: 2),
-                      Text('${request.weightKg} kg · By ${request.deadline}',
-                          style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 12,
-                              color: textSecondary)),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '\$${request.budgetUsd}',
-                    style: const TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.success,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: divider),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(children: [
-                    _RouteChip(code: request.fromCode, isDark: isDark),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Icon(Icons.arrow_forward_rounded,
-                          size: 13, color: textSecondary),
-                    ),
-                    _RouteChip(code: request.toCode, isDark: isDark),
-                  ]),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.darkBackground
-                        : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isDark
-                          ? AppColors.darkBorder
-                          : const Color(0xFFE2E8F0),
-                    ),
-                  ),
-                  child: Text(
-                    'Send Proposal',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: textPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

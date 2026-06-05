@@ -426,3 +426,41 @@ Senders must pick a country from the supported list (no free text) on the offer-
 ## Reference-data prefetch (items + countries)
 
 `ItemRepository` and `CountryRepository` are app-level singletons that cache their lists in-memory (`_cache`). To avoid the create bubbles waiting on the network, both caches are **warmed once at startup** in `_HomeViewState.initState` (after auth, so the JWT exists): `context.read<ItemRepository>().fetchItems().ignore()` + same for countries. The cubits' `loadItems()/loadCountries()` then read straight from cache (no extra network call) as long as the cache is populated. Cache lives for the app session; restart re-fetches.
+
+---
+
+## Carrier browse offer requests (home carrier mode)
+
+**Endpoint**: `GET /api/v1/offer-requests/browse` (optional query filters `sourceCountry`, `destinationCountry`, `sourceCity`). Response items include a nested `shipper { id, firstName, lastName, profilePictureUrl }`.
+
+**Model**: added `Shipper` + `OfferRequestResponse.shipper` (parsed from `shipper`; `shipperId` falls back to `shipper.id`).
+
+**Repo**: `OfferRequestRepository.browseOfferRequests({sourceCountry, destinationCountry, sourceCity})` — builds query string, reads `content ?? data`.
+
+**Cubit**: `BrowseOfferRequestsCubit` (provided in HomeScreen) — `load({force})`, `applyFilters(...)`, `clearFilters()`; holds list + loading + error + active filters.
+
+**Card** (`widgets/browse_request_card.dart`, `BrowseRequestCard`): NO leading icon — uses `ShipperAvatar` (network photo if `profilePictureUrl`, else colored initial) with a **Verified** chip beneath (same design as the sender-view carrier card). Shows `sourceCity, sourceCountry → destinationCountry` (no airports), urgency badge, item count, optional "Partial ✓", **Send Proposal** button (NO price label), and **created-ago at bottom-right**. Tapping the card body opens the detail bottom-sheet.
+
+**Detail popup**: `showBrowseRequestDetail()` — bottom sheet with shipper, route, date, urgency, partial flag, note, full items list, created-ago, and a sticky Send Proposal CTA.
+
+**See-all**: `openBrowseSeeAll()` pushes `BrowseOfferRequestsScreen` (fresh `BrowseOfferRequestsCubit`) — full list, pull-to-refresh, and a **filter sheet** (source country, destination country, source city) with a dot indicator when filters are active. Carrier section header "See all" is wired to this; sender keeps a no-op for now.
+
+**Send Proposal** (`widgets/send_proposal_sheet.dart`, `showSendProposalSheet`): per-item select + price inputs, partial logic (deselect only allowed when `partialProposalAccepted`; validates all-or-partial), running total, and a flight-attach row (placeholder). Assembles a payload `{offerRequestId, isPartial, items:[{itemId, price}]}` and hands it to `onSubmit`.
+
+**Pending APIs** (stubbed/flagged): (1) proposal submission endpoint — `launchSendProposal` currently shows an info snackbar with the assembled payload ready to POST; (2) flight attachment to a proposal; (3) sender-side browse API/UI (the mode framework is in place — sender still shows the `_CarrierOfferList` placeholder).
+
+---
+
+## Proposal creation (carrier → request) + softer CTAs
+
+**Softer buttons**: "Send Proposal" (card + detail CTA) and "Match" now use a tonal style — `AppColors.primary.withValues(alpha: 0.14)` fill with primary-colored text instead of the full gradient — to reduce primary-color intensity.
+
+**Endpoint**: `POST /api/v1/offer-requests/{requestId}/proposals`. Payload: `flightId, deliveryArea, pickupArea, discount?, meetupPlaces[], paymentMethods[] (display labels e.g. "Cash"), note?, items[{offerRequestItemId, pricePerItem}]`. Without partial → ALL request items must be priced; with partial → a subset is allowed.
+
+**Flight nested in proposal (single call)**: The flight is sent INSIDE the proposal payload as a `flight` object (`CreateProposalRequest.flight: CreateFlightRequest`), so `POST /offer-requests/{id}/proposals` creates the flight + proposal atomically — no separate `/flights` call. `CreateProposalCubit.submit()` builds the one-way `CreateFlightRequest` and nests it; no `FlightRepository` dependency. Payload: `{flight:{flightType,legs}, deliveryArea, pickupArea, discount?, meetupPlaces, paymentMethods (labels), note?, items:[{offerRequestItemId, pricePerItem}]}`. `isValid` requires the flight fields + pickup/delivery + ≥1 payment method + priced selected items (+ all items unless partial allowed), so the Submit button stays disabled until a flight is specified.
+
+**Model**: `OfferRequestItem` now carries both `id` (the offer-request-item id → `offerRequestItemId`) and `itemId` (catalog id). New `proposal_models.dart` (`CreateProposalRequest`, `ProposalItemRequest`). Repo: `createProposal(requestId, request)`.
+
+**UI**: `CreateProposalScreen` (full screen, pushed via `openCreateProposal`) reuses `form_widgets` (AirportPicker, DateTimeTile, FormTextField). Sections: your flight (one-way airports + dates), pickup/delivery, payment-method chips, per-item price rows (checkbox to include — deselect only when partial allowed), discount, note, running total + Submit. Browse "Send Proposal" (card + detail) routes here. The old placeholder `send_proposal_sheet.dart` was removed.
+
+**PENDING (sender accept/decline)**: not built — needs APIs: (1) list proposals received on the sender's requests, (2) accept proposal, (3) decline proposal. Once provided, surface them in the home "Engagements" section (currently mock) with accept/decline actions.
