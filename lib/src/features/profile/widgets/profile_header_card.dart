@@ -26,7 +26,9 @@ class ProfileHeaderCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (profile == null)
+                  if (profile != null && profile.hasIdentity)
+                    ProfileAvatar(profile: profile)
+                  else
                     Container(
                       width: 72,
                       height: 72,
@@ -36,16 +38,14 @@ class ProfileHeaderCard extends StatelessWidget {
                       ),
                       child: const Icon(Icons.person_outline_rounded,
                           color: AppColors.primary, size: 32),
-                    )
-                  else
-                    ProfileAvatar(profile: profile),
+                    ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          profile?.fullName ?? 'Guest',
+                          profile?.displayName ?? 'Guest',
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 20,
@@ -58,7 +58,7 @@ class ProfileHeaderCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          mode.label,
+                          mode.displayLabel,
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 13,

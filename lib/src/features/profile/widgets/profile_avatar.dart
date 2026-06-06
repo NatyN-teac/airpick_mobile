@@ -17,7 +17,7 @@ class ProfileAvatar extends StatelessWidget {
       Color(0xFFEC4899),
       Color(0xFF38B2AC),
     ];
-    return palette[profile.fullName.hashCode.abs() % palette.length];
+    return palette[profile.displayName.hashCode.abs() % palette.length];
   }
 
   @override
@@ -51,7 +51,7 @@ class ProfileAvatar extends StatelessWidget {
       child: (url == null || url.isEmpty)
           ? Center(
               child: Text(
-                profile.initial,
+                profile.initials,
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: size * 0.38,

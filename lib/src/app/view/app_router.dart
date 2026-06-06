@@ -8,7 +8,9 @@ import '../../features/auth/screens/auth_screen.dart';
 import '../../features/home/cubit/user_mode_cubit.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../core/storage/token_storage.dart';
 import '../../features/profile/cubit/current_user_cubit.dart';
+import '../../features/profile/repository/user_repository.dart';
 
 class AppRouter extends StatefulWidget {
   const AppRouter({super.key});
@@ -45,6 +47,10 @@ class _AppRouterState extends State<AppRouter> {
           listener: (context, state) {
             if (state is AuthSuccess) {
               context.read<CurrentUserCubit>().setFromUser(state.user);
+              context.read<CurrentUserCubit>().refreshFromServer(
+                    context.read<UserRepository>(),
+                    context.read<TokenStorage>(),
+                  );
               final activeMode = state.user.activeMode;
               if (activeMode != null && activeMode.isNotEmpty) {
                 context

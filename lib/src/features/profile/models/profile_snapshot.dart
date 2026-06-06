@@ -58,9 +58,38 @@ class ProfileSnapshot {
         bio: detail.bio ?? current.bio,
         profilePictureUrl:
             detail.profilePictureUrl ?? current.profilePictureUrl,
-        isVerified: current.isVerified,
+        isVerified: detail.isVerified,
         verificationStatus: current.verificationStatus,
       );
+
+  /// Applies saved form values on top of any API response so the profile
+  /// header updates immediately even when PUT returns partial/null fields.
+  factory ProfileSnapshot.mergeAfterSave({
+    required UpdateUserProfileRequest request,
+    UserProfileDetail? detail,
+    required ProfileSnapshot current,
+  }) {
+    final merged = detail != null
+        ? ProfileSnapshot.fromDetail(detail, current: current)
+        : current;
+    return merged.copyWith(
+      firstName: request.firstName.trim(),
+      middleName: _trimOrNull(request.middleName),
+      lastName: request.lastName.trim(),
+      city: request.city.trim(),
+      state: _trimOrNull(request.state),
+      country: request.country.trim(),
+      bio: _trimOrNull(request.bio),
+      profilePictureUrl:
+          _trimOrNull(request.profilePictureUrl) ?? merged.profilePictureUrl,
+    );
+  }
+
+  static String? _trimOrNull(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
 
   factory ProfileSnapshot.fromJson(Map<String, dynamic> json) =>
       ProfileSnapshot(
@@ -127,9 +156,39 @@ class ProfileSnapshot {
     return n.isEmpty ? email.split('@').first : n;
   }
 
+  /// Header label: "Jane D." when first + last name exist.
+  String get displayName {
+    final first = firstName?.trim();
+    if (first != null && first.isNotEmpty) {
+      final last = lastName?.trim();
+      if (last != null && last.isNotEmpty) {
+        return '$first ${last[0].toUpperCase()}.';
+      }
+      return first;
+    }
+    if (email.isNotEmpty) return email.split('@').first;
+    return 'Guest';
+  }
+
   String get initial {
     final f = firstName;
     if (f != null && f.isNotEmpty) return f[0].toUpperCase();
     return email.isNotEmpty ? email[0].toUpperCase() : '?';
   }
+
+  /// Avatar fallback when no profile picture (e.g. "JD").
+  String get initials {
+    final f = firstName?.trim();
+    final l = lastName?.trim();
+    if (f != null && f.isNotEmpty && l != null && l.isNotEmpty) {
+      return '${f[0]}${l[0]}'.toUpperCase();
+    }
+    return initial;
+  }
+
+  bool get hasIdentity =>
+      (firstName?.trim().isNotEmpty ?? false) ||
+      (lastName?.trim().isNotEmpty ?? false) ||
+      (profilePictureUrl?.trim().isNotEmpty ?? false) ||
+      email.isNotEmpty;
 }

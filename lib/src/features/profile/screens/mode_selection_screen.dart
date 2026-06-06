@@ -50,20 +50,8 @@ class ModeSelectionScreen extends StatelessWidget {
                 const SizedBox(height: 28),
                 ModePickerCards(
                   currentMode: currentMode,
-                  onSelect: (mode) async {
-                    await context.read<UserModeCubit>().setMode(mode);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Mode updated to ${mode.label}'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      );
-                    }
-                  },
+                  onSelect: (mode) =>
+                      context.read<UserModeCubit>().setMode(mode),
                 ),
               ],
             ),

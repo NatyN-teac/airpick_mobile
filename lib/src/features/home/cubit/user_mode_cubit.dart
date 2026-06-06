@@ -6,6 +6,7 @@ enum UserMode { sender, carrier }
 
 extension UserModeX on UserMode {
   String get label => this == UserMode.sender ? 'Sender' : 'Carrier';
+  String get displayLabel => apiValue;
   String get pillLabel => this == UserMode.sender ? 'Sender mode' : 'Carrier mode';
   String get description => this == UserMode.sender
       ? 'I need items delivered'

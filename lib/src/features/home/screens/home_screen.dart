@@ -19,7 +19,10 @@ import '../../flights/repository/flight_repository.dart';
 import '../../offers/repository/offer_repository.dart';
 import '../../offers/screens/offers_screen.dart';
 import '../../offers/widgets/create_offer_bubble.dart';
+import '../../profile/cubit/current_user_cubit.dart';
+import '../../profile/repository/user_repository.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../../core/storage/token_storage.dart';
 import '../../search/screens/search_screen.dart';
 import '../widgets/mode_picker_dialog.dart';
 import 'carrier_offer_detail_screen.dart';
@@ -61,6 +64,10 @@ class _HomeViewState extends State<_HomeView> {
     // are singletons and cache in-memory, so later reads come from cache.
     context.read<ItemRepository>().fetchItems().ignore();
     context.read<CountryRepository>().fetchCountries().ignore();
+    context.read<CurrentUserCubit>().refreshFromServer(
+          context.read<UserRepository>(),
+          context.read<TokenStorage>(),
+        );
   }
 
   void _onPlusTap(BuildContext context) {

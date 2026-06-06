@@ -221,7 +221,7 @@ class BubbleSuccessScreen extends StatefulWidget {
 }
 
 class _BubbleSuccessScreenState extends State<BubbleSuccessScreen> {
-  int _countdown = 3;
+  int _countdown = 1;
 
   @override
   void initState() {

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'api_response.dart';
 import '../config/app_config.dart';
 import '../storage/token_storage.dart';
 import 'auth_interceptor.dart';
@@ -96,7 +97,11 @@ class ApiClient {
 
   Exception _mapError(DioException e) {
     final statusCode = e.response?.statusCode;
-    final message = e.response?.data?['message'] as String?;
+    final data = e.response?.data;
+    String? message;
+    if (data is Map<String, dynamic>) {
+      message = apiResponseMessage(data);
+    }
 
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
