@@ -98,10 +98,24 @@ class ApiClient {
   Exception _mapError(DioException e) {
     final statusCode = e.response?.statusCode;
     final data = e.response?.data;
+    final path = e.requestOptions.path;
+    final method = e.requestOptions.method;
+
+    logApi(
+      tag: 'ApiClient',
+      method: method,
+      path: path,
+      statusCode: statusCode,
+      body: data,
+      error: e.message,
+    );
+
     String? message;
     if (data is Map<String, dynamic>) {
       message = apiResponseMessage(data);
     }
+
+    final bodyDetail = data != null ? '\n${formatApiResponseBody(data)}' : '';
 
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
@@ -109,13 +123,17 @@ class ApiClient {
     }
 
     return switch (statusCode) {
-      400 => Exception(message ?? 'Invalid request.'),
-      401 => Exception(message ?? 'Unauthorised. Please sign in again.'),
-      403 => Exception(message ?? 'Access denied.'),
-      404 => Exception(message ?? 'Resource not found.'),
-      422 => Exception(message ?? 'Validation failed.'),
-      500 => Exception(message ?? 'Server error. Please try again later.'),
-      _ => Exception(message ?? e.message ?? 'Something went wrong.'),
+      400 => Exception(message ?? 'Invalid request.$bodyDetail'),
+      401 => Exception(message ?? 'Unauthorised. Please sign in again.$bodyDetail'),
+      403 => Exception(
+          message ?? 'Access denied (403).$bodyDetail',
+        ),
+      404 => Exception(message ?? 'Resource not found.$bodyDetail'),
+      422 => Exception(message ?? 'Validation failed.$bodyDetail'),
+      500 => Exception(message ?? 'Server error. Please try again later.$bodyDetail'),
+      _ => Exception(
+          message ?? e.message ?? 'Something went wrong.$bodyDetail',
+        ),
     };
   }
 }

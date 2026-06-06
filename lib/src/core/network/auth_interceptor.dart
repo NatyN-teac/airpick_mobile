@@ -22,6 +22,9 @@ class AuthInterceptor extends Interceptor {
       final token = await _tokenStorage.getToken();
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
+      } else {
+        // ignore: avoid_print
+        print('[AuthInterceptor] No JWT for ${options.method} ${options.path}');
       }
     }
     handler.next(options);

@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Airpick needs camera access to verify your identity with Veriff.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Airpick may use the microphone during identity verification.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Airpick may access photos if you choose to upload an ID image.</string>
 </dict>
 </plist>

@@ -34,6 +34,7 @@ dependencies:
   uuid: ^4.5.3
   image_picker: ^1.1.2
   package_info_plus: ^8.3.0
+  veriff_flutter: ^7.0.0
 
 dev_dependencies:
   flutter_test:

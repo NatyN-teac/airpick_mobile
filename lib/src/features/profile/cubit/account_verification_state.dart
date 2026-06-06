@@ -1,6 +1,13 @@
 part of 'account_verification_cubit.dart';
 
-enum AccountVerificationStatus { initial, loading, uploading, loaded, failure }
+enum AccountVerificationStatus {
+  initial,
+  loading,
+  startingVeriff,
+  pollingStatus,
+  loaded,
+  failure,
+}
 
 class AccountVerificationState {
   final AccountVerificationStatus status;
