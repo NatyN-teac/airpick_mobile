@@ -46,7 +46,7 @@ class SettingsRepository {
   // ── User mode ──────────────────────────────────────────────────────────────
 
   UserMode getMode() =>
-      UserModeX.fromApi(_prefs.getString(_modeKey) ?? 'SENDER');
+      UserModeX.fromApi(_prefs.getString(_modeKey) ?? 'SHIPPER');
 
   Future<void> saveMode(UserMode mode) async {
     await _prefs.setString(_modeKey, mode.apiValue);

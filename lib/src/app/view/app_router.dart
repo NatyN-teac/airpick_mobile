@@ -5,8 +5,10 @@ import '../bloc/app_bloc.dart';
 import '../../core/session/app_session.dart';
 import '../../features/auth/bloc/auth_bloc.dart';
 import '../../features/auth/screens/auth_screen.dart';
+import '../../features/home/cubit/user_mode_cubit.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/profile/cubit/current_user_cubit.dart';
 
 class AppRouter extends StatefulWidget {
   const AppRouter({super.key});
@@ -23,6 +25,7 @@ class _AppRouterState extends State<AppRouter> {
     super.initState();
     _unauthorizedSub = AppSession.onUnauthorized.listen((_) {
       if (mounted) {
+        context.read<CurrentUserCubit>().clear();
         context.read<AppBloc>().add(const AppLoggedOut());
       }
     });
@@ -41,6 +44,13 @@ class _AppRouterState extends State<AppRouter> {
         BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthSuccess) {
+              context.read<CurrentUserCubit>().setFromUser(state.user);
+              final activeMode = state.user.activeMode;
+              if (activeMode != null && activeMode.isNotEmpty) {
+                context
+                    .read<UserModeCubit>()
+                    .syncFromServer(UserModeX.fromApi(activeMode));
+              }
               context.read<AppBloc>().add(const AppAuthCompleted());
             }
           },

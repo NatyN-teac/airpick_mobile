@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../cubit/create_offer_cubit.dart';
 import '../cubit/create_offer_state.dart';
@@ -15,7 +15,7 @@ class OfferFormStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = l10n(context);
 
     return BlocBuilder<CreateOfferCubit, CreateOfferState>(
       builder: (context, state) {

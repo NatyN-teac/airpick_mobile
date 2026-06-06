@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 
 // Shared bottle-shaped bubble shell used by both offer creation and offer-request creation.
@@ -24,7 +25,7 @@ Future<void> showAirpickBubble(
   final buttonPos = renderBox.localToGlobal(Offset.zero);
   final double buttonCenterX = buttonPos.dx + buttonSize.width / 2;
   final double buttonTopY = buttonPos.dy;
-  final locale = Localizations.localeOf(context);
+  final locale = resolveAppLocale(Localizations.localeOf(context));
 
   await showGeneralDialog(
     context: context,

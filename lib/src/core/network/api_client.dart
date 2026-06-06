@@ -55,6 +55,36 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> put(
+    String path,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _dio.put(path, data: data);
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> postMultipart(
+    String path,
+    FormData data,
+  ) async {
+    try {
+      final response = await _dio.post(
+        path,
+        data: data,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final body = response.data;
+      if (body is Map<String, dynamic>) return body;
+      return {'success': true};
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   // Returns nothing — used for 204 No Content responses.
   Future<void> delete(String path) async {
     try {

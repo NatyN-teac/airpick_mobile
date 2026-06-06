@@ -1,3 +1,4 @@
+import 'package:airpick/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'src/app/bloc/app_bloc.dart';
 import 'src/app/view/app_router.dart';
+import 'src/core/l10n/l10n.dart';
 import 'src/core/config/app_config.dart';
 import 'src/core/network/api_client.dart';
 import 'src/core/notifications/notification_service.dart';
@@ -24,6 +26,8 @@ import 'src/features/flights/repository/flight_repository.dart';
 import 'src/features/items/repository/item_repository.dart';
 import 'src/features/offer_requests/repository/offer_request_repository.dart';
 import 'src/features/offers/repository/offer_repository.dart';
+import 'src/features/profile/cubit/current_user_cubit.dart';
+import 'src/features/profile/repository/user_repository.dart';
 import 'src/features/settings/cubit/locale_cubit.dart';
 import 'src/features/settings/cubit/theme_cubit.dart';
 import 'src/features/settings/repository/settings_repository.dart';
@@ -77,6 +81,7 @@ class AirpickApp extends StatelessWidget {
             firebaseService: FirebaseAuthService(),
             apiClient: apiClient,
             tokenStorage: tokenStorage,
+            settings: settingsRepo,
           ),
         ),
         RepositoryProvider<SettingsRepository>(
@@ -99,6 +104,9 @@ class AirpickApp extends StatelessWidget {
         ),
         RepositoryProvider<CountryRepository>(
           create: (_) => CountryRepository(apiClient),
+        ),
+        RepositoryProvider<UserRepository>(
+          create: (_) => UserRepository(apiClient),
         ),
       ],
       child: MultiBlocProvider(
@@ -127,9 +135,16 @@ class AirpickApp extends StatelessWidget {
               context.read<IAuthRepository>(),
             ),
           ),
+          BlocProvider<CurrentUserCubit>(
+            create: (context) =>
+                CurrentUserCubit(context.read<SettingsRepository>()),
+          ),
           // App-wide so sender/carrier mode is consistent everywhere
           BlocProvider<UserModeCubit>(
-            create: (_) => UserModeCubit(),
+            create: (context) => UserModeCubit(
+              context.read<SettingsRepository>(),
+              context.read<UserRepository>(),
+            ),
           ),
           BlocProvider<OfferRequestsCubit>(
             create: (context) =>
@@ -146,9 +161,10 @@ class AirpickApp extends StatelessWidget {
                   theme: AppTheme.light,
                   darkTheme: AppTheme.dark,
                   themeMode: themeMode,
-                  locale: locale,
+                  locale: resolveAppLocale(locale),
                   supportedLocales: LocaleCubit.supportedLocales,
                   localizationsDelegates: const [
+                    AppLocalizations.delegate,
                     GlobalMaterialLocalizations.delegate,
                     GlobalWidgetsLocalizations.delegate,
                     GlobalCupertinoLocalizations.delegate,

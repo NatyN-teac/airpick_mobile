@@ -2,6 +2,8 @@ import '../data/firebase_auth_service.dart';
 import '../models/user_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/token_storage.dart';
+import '../../home/cubit/user_mode_cubit.dart';
+import '../../settings/repository/settings_repository.dart';
 
 abstract class IAuthRepository {
   Future<UserModel> signInWithGoogle();
@@ -12,14 +14,17 @@ class AuthRepository implements IAuthRepository {
   final FirebaseAuthService _firebaseService;
   final ApiClient _apiClient;
   final TokenStorage _tokenStorage;
+  final SettingsRepository _settings;
 
   const AuthRepository({
     required FirebaseAuthService firebaseService,
     required ApiClient apiClient,
     required TokenStorage tokenStorage,
+    required SettingsRepository settings,
   })  : _firebaseService = firebaseService,
         _apiClient = apiClient,
-        _tokenStorage = tokenStorage;
+        _tokenStorage = tokenStorage,
+        _settings = settings;
 
   @override
   Future<UserModel> signInWithGoogle() => _register(
@@ -38,7 +43,10 @@ class AuthRepository implements IAuthRepository {
 
     final response = await _apiClient.post(
       '/users/register',
-      {'firebaseToken': firebaseToken, 'mode': 'CARRIER'},
+      {
+        'firebaseToken': firebaseToken,
+        'mode': _settings.getMode().apiValue,
+      },
     );
 
     if (response['success'] != true) {

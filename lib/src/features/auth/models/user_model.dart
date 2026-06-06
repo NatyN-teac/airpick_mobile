@@ -3,6 +3,7 @@ class UserModel {
   final String email;
   final String providerId;
   final String role;
+  final String? activeMode;
   final bool isActiveUser;
   final bool isBlocked;
   final String createdAt;
@@ -14,6 +15,7 @@ class UserModel {
     required this.email,
     required this.providerId,
     required this.role,
+    this.activeMode,
     required this.isActiveUser,
     required this.isBlocked,
     required this.createdAt,
@@ -27,6 +29,7 @@ class UserModel {
       email: json['email'] as String,
       providerId: json['providerId'] as String,
       role: json['role'] as String,
+      activeMode: json['activeMode'] as String?,
       isActiveUser: json['isActiveUser'] as bool,
       isBlocked: json['isBlocked'] as bool,
       createdAt: json['createdAt'] as String,

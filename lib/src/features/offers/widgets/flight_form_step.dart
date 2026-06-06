@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../flights/models/flight_models.dart';
 import '../cubit/create_offer_cubit.dart';
@@ -13,7 +13,7 @@ class FlightFormStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = l10n(context);
     final keyboardH = MediaQuery.of(context).viewInsets.bottom;
 
     return BlocBuilder<CreateOfferCubit, CreateOfferState>(
@@ -528,7 +528,7 @@ class _AirportError extends StatelessWidget {
           GestureDetector(
             onTap: onRetry,
             child: Text(
-              AppLocalizations.of(context)!.retry,
+              l10n(context).retry,
               style: const TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 12,

@@ -89,6 +89,8 @@ class FirebaseAuthService {
     }
   }
 
+  Future<void> signOut() => _auth.signOut();
+
   Future<String> _getFirebaseToken(UserCredential credential) async {
     final token = await credential.user?.getIdToken();
     if (token == null) {

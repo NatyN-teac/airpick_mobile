@@ -16,6 +16,21 @@ class CurrentUserCubit extends Cubit<ProfileSnapshot?> {
     _settings.saveProfile(snap);
   }
 
+  void updateProfile(ProfileSnapshot profile) {
+    emit(profile);
+    _settings.saveProfile(profile);
+  }
+
+  void updateVerification({required bool isVerified, String? status}) {
+    final current = state;
+    if (current == null) return;
+    emit(current.copyWith(
+      isVerified: isVerified,
+      verificationStatus: status,
+    ));
+    _settings.saveProfile(state!);
+  }
+
   void clear() {
     emit(null);
     _settings.clearProfile();
