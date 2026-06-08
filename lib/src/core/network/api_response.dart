@@ -3,6 +3,8 @@ import 'dart:convert';
 String? apiResponseMessage(Map<String, dynamic> response) {
   final top = response['message'];
   if (top is String && top.isNotEmpty) return top;
+  final resultReason = response['resultReason'];
+  if (resultReason is String && resultReason.isNotEmpty) return resultReason;
   final errors = response['errors'];
   if (errors is Map<String, dynamic>) {
     final msg = errors['message'];

@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/engagement_cubit.dart';
 import '../cubit/nav_cubit.dart';
 import '../cubit/user_mode_cubit.dart';
+import '../models/engagement_models.dart';
 import '../../items/repository/item_repository.dart';
 import '../../offer_requests/cubit/browse_offer_requests_cubit.dart';
 import '../../offer_requests/cubit/offer_requests_cubit.dart';
 import '../../offer_requests/models/offer_request_models.dart';
 import '../../offer_requests/repository/offer_request_repository.dart';
+import '../../matches/repository/match_repository.dart';
 import '../../offer_requests/screens/browse_offer_requests_screen.dart';
 import '../../offer_requests/screens/offer_requests_screen.dart';
 import '../../offer_requests/widgets/create_offer_request_bubble.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/app_nav_bar.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/skeleton_list.dart';
+import '../../chat/screens/chats_list_screen.dart';
+import '../../notifications/screens/notifications_screen.dart';
 import '../../airports/repository/airport_repository.dart';
 import '../../countries/repository/country_repository.dart';
 import '../../flights/repository/flight_repository.dart';
+import '../../offers/cubit/browse_offers_cubit.dart';
+import '../../offers/cubit/offers_cubit.dart';
 import '../../offers/repository/offer_repository.dart';
+import '../../offers/screens/browse_offers_screen.dart';
+import '../../offers/screens/edit_offer_screen.dart';
 import '../../offers/screens/offers_screen.dart';
 import '../../offers/widgets/create_offer_bubble.dart';
 import '../../profile/cubit/current_user_cubit.dart';
@@ -24,8 +34,13 @@ import '../../profile/repository/user_repository.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../search/screens/search_screen.dart';
+import '../../matches/cubit/delivery_track_cubit.dart';
+import '../../matches/screens/delivery_track_list_screen.dart';
+import '../../matches/models/delivery_track_models.dart';
+import '../../matches/widgets/delivery_track_card.dart';
+import '../../chat/screens/chat_screen.dart';
 import '../widgets/mode_picker_dialog.dart';
-import 'carrier_offer_detail_screen.dart';
+import 'engagements_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -39,6 +54,21 @@ class HomeScreen extends StatelessWidget {
         BlocProvider(
           create: (context) =>
               BrowseOfferRequestsCubit(context.read<OfferRequestRepository>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              BrowseOffersCubit(context.read<OfferRepository>()),
+        ),
+        BlocProvider(
+          create: (context) => EngagementCubit(
+            context.read<UserRepository>(),
+            context.read<OfferRequestRepository>(),
+          )..load(),
+        ),
+        BlocProvider(
+          create: (context) => DeliveryTrackCubit(
+            context.read<MatchRepository>(),
+          ),
         ),
       ],
       child: const _HomeView(),
@@ -68,6 +98,9 @@ class _HomeViewState extends State<_HomeView> {
           context.read<UserRepository>(),
           context.read<TokenStorage>(),
         );
+    context.read<DeliveryTrackCubit>().load(
+          mode: context.read<UserModeCubit>().state,
+        );
   }
 
   void _onPlusTap(BuildContext context) {
@@ -76,6 +109,7 @@ class _HomeViewState extends State<_HomeView> {
 
     final mode = context.read<UserModeCubit>().state;
     if (mode == UserMode.carrier) {
+      final offersCubit = context.read<OffersCubit>();
       showCreateOfferBubble(
         context,
         plusKey: _plusKey,
@@ -83,6 +117,7 @@ class _HomeViewState extends State<_HomeView> {
         flights: context.read<FlightRepository>(),
         offers: context.read<OfferRepository>(),
         items: context.read<ItemRepository>(),
+        onCreated: offersCubit.prepend, // optimistic — new offer on top
       );
     } else {
       _openRequestBubble(context);
@@ -120,8 +155,7 @@ class _HomeViewState extends State<_HomeView> {
             index: currentIndex,
             children: [
               const _HomeTab(),
-              const _PlaceholderTab(
-                  icon: Icons.chat_bubble_outline_rounded, label: 'Chat'),
+              const ChatsListScreen(),
               // Third tab switches with sender/carrier mode
               BlocBuilder<UserModeCubit, UserMode>(
                 builder: (context, mode) => mode == UserMode.sender
@@ -129,10 +163,11 @@ class _HomeViewState extends State<_HomeView> {
                         onEdit: (req) =>
                             _openRequestBubble(context, existing: req),
                       )
-                    : const OffersScreen(),
+                    : OffersScreen(
+                        onEdit: (offer) => openEditOffer(context, offer),
+                      ),
               ),
-              const _PlaceholderTab(
-                  icon: Icons.notifications_outlined, label: 'Notifications'),
+              const NotificationsScreen(),
               const ProfileScreen(),
             ],
           ),
@@ -159,17 +194,62 @@ class _HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<_HomeTab> {
+  void _openEngagements(BuildContext context) {
+    final engagementCubit = context.read<EngagementCubit>();
+    final navCubit = context.read<NavCubit>();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: engagementCubit),
+            BlocProvider.value(value: navCubit),
+          ],
+          child: const EngagementsListScreen(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _refreshHome(UserMode mode) async {
+    final futures = <Future<void>>[
+      context.read<CurrentUserCubit>().refreshFromServer(
+            context.read<UserRepository>(),
+            context.read<TokenStorage>(),
+          ),
+      context.read<ItemRepository>().fetchItems(),
+      context.read<CountryRepository>().fetchCountries(),
+    ];
+    if (mode == UserMode.sender) {
+      futures.add(context.read<BrowseOffersCubit>().load(force: true));
+    } else {
+      futures.add(
+          context.read<BrowseOfferRequestsCubit>().load(force: true));
+    }
+    futures.add(context.read<EngagementCubit>().load(force: true));
+    futures.add(context.read<DeliveryTrackCubit>().load(mode: mode, force: true));
+    await Future.wait(futures);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    return BlocBuilder<UserModeCubit, UserMode>(
+    return BlocListener<UserModeCubit, UserMode>(
+      listenWhen: (prev, next) => prev != next,
+      listener: (context, mode) {
+        context.read<DeliveryTrackCubit>().load(mode: mode, force: true);
+      },
+      child: BlocBuilder<UserModeCubit, UserMode>(
       builder: (context, mode) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 32),
-          child: Column(
+        return RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: () => _refreshHome(mode),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: 32),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Greeting + mode pill ──────────────────────────────────
@@ -208,51 +288,112 @@ class _HomeTabState extends State<_HomeTab> {
               ),
 
               // ── In delivery ───────────────────────────────────────────
-              if (_deliveries.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                _SectionHeader(
-                  title: 'In delivery',
-                  isDark: isDark,
-                  onSeeAll: () {},
-                ),
-                const SizedBox(height: 12),
-                _InDeliveryList(isDark: isDark),
-                const SizedBox(height: 15),
-              ],
+              BlocBuilder<DeliveryTrackCubit, DeliveryTrackState>(
+                builder: (context, trackState) {
+                  if (trackState.loading && !trackState.hasDeliveries) {
+                    return const Column(
+                      children: [
+                        SizedBox(height: 20),
+                        _InDeliverySkeleton(),
+                        SizedBox(height: 15),
+                      ],
+                    );
+                  }
+                  if (!trackState.hasDeliveries) {
+                    return const SizedBox.shrink();
+                  }
+                  final preview =
+                      trackState.data!.preview(limit: 5);
+                  return Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      _SectionHeader(
+                        title: 'In delivery',
+                        isDark: isDark,
+                        onSeeAll: () => openDeliveryTrackList(context),
+                      ),
+                      const SizedBox(height: 12),
+                      _InDeliveryPreview(
+                        items: preview,
+                        isDark: isDark,
+                        viewerIsCarrier: mode == UserMode.carrier,
+                      ),
+                      const SizedBox(height: 15),
+                    ],
+                  );
+                },
+              ),
 
               // ── Engagements ───────────────────────────────────────────
-              if (_engagements.isNotEmpty) ...[
-                _SectionHeader(
-                  title: 'Engagements',
-                  isDark: isDark,
-                  onSeeAll: () {},
-                ),
-                const SizedBox(height: 14),
-                _EngagementList(isDark: isDark),
-                const SizedBox(height: 28),
-              ],
+              BlocBuilder<EngagementCubit, EngagementState>(
+                builder: (context, engState) {
+                  if (engState.loading && engState.items.isEmpty) {
+                    return const Column(
+                      children: [
+                        SizedBox(height: 20),
+                        SkeletonEngagementTeaser(),
+                        SizedBox(height: 28),
+                      ],
+                    );
+                  }
+                  if (engState.items.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Column(
+                    children: [
+                      _SectionHeader(
+                        title: 'Engagements',
+                        isDark: isDark,
+                        onSeeAll: () => _openEngagements(context),
+                      ),
+                      const SizedBox(height: 14),
+                      _EngagementTeaser(
+                        isDark: isDark,
+                        items: engState.items,
+                        onSeeAll: () => _openEngagements(context),
+                      ),
+                      const SizedBox(height: 28),
+                    ],
+                  );
+                },
+              ),
 
               // ── Available carriers / Offer requests ───────────────────
-              if (_deliveries.isEmpty && _engagements.isEmpty)
-                const SizedBox(height: 20),
-              _SectionHeader(
-                title: mode == UserMode.sender
-                    ? 'Available carriers'
-                    : 'Offer requests',
-                isDark: isDark,
-                onSeeAll: mode == UserMode.carrier
-                    ? () => openBrowseSeeAll(context)
-                    : () {},
+              BlocBuilder<EngagementCubit, EngagementState>(
+                builder: (context, engState) {
+                  final noEngagements =
+                      !engState.loading && engState.items.isEmpty;
+                  final noDeliveries =
+                      !context.watch<DeliveryTrackCubit>().state.hasDeliveries;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (noDeliveries && noEngagements)
+                        const SizedBox(height: 20),
+                      _SectionHeader(
+                        title: mode == UserMode.sender
+                            ? 'Available carriers'
+                            : 'Offer requests',
+                        isDark: isDark,
+                        onSeeAll: mode == UserMode.carrier
+                            ? () => openBrowseSeeAll(context)
+                            : () => openBrowseOffersSeeAll(context),
+                      ),
+                      const SizedBox(height: 14),
+                      if (mode == UserMode.sender)
+                        BrowseOffersPreview(isDark: isDark)
+                      else
+                        BrowseOfferRequestsPreview(isDark: isDark),
+                    ],
+                  );
+                },
               ),
-              const SizedBox(height: 14),
-              if (mode == UserMode.sender)
-                _CarrierOfferList(isDark: isDark)
-              else
-                BrowseOfferRequestsPreview(isDark: isDark),
             ],
           ),
+        ),
         );
       },
+    ),
     );
   }
 
@@ -260,9 +401,19 @@ class _HomeTabState extends State<_HomeTab> {
     showModePickerDialog(
       context,
       currentMode: current,
-      onSelect: (mode) {
-        context.read<UserModeCubit>().setMode(mode);
-        Navigator.of(context).pop();
+      onSelect: (mode) async {
+        await context.read<UserModeCubit>().setMode(mode);
+        if (!context.mounted) return;
+        if (mode == UserMode.sender) {
+          context.read<BrowseOffersCubit>().load(force: true);
+        } else {
+          context.read<BrowseOfferRequestsCubit>().load(force: true);
+        }
+        context.read<EngagementCubit>().load(force: true);
+        context
+            .read<DeliveryTrackCubit>()
+            .load(mode: mode, force: true);
+        if (context.mounted) Navigator.of(context).pop();
       },
     );
   }
@@ -376,581 +527,204 @@ class _SectionHeader extends StatelessWidget {
 
 // ── In delivery ───────────────────────────────────────────────────────────────
 
-class _DeliveryItem {
-  final String item, from, fromCode, to, toCode, partner, partnerRole, updatedAt;
-  final _DeliveryStatus status;
-
-  const _DeliveryItem({
-    required this.item,
-    required this.from,
-    required this.fromCode,
-    required this.to,
-    required this.toCode,
-    required this.partner,
-    required this.partnerRole,
-    required this.updatedAt,
-    required this.status,
-  });
-}
-
-enum _DeliveryStatus { pickedUp, inTransit, nearDestination }
-
-extension _DeliveryStatusX on _DeliveryStatus {
-  String get label => switch (this) {
-        _DeliveryStatus.pickedUp => 'Picked up',
-        _DeliveryStatus.inTransit => 'In transit',
-        _DeliveryStatus.nearDestination => 'Almost there',
-      };
-
-  Color get color => switch (this) {
-        _DeliveryStatus.pickedUp => const Color(0xFFED8936),
-        _DeliveryStatus.inTransit => const Color(0xFF4299E1),
-        _DeliveryStatus.nearDestination => const Color(0xFF48BB78),
-      };
-
-  double get progress => switch (this) {
-        _DeliveryStatus.pickedUp => 0.25,
-        _DeliveryStatus.inTransit => 0.6,
-        _DeliveryStatus.nearDestination => 0.88,
-      };
-}
-
-final _deliveries = [
-  const _DeliveryItem(
-    item: 'Consumer Electronics',
-    from: 'New York',
-    fromCode: 'JFK',
-    to: 'London',
-    toCode: 'LHR',
-    partner: 'Samuel K.',
-    partnerRole: 'Carrier',
-    updatedAt: '2h ago',
-    status: _DeliveryStatus.inTransit,
-  ),
-  const _DeliveryItem(
-    item: 'Fashion & Clothing',
-    from: 'Paris',
-    fromCode: 'CDG',
-    to: 'Nairobi',
-    toCode: 'NBO',
-    partner: 'Aisha M.',
-    partnerRole: 'Carrier',
-    updatedAt: '5h ago',
-    status: _DeliveryStatus.pickedUp,
-  ),
-];
-
-class _InDeliveryList extends StatelessWidget {
+class _InDeliveryPreview extends StatelessWidget {
+  final List<TrackedDeliveryItem> items;
   final bool isDark;
-  const _InDeliveryList({required this.isDark});
+  final bool viewerIsCarrier;
+
+  const _InDeliveryPreview({
+    required this.items,
+    required this.isDark,
+    required this.viewerIsCarrier,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final cardWidth = MediaQuery.of(context).size.width * 0.72;
     return SizedBox(
-      height: 148,
+      height: 172,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(20, 2, 20, 16),
-        itemCount: _deliveries.length,
-        separatorBuilder: (context, _) => const SizedBox(width: 10),
-        itemBuilder: (_, i) =>
-            _DeliveryCard(item: _deliveries[i], isDark: isDark),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (_, i) => DeliveryTrackCard(
+          item: items[i],
+          isDark: isDark,
+          viewerIsCarrier: viewerIsCarrier,
+          width: cardWidth,
+          onTap: () => openChatScreen(
+            context,
+            items[i].match.id,
+            initialMatch: items[i].match,
+          ),
+        ),
       ),
     );
   }
 }
 
-class _DeliveryCard extends StatelessWidget {
-  final _DeliveryItem item;
-  final bool isDark;
-
-  const _DeliveryCard({required this.item, required this.isDark});
+class _InDeliverySkeleton extends StatelessWidget {
+  const _InDeliverySkeleton();
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return Container(
-      width: screenWidth * 0.68,
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.07),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Status + time
-          Row(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.darkSurface : Colors.white;
+    final cardWidth = MediaQuery.of(context).size.width * 0.72;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                item.status.label,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: item.status.color,
+              Container(
+                width: 100,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: surface,
+                  borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              Text(
-                item.updatedAt,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 10,
-                  color: textSecondary,
+              Container(
+                width: 56,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: surface,
+                  borderRadius: BorderRadius.circular(6),
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 6),
-
-          Text(
-            item.item,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: textPrimary,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 172,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(20, 2, 20, 16),
+            itemCount: 2,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, __) => Container(
+              width: cardWidth,
+              decoration: BoxDecoration(
+                color: surface,
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
-
-          const SizedBox(height: 4),
-
-          Row(
-            children: [
-              Text(
-                item.fromCode,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 11,
-                  color: textSecondary,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Icon(Icons.arrow_forward_rounded,
-                    size: 10, color: textSecondary),
-              ),
-              Text(
-                item.toCode,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 11,
-                  color: textSecondary,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                item.partner,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 10,
-                  color: textSecondary,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          // Progress bar
-          LinearProgressIndicator(
-            value: item.status.progress,
-            minHeight: 3,
-            borderRadius: BorderRadius.circular(3),
-            backgroundColor: isDark
-                ? AppColors.darkBorder
-                : const Color(0xFFEEF0F3),
-            valueColor: AlwaysStoppedAnimation<Color>(item.status.color),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 // ── Engagements ───────────────────────────────────────────────────────────────
 
-class _EngagementItem {
-  final String title, fromCode, toCode, partner, date;
-  final _EngagementStatus status;
-
-  const _EngagementItem({
-    required this.title,
-    required this.fromCode,
-    required this.toCode,
-    required this.partner,
-    required this.date,
-    required this.status,
+// Non-scrollable, attention-seeking teaser. Pulses softly to invite a tap
+// to "See all". Performant — a single repeating controller drives a glow.
+class _EngagementTeaser extends StatefulWidget {
+  final bool isDark;
+  final List<EngagementListItem> items;
+  final VoidCallback onSeeAll;
+  const _EngagementTeaser({
+    required this.isDark,
+    required this.items,
+    required this.onSeeAll,
   });
-}
-
-enum _EngagementStatus { matched, proposalSent, proposalReceived, pending }
-
-extension _EngagementStatusX on _EngagementStatus {
-  String get label => switch (this) {
-        _EngagementStatus.matched => 'Matched',
-        _EngagementStatus.proposalSent => 'Proposal sent',
-        _EngagementStatus.proposalReceived => 'Proposal received',
-        _EngagementStatus.pending => 'Pending',
-      };
-
-  Color get color => switch (this) {
-        _EngagementStatus.matched => const Color(0xFF48BB78),
-        _EngagementStatus.proposalSent => const Color(0xFF4299E1),
-        _EngagementStatus.proposalReceived => const Color(0xFF9F7AEA),
-        _EngagementStatus.pending => const Color(0xFFA0AEC0),
-      };
-}
-
-final _engagements = [
-  const _EngagementItem(
-    title: 'Tokyo Electronics',
-    fromCode: 'JFK',
-    toCode: 'NRT',
-    partner: 'Aisha M.',
-    date: 'Jun 12',
-    status: _EngagementStatus.matched,
-  ),
-  const _EngagementItem(
-    title: 'Books — London',
-    fromCode: 'YYZ',
-    toCode: 'LHR',
-    partner: 'Carlos R.',
-    date: 'Jun 18',
-    status: _EngagementStatus.proposalSent,
-  ),
-  const _EngagementItem(
-    title: 'Fashion Package',
-    fromCode: 'CDG',
-    toCode: 'LOS',
-    partner: 'Sara T.',
-    date: 'Jun 20',
-    status: _EngagementStatus.proposalReceived,
-  ),
-];
-
-class _EngagementList extends StatelessWidget {
-  final bool isDark;
-  const _EngagementList({required this.isDark});
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 88,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: _engagements.length,
-        separatorBuilder: (context, _) => const SizedBox(height: 6),
-        itemBuilder: (_, i) =>
-            _EngagementCard(item: _engagements[i], isDark: isDark),
-      ),
-    );
+  State<_EngagementTeaser> createState() => _EngagementTeaserState();
+}
+
+class _EngagementTeaserState extends State<_EngagementTeaser>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1600),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
   }
-}
-
-class _EngagementCard extends StatelessWidget {
-  final _EngagementItem item;
-  final bool isDark;
-
-  const _EngagementCard({required this.item, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
-    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final isDark = widget.isDark;
+    final latest = widget.items.first;
+    final count = widget.items.length;
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          // Status dot
-          Container(
-            width: 7,
-            height: 7,
-            decoration: BoxDecoration(
-              color: item.status.color,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.title,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: textPrimary,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: item.status.color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        item.status.label,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: item.status.color,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    _RouteChip(code: item.fromCode, isDark: isDark),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: Icon(Icons.arrow_forward_rounded,
-                          size: 11, color: textSecondary),
-                    ),
-                    _RouteChip(code: item.toCode, isDark: isDark),
-                    const SizedBox(width: 8),
-                    Text(
-                      '· ${item.partner} · ${item.date}',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 11,
-                        color: textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 8),
-          Icon(Icons.chevron_right_rounded,
-              size: 18,
-              color: isDark
-                  ? AppColors.darkTextTertiary
-                  : const Color(0xFFD1D5DB)),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Carrier offer list (Sender mode) ─────────────────────────────────────────
-
-class _CarrierOffer {
-  final String name, fromCity, fromCode, toCity, toCode, date;
-  final double rating, startingPrice, maxCapacity;
-  final String priceUnit, capacityUnit;
-  final int reviews, itemCount;
-  final Color avatarColor;
-  final bool isVerified;
-
-  const _CarrierOffer({
-    required this.name,
-    required this.rating,
-    required this.reviews,
-    required this.fromCity,
-    required this.fromCode,
-    required this.toCity,
-    required this.toCode,
-    required this.date,
-    required this.startingPrice,
-    required this.priceUnit,
-    required this.maxCapacity,
-    required this.capacityUnit,
-    required this.itemCount,
-    required this.avatarColor,
-    this.isVerified = true,
-  });
-}
-
-final _carrierOffers = [
-  const _CarrierOffer(
-    name: 'Samuel K.',
-    rating: 4.9,
-    reviews: 128,
-    fromCity: 'New York',
-    fromCode: 'JFK',
-    toCity: 'London',
-    toCode: 'LHR',
-    date: 'Jun 12',
-    startingPrice: 3.20,
-    priceUnit: 'kg',
-    maxCapacity: 12,
-    capacityUnit: 'kg',
-    itemCount: 4,
-    avatarColor: Color(0xFF4299E1),
-  ),
-  const _CarrierOffer(
-    name: 'Aisha M.',
-    rating: 5.0,
-    reviews: 64,
-    fromCity: 'Dubai',
-    fromCode: 'DXB',
-    toCity: 'Addis Ababa',
-    toCode: 'ADD',
-    date: 'Jun 14',
-    startingPrice: 1.50,
-    priceUnit: 'piece',
-    maxCapacity: 20,
-    capacityUnit: 'pieces',
-    itemCount: 3,
-    avatarColor: Color(0xFF48BB78),
-  ),
-  const _CarrierOffer(
-    name: 'Carlos R.',
-    rating: 4.7,
-    reviews: 43,
-    fromCity: 'Madrid',
-    fromCode: 'MAD',
-    toCity: 'Lagos',
-    toCode: 'LOS',
-    date: 'Jun 18',
-    startingPrice: 4.50,
-    priceUnit: 'kg',
-    maxCapacity: 5,
-    capacityUnit: 'kg',
-    itemCount: 2,
-    avatarColor: Color(0xFF9F7AEA),
-    isVerified: false,
-  ),
-];
-
-class _CarrierOfferList extends StatelessWidget {
-  final bool isDark;
-  const _CarrierOfferList({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: _carrierOffers.length,
-      separatorBuilder: (context, _) => const SizedBox(height: 14),
-      itemBuilder: (_, i) =>
-          _CarrierOfferCard(offer: _carrierOffers[i], isDark: isDark),
-    );
-  }
-}
-
-class _CarrierOfferCard extends StatelessWidget {
-  final _CarrierOffer offer;
-  final bool isDark;
-
-  const _CarrierOfferCard({required this.offer, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final textTertiary = isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.07),
-            blurRadius: 24,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.10 : 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Header ─────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: GestureDetector(
+        onTap: widget.onSeeAll,
+        child: AnimatedBuilder(
+          animation: _c,
+          builder: (context, child) {
+            final t = Curves.easeInOut.transform(_c.value);
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.secondary
+                        .withValues(alpha: 0.08 + 0.16 * t),
+                    blurRadius: 14 + 14 * t,
+                    spreadRadius: 0.5 * t,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: child,
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                        AppColors.secondaryLight.withValues(alpha: 0.30),
+                        AppColors.darkSurface,
+                      ]
+                    : [
+                        AppColors.secondary.withValues(alpha: 0.10),
+                        Colors.white,
+                      ],
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                  color: AppColors.secondary.withValues(alpha: 0.18)),
+            ),
             child: Row(
               children: [
-                Column(
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
+                // Pulsing live badge
+                AnimatedBuilder(
+                  animation: _c,
+                  builder: (_, __) {
+                    final t = Curves.easeInOut.transform(_c.value);
+                    return Container(
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            offer.avatarColor,
-                            offer.avatarColor.withValues(alpha: 0.65),
-                          ],
-                        ),
+                        color: AppColors.secondary
+                            .withValues(alpha: 0.10 + 0.08 * t),
                         borderRadius: BorderRadius.circular(13),
                       ),
-                      child: Center(
-                        child: Text(
-                          offer.name[0],
-                          style: const TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 19,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (offer.isVerified) ...[
-                      const SizedBox(height: 3),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: const Text(
-                          'Verified',
-                          style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.success,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+                      child: const Icon(Icons.bolt_rounded,
+                          size: 22, color: AppColors.secondary),
+                    );
+                  },
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -959,391 +733,98 @@ class _CarrierOfferCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Flexible(
-                            child: Text(
-                              offer.name,
-                              style: TextStyle(
-                                fontFamily: 'Manrope',
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: textPrimary,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CarrierOfferDetailScreen(
-                                  name: offer.name,
-                                  fromCode: offer.fromCode,
-                                  fromCity: offer.fromCity,
-                                  toCode: offer.toCode,
-                                  toCity: offer.toCity,
-                                  date: offer.date,
-                                  rating: offer.rating,
-                                  reviews: offer.reviews,
-                                  startingPrice: offer.startingPrice,
-                                  priceUnit: offer.priceUnit,
-                                  maxCapacity: offer.maxCapacity,
-                                  capacityUnit: offer.capacityUnit,
-                                  itemCount: offer.itemCount,
-                                  avatarColor: offer.avatarColor,
-                                  isVerified: offer.isVerified,
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'View details',
-                                  style: TextStyle(
-                                    fontFamily: 'Manrope',
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.info,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                const Icon(Icons.arrow_forward_ios_rounded,
-                                    size: 10, color: AppColors.info),
-                              ],
+                          _LiveDot(controller: _c),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$count active engagement${count == 1 ? '' : 's'}',
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              color: textPrimary,
+                              letterSpacing: -0.2,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.star_rounded,
-                              color: Color(0xFFF6AD55), size: 13),
-                          const SizedBox(width: 3),
-                          Text(
-                            offer.rating.toStringAsFixed(1),
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: textPrimary,
-                            ),
-                          ),
-                          Text(
-                            '  ·  ${offer.reviews} reviews',
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 11,
-                              color: textSecondary,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 3),
+                      Text(
+                        'Latest: ${latest.title} · ${latest.fromCode}→${latest.toCode} · ${latest.status.label}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 11.5,
+                          color: textSecondary,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // ── Route strip ────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkBackground : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  // Origin
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        offer.fromCode,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.6,
-                          color: textPrimary,
-                        ),
-                      ),
-                      Text(
-                        offer.fromCity,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 9,
-                          color: textTertiary,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Flight path + date
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _DottedLine(isDark: isDark),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: Icon(Icons.flight_rounded,
-                                  size: 11, color: AppColors.primary),
-                            ),
-                            _DottedLine(isDark: isDark),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.calendar_today_outlined,
-                                size: 8, color: textTertiary),
-                            const SizedBox(width: 3),
-                            Text(
-                              offer.date,
-                              style: TextStyle(
-                                fontFamily: 'Manrope',
-                                fontSize: 9,
-                                fontWeight: FontWeight.w500,
-                                color: textTertiary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                const SizedBox(width: 8),
+                // See all pill
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppColors.secondary, AppColors.secondaryLight],
                     ),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-
-                  // Destination
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        offer.toCode,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.6,
-                          color: textPrimary,
-                        ),
-                      ),
-                      Text(
-                        offer.toCity,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 9,
-                          color: textTertiary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Price + CTA ─────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Starting from',
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: textTertiary,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                '\$${offer.startingPrice.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: textPrimary,
-                                  letterSpacing: -0.6,
-                                ),
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                '/ ${offer.priceUnit}',
-                                style: TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: textSecondary,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '·',
-                                style: TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 11,
-                                  color: textTertiary,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  'Up to ${offer.maxCapacity % 1 == 0 ? offer.maxCapacity.toInt() : offer.maxCapacity} ${offer.capacityUnit}  ·  ${offer.itemCount} ${offer.itemCount == 1 ? 'slot' : 'slots'}',
-                                  style: TextStyle(
-                                    fontFamily: 'Manrope',
-                                    fontSize: 10,
-                                    color: textTertiary,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 9),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.14),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'Match',
+                      Text('See all',
                           style: TextStyle(
                             fontFamily: 'Manrope',
-                            fontSize: 13,
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                            letterSpacing: -0.1,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                            color: Colors.white,
+                          )),
+                      SizedBox(width: 2),
+                      Icon(Icons.arrow_forward_rounded,
+                          size: 13, color: Colors.white),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DottedLine extends StatelessWidget {
-  final bool isDark;
-  const _DottedLine({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 36,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(
-          4,
-          (_) => Container(
-            width: 4,
-            height: 1.5,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.darkBorder
-                  : const Color(0xFFD1D5DB),
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
         ),
       ),
     );
   }
 }
 
-// ── Shared route chip ─────────────────────────────────────────────────────────
-
-class _RouteChip extends StatelessWidget {
-  final String code;
-  final bool isDark;
-
-  const _RouteChip({required this.code, required this.isDark});
+class _LiveDot extends StatelessWidget {
+  final Animation<double> controller;
+  const _LiveDot({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkBackground : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Text(
-        code,
-        style: TextStyle(
-          fontFamily: 'Manrope',
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-        ),
-      ),
-    );
-  }
-}
-
-// ── Generic tab placeholder ───────────────────────────────────────────────────
-
-class _PlaceholderTab extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _PlaceholderTab({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 48,
-              color: isDark
-                  ? AppColors.darkTextTertiary
-                  : const Color(0xFFD1D5DB)),
-          const SizedBox(height: 12),
-          Text(
-            '$label — coming soon',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: isDark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.textSecondary,
-            ),
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (_, __) {
+        final t = Curves.easeInOut.transform(controller.value);
+        return Container(
+          width: 7,
+          height: 7,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.success,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.success.withValues(alpha: 0.5 * (1 - t)),
+                blurRadius: 6 * t,
+                spreadRadius: 2 * t,
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

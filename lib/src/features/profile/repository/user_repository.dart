@@ -1,6 +1,7 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
 import '../../home/cubit/user_mode_cubit.dart';
+import '../../home/models/engagement_models.dart';
 import '../models/account_verification.dart';
 import '../models/user_profile_detail.dart';
 
@@ -53,6 +54,21 @@ class UserRepository {
   ) async {
     final response = await _client.put('/users/update', request.toJson());
     return _parseProfileDetail(response);
+  }
+
+  // GET /api/v1/users/engagement — proposals + matches for home (mode-aware).
+  Future<EngagementResponse> fetchEngagement() async {
+    final response = await _client.get('/users/engagement');
+    if (response['success'] == false) {
+      throw Exception(
+        apiResponseMessage(response) ?? 'Failed to load engagements.',
+      );
+    }
+    final content = _unwrap(response);
+    if (content == null) {
+      throw Exception('Engagement data missing from server response.');
+    }
+    return EngagementResponse.fromJson(content);
   }
 
   Future<ClosedAccountResponse> closeAccount(String userId) async {

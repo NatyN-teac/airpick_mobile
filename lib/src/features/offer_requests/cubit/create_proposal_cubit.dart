@@ -52,6 +52,7 @@ class CreateProposalCubit extends Cubit<CreateProposalState> {
   void setDeliveryArea(String v) => emit(state.copyWith(deliveryArea: v));
   void setDiscount(double? v) => emit(state.copyWith(discount: v));
   void setNote(String v) => emit(state.copyWith(note: v));
+  void setCurrency(Currency c) => emit(state.copyWith(currency: c));
 
   void togglePaymentMethod(PaymentMethod m) {
     final list = [...state.paymentMethods];
@@ -114,6 +115,7 @@ class CreateProposalCubit extends Cubit<CreateProposalState> {
           flight: flight,
           pickupArea: state.pickupArea,
           deliveryArea: state.deliveryArea,
+          currency: state.currency,
           discount: state.discount,
           meetupPlaces: state.meetupPlaces,
           paymentMethods: state.paymentMethods,

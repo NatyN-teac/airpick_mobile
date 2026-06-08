@@ -1,4 +1,5 @@
 import '../../flights/models/flight_models.dart';
+import '../../matches/models/match_models.dart';
 import '../../offers/models/offer_models.dart';
 
 class ProposalItemRequest {
@@ -22,6 +23,7 @@ class CreateProposalRequest {
   final CreateFlightRequest flight;
   final String deliveryArea;
   final String pickupArea;
+  final Currency currency;
   final double? discount;
   final List<String> meetupPlaces;
   final List<PaymentMethod> paymentMethods;
@@ -32,6 +34,7 @@ class CreateProposalRequest {
     required this.flight,
     required this.deliveryArea,
     required this.pickupArea,
+    required this.currency,
     required this.meetupPlaces,
     required this.paymentMethods,
     required this.items,
@@ -43,11 +46,27 @@ class CreateProposalRequest {
         'flight': flight.toJson(),
         'deliveryArea': deliveryArea,
         'pickupArea': pickupArea,
+        'currency': currency.apiValue,
         if (discount != null) 'discount': discount,
         'meetupPlaces': meetupPlaces,
         // API sample uses display labels ("Cash", "Zelle")
         'paymentMethods': paymentMethods.map((m) => m.label).toList(),
         if (note != null && note!.isNotEmpty) 'note': note,
         'items': items.map((i) => i.toJson()).toList(),
+      };
+}
+
+class AcceptProposalRequest {
+  final bool receiverNeeded;
+  final MatchReceiverRequest? receiver;
+
+  const AcceptProposalRequest({
+    required this.receiverNeeded,
+    this.receiver,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'receiverNeeded': receiverNeeded,
+        'receiver': receiverNeeded ? receiver?.toJson() : null,
       };
 }

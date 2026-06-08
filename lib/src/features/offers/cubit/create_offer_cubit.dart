@@ -210,7 +210,7 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
     emit(state.copyWith(creatingOffer: true, offerError: null));
     try {
       final hasManualItem = state.items.any((d) => d.item.isManuallyCreated);
-      await _offers.createOffer(CreateOfferRequest(
+      final created = await _offers.createOffer(CreateOfferRequest(
         flightId: state.flightId!,
         pickupArea: state.pickupArea,
         deliveryArea: state.deliveryArea,
@@ -229,7 +229,8 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
                 ))
             .toList(),
       ));
-      emit(state.copyWith(creatingOffer: false, offerCreated: true));
+      emit(state.copyWith(
+          creatingOffer: false, offerCreated: true, createdOffer: created));
     } catch (e) {
       emit(state.copyWith(
           creatingOffer: false, offerError: e.toString()));

@@ -26,11 +26,16 @@ class ErrorDialog {
             borderRadius: BorderRadius.circular(24),
           ),
           insetPadding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(dialogContext).size.height * 0.75,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                 // Icon
                 Container(
                   width: 64,
@@ -126,6 +131,8 @@ class ErrorDialog {
                   ),
                 ),
               ],
+                ),
+              ),
             ),
           ),
         );

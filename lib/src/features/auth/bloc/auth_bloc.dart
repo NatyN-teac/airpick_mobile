@@ -40,7 +40,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on AuthConfigurationException catch (e) {
       emit(AuthFailure(e.message));
     } catch (e) {
-      emit(AuthFailure(e.toString()));
+      emit(AuthFailure(e.toString().replaceFirst('Exception: ', '')));
     }
   }
 }

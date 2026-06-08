@@ -29,6 +29,8 @@ dependencies:
   crypto: ^3.0.7
   # Networking
   dio: ^5.8.0
+  # Realtime chat (STOMP over WebSocket / SockJS)
+  stomp_dart_client: ^2.1.0
   # Secure storage
   flutter_secure_storage: ^9.2.4
   uuid: ^4.5.3
@@ -42,6 +44,17 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   bloc_test: ^10.0.0
   mocktail: ^1.0.4
+  flutter_native_splash: ^2.4.1
+
+# Native splash (run: dart run flutter_native_splash:create)
+flutter_native_splash:
+  color: "#ffffff"
+  color_dark: "#0F172A"
+  image: assets/logo_me.png
+  android_12:
+    image: assets/logo_me.png
+    color: "#ffffff"
+    color_dark: "#0F172A"
 
 flutter:
   generate: true

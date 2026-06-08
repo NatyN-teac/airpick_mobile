@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
   NotificationService._();
 
   static final _plugin = FlutterLocalNotificationsPlugin();
+
+  // Wired in main.dart to the chat deep-link handler. Receives the decoded
+  // notification data (e.g. { refType: MATCH, refId: <matchId> }).
+  static void Function(Map<String, dynamic> data)? onDeepLink;
 
   static const _channelId = 'airpick_main';
   static const _channelName = 'Airpick Notifications';
@@ -68,9 +73,17 @@ class NotificationService {
   static Future<void> cancelAll() => _plugin.cancelAll();
 
   static void _onTap(NotificationResponse response) {
-    // TODO: wire up navigation via a global navigator key or go_router
-    // Example: AppRouter.navigatorKey.currentState?.pushNamed(response.payload);
+    final payload = response.payload;
+    if (payload == null || payload.isEmpty || onDeepLink == null) return;
+    try {
+      final data = jsonDecode(payload);
+      if (data is Map<String, dynamic>) onDeepLink!(data);
+    } catch (_) {/* non-JSON payload — ignore */}
   }
+
+  // Called from the FCM message handler (foreground/opened-app) once
+  // firebase_messaging is wired — routes { refType: MATCH, refId } deep links.
+  static void handleData(Map<String, dynamic> data) => onDeepLink?.call(data);
 }
 
 // ── FCM integration guide ────────────────────────────────────────────────────

@@ -7,6 +7,7 @@ import '../../flights/repository/flight_repository.dart';
 import '../../items/repository/item_repository.dart';
 import '../cubit/create_offer_cubit.dart';
 import '../cubit/create_offer_state.dart';
+import '../models/offer_response.dart';
 import '../repository/offer_repository.dart';
 import 'airpick_bubble_shell.dart';
 import 'flight_form_step.dart';
@@ -21,6 +22,7 @@ Future<void> showCreateOfferBubble(
   required FlightRepository flights,
   required OfferRepository offers,
   required ItemRepository items,
+  ValueChanged<OfferResponse>? onCreated,
 }) async {
   await showAirpickBubble(
     context,
@@ -34,7 +36,7 @@ Future<void> showCreateOfferBubble(
       )
         ..loadAirports()
         ..loadItems(),
-      child: _BubbleContent(onDismiss: dismiss),
+      child: _BubbleContent(onDismiss: dismiss, onCreated: onCreated),
     ),
   );
 }
@@ -43,7 +45,8 @@ Future<void> showCreateOfferBubble(
 
 class _BubbleContent extends StatelessWidget {
   final VoidCallback onDismiss;
-  const _BubbleContent({required this.onDismiss});
+  final ValueChanged<OfferResponse>? onCreated;
+  const _BubbleContent({required this.onDismiss, this.onCreated});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +58,11 @@ class _BubbleContent extends StatelessWidget {
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    return BlocBuilder<CreateOfferCubit, CreateOfferState>(
+    return BlocConsumer<CreateOfferCubit, CreateOfferState>(
+      listenWhen: (p, c) => c.offerCreated && !p.offerCreated,
+      listener: (_, state) {
+        if (state.createdOffer != null) onCreated?.call(state.createdOffer!);
+      },
       builder: (context, state) {
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 400),

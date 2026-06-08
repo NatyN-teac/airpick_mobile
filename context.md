@@ -464,3 +464,71 @@ Senders must pick a country from the supported list (no free text) on the offer-
 **UI**: `CreateProposalScreen` (full screen, pushed via `openCreateProposal`) reuses `form_widgets` (AirportPicker, DateTimeTile, FormTextField). Sections: your flight (one-way airports + dates), pickup/delivery, payment-method chips, per-item price rows (checkbox to include — deselect only when partial allowed), discount, note, running total + Submit. Browse "Send Proposal" (card + detail) routes here. The old placeholder `send_proposal_sheet.dart` was removed.
 
 **PENDING (sender accept/decline)**: not built — needs APIs: (1) list proposals received on the sender's requests, (2) accept proposal, (3) decline proposal. Once provided, surface them in the home "Engagements" section (currently mock) with accept/decline actions.
+
+---
+
+## Chat feature (realtime, STOMP over SockJS)
+
+**Dependency**: `stomp_dart_client: ^2.1.0` (SockJS + STOMP, pure Dart).
+
+**Structure** (`features/chat/`): models (`chat_message`, `chat`, `chat_summary`), `repository/chat_repository`, `service/chat_socket`, `cubit/chat_cubit`+state, `screens/chat_screen`+`chats_list_screen`, `navigation/chat_deep_link`.
+
+**Flow (maps to backend guide)** — `ChatCubit.open()`:
+1. `GET /chats/match/{matchId}` → history + chatId + unread (`ChatRepository.getChatByMatch`).
+2. `PATCH /chats/{chatId}/read` (best-effort).
+3. `ChatSocket.connect` → `StompConfig.sockJS(url: '${AppConfig.baseUrl}/api/v1/ws')` with `Authorization: Bearer <jwt>` in STOMP + WS headers.
+4. Subscribe `/topic/match/{matchId}/chat` → append incoming.
+5. Send → publish to `/app/chat/{matchId}` body `{"content": "..."}`; optimistic append reconciled by server echo (dedup by id; pending message replaced).
+7. `ChatCubit.close()` → `ChatSocket.disconnect()` on screen dispose.
+8. Reconnect is manual (`reconnectDelay: Duration.zero`): on WS close/error, re-read JWT from `TokenStorage` and re-activate after 3s, then re-subscribe. Connection state surfaced via a "Connecting…/Reconnecting…" bar.
+
+**currentUserId** from `TokenStorage.getUserId()` decides `isMine` for bubble alignment (tonal-primary right / surface left, day separators, timestamps, pending clock icon).
+
+**Match context UI**: a pinned, tappable **`_MatchBanner`** under the AppBar (route + status pill + item count) and the AppBar title (name + route subtitle) both open a **`_MatchDetailSheet`** bottom sheet — keeps the matched offer one tap away while chatting. `MatchContext` parsed defensively from the chat response.
+
+**Chat tab (index 1)**: `ChatsListScreen` calls `GET /chats` (shape TBD — parsed defensively, graceful empty state). Tapping a row → `openChatScreen(matchId)`.
+
+**FCM deep-link (step 6)**: global `appNavigatorKey` (wired to `MaterialApp.navigatorKey`). `NotificationService.onDeepLink` is set in `main.dart` to `handleChatDeepLink`, which on `{refType: MATCH, refId}` opens that chat. Local-notification taps decode the JSON payload through the same hook. NOTE: `firebase_messaging` is NOT added yet — when it is, call `NotificationService.handleData(message.data)` from `onMessage`/`onMessageOpenedApp` and the deep-link path already works.
+
+**PENDING API confirmations**: exact shapes for `GET /chats/match/{matchId}` (message fields, chatId, unread, match/other-party summary), the `GET /chats` list endpoint, and the STOMP incoming message body. All parsed defensively; share shapes to tighten.
+
+---
+
+## Notifications UI (sample / design)
+
+Tab index 3 now renders `NotificationsScreen` (`features/notifications/`). Sample/mock data for now — no API wired.
+- `AppNotification` model + `NotificationType` enum (match/message/proposal/delivery/payment/verification/system) each with its own icon + color.
+- Design: big bold header with live unread subtitle + a tonal "Mark all read" pill (fades out when caught up). Two groups — "New" (unread, primary accent label) and "Earlier". Rows are soft rounded cards: colored icon badge, title (bolder when unread) + body + relative time, an unread color-dot, and a faint type-tinted background/border when unread. Tapping marks read (animated). Staggered fade+slide entrance per row; empty state included.
+- Replaced the old `_PlaceholderTab` (removed — no longer used). `home_screen` tab 1 = chat, 3 = notifications.
+
+---
+
+## My Offers (carrier third tab) — list / detail / delete / optimistic
+
+Mirrors the offer-requests flow, for carrier-created offers.
+
+**Endpoint**: `GET /api/v1/offers/me` → list. Response item has nested `flight` (reuses `FlightResponse`), `items[{id, item{...}, quantity, remainingQuantity, pricePerItem}]`, currency, areas, urgency, discount, paymentMethods, meetupPlaces, status, createdAt.
+
+**Model** (`offers/models/offer_response.dart`): `OfferResponse` + `OfferItemResponse`. Helpers: `fromCode/toCode/fromCity/toCity` (from first flight leg), `totalQuantity`, `totalValue`, `urgencyLabel`, `canDelete`, `createdAgo`.
+
+**Repo** (`offer_repository.dart`): `createOffer` now RETURNS `OfferResponse?` (for optimistic prepend); `fetchMyOffers()` (GET /offers/me); `deleteOffer(id)` (DELETE /offers/{id}, assumed).
+
+**Cubit** (`offers/cubit/offers_cubit.dart`): `OffersCubit` (app-level in main.dart) — `load({force})`, `setFilter`, `prepend` (optimistic, newest on top w/ brief highlight), `remove`. `kOfferStatuses` filter chips (Open/Matched/In delivery/Completed/Expired).
+
+**Screen** (`offers/screens/offers_screen.dart`): now takes `onEdit`. Loads on init, status filter bar, pull-to-refresh, animated cards (entrance slide for the new one), **swipe-left → confirm → DELETE**, edit pencil icon (when `canDelete`), tap → `OfferDetailScreen`. Empty/error/filter-empty states.
+
+**Detail** (`offers/screens/offer_detail_screen.dart`): sleek view — flight route card (LOS→LAX with dates), pickup/delivery, urgency, currency, discount, payment, meetup, note, items with per-item price + total value, status chip, created-ago.
+
+**Optimistic prepend wiring**: `CreateOfferState.createdOffer` set from `createOffer` response → bubble `BlocConsumer` fires `onCreated(createdOffer)` → `showCreateOfferBubble(onCreated:)` → home wires it to `OffersCubit.prepend`. So a freshly created offer appears on top of tab-3 instantly (fixes "created offer doesn't show").
+
+**Edit** (`offers/screens/edit_offer_screen.dart`): `PATCH /api/v1/offers/{offerId}` — offer-LEVEL fields only (currency, pickup/delivery, urgency, discount, note, meetupPlaces, paymentMethods); flight + items are NOT editable. `EditOfferScreen` is a single pre-filled form (route shown read-only), opened via `openEditOffer` from the card's edit pencil. On save → `OfferRepository.updateOffer` returns the full updated offer → `OffersCubit.update` (replace in place) → pop + snackbar. `UpdateOfferRequest` sends only the offer-level fields (paymentMethods as labels). Enum parsing helpers added: `CurrencyX.fromApi`, `UrgencyLevelX.fromApi`, `PaymentMethodX.fromString`.
+
+---
+
+## Home engagements + animated splash + Apple sign-in
+
+**Engagements (home tab)** — replaced the scrollable `_EngagementList` with a **non-scrollable `_EngagementTeaser`**: a single attention-seeking card (primary-tinted gradient, pulsing glow via one repeating `AnimationController`, a "live" success dot, count + latest-engagement peek) with a gradient **"See all →"** pill. Tapping it (or the section header's See all) pushes `_EngagementsScreen` (the full scrollable list of `_EngagementCard`s). Users must tap See all to view details — the home only teases.
+
+**Animated splash** — `_LoadingView` (shown during `AppLoading`) is now an animated splash: logo (`assets/logo_me.png`) scale+fade-in (entrance controller) + **"Airpick" with a shimmer sweep** (ShaderMask + repeating gradient) + tagline. Performant (2 controllers, no heavy effects). **Native splash** (the pre-Flutter OS splash that showed the default Flutter logo) replaced via `flutter_native_splash` (config in pubspec, logo + white/dark colors); regenerate with `dart run flutter_native_splash:create`.
+
+**Apple sign-in** — already implemented in `auth_screen.dart`: `_showAppleButton` = `Platform.isIOS || Platform.isMacOS`, so iPhone shows BOTH Google + Apple, Android shows Google only. Bloc/repo (`AuthAppleSignInRequested` → `signInWithApple`) were already wired. No change needed.

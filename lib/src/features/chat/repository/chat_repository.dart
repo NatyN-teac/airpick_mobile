@@ -1,0 +1,31 @@
+import 'package:flutter/foundation.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_response.dart';
+import '../models/chat.dart';
+
+class ChatRepository {
+  final ApiClient _client;
+
+  ChatRepository(this._client);
+
+  // GET /api/v1/chats/match/{matchId} — chat room + message history.
+  Future<Chat> getChatByMatch(String matchId) async {
+    final response = await _client.get('/chats/match/$matchId');
+    debugPrint('[Chat] GET /chats/match/$matchId → $response');
+    if (response['success'] == false) {
+      throw Exception(
+        apiResponseMessage(response) ?? 'Failed to load chat room.',
+      );
+    }
+    final data = response['content'] ?? response['data'];
+    if (data is! Map<String, dynamic>) {
+      throw Exception('Chat room data missing from server response.');
+    }
+    return Chat.fromJson(data);
+  }
+
+  // PATCH /api/v1/chats/{chatId}/read — mark messages read (no body).
+  Future<void> markRead(String chatId) async {
+    await _client.patchVoid('/chats/$chatId/read');
+  }
+}

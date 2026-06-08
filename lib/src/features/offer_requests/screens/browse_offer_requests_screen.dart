@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/skeleton_list.dart';
 import '../../countries/models/country.dart';
 import '../../countries/repository/country_repository.dart';
 import '../../countries/widgets/country_picker_field.dart';
@@ -41,12 +42,7 @@ class _BrowseOfferRequestsPreviewState
     return BlocBuilder<BrowseOfferRequestsCubit, BrowseOfferRequestsState>(
       builder: (context, state) {
         if (state.loading && state.requests.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 32),
-            child: Center(
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppColors.primary)),
-          );
+          return const SkeletonPreviewList(count: 3);
         }
         if (state.requests.isEmpty) {
           return Padding(
@@ -151,9 +147,7 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
       body: BlocBuilder<BrowseOfferRequestsCubit, BrowseOfferRequestsState>(
         builder: (context, state) {
           if (state.loading && state.requests.isEmpty) {
-            return const Center(
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: AppColors.primary));
+            return const SkeletonList();
           }
           if (state.requests.isEmpty) {
             return Center(

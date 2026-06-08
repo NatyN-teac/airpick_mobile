@@ -44,6 +44,11 @@ extension CurrencyX on Currency {
         Currency.jod => 'JD',
         _ => name.toUpperCase(),
       };
+
+  static Currency fromApi(String v) => Currency.values.firstWhere(
+        (c) => c.apiValue == v.toUpperCase(),
+        orElse: () => Currency.usd,
+      );
 }
 
 enum MeetupPlace { cafe, airport, publicPark, hotel, gasStation, other }
@@ -72,6 +77,11 @@ extension UrgencyLevelX on UrgencyLevel {
         UrgencyLevel.flexible => 'Flexible',
         UrgencyLevel.normal => 'Normal',
       };
+
+  static UrgencyLevel fromApi(String v) => UrgencyLevel.values.firstWhere(
+        (u) => u.apiValue == v.toUpperCase(),
+        orElse: () => UrgencyLevel.normal,
+      );
 }
 
 enum PaymentMethod {
@@ -116,6 +126,16 @@ extension PaymentMethodX on PaymentMethod {
         PaymentMethod.westernUnion => 'Western Union',
         PaymentMethod.moneyGram => 'MoneyGram',
       };
+
+  // Match a backend string by label ("Cash") or apiValue ("CASH").
+  static PaymentMethod? fromString(String v) {
+    String norm(String s) => s.toLowerCase().replaceAll(RegExp(r'[\s_]'), '');
+    final n = norm(v);
+    for (final m in PaymentMethod.values) {
+      if (norm(m.label) == n || norm(m.apiValue) == n) return m;
+    }
+    return null;
+  }
 }
 
 // ── Request models ────────────────────────────────────────────────────────────
@@ -178,5 +198,41 @@ class CreateOfferRequest {
         'paymentMethods': paymentMethods.map((m) => m.apiValue).toList(),
         'items': items.map((i) => i.toJson()).toList(),
         if (hasManualItem) 'hasManualItem': true,
+      };
+}
+
+// PATCH /api/v1/offers/{offerId} — all fields optional, only non-null applied.
+class UpdateOfferRequest {
+  final Currency? currency;
+  final String? deliveryArea;
+  final String? pickupArea;
+  final UrgencyLevel? urgencyLevel;
+  final double? discount;
+  final String? specialNote;
+  final List<String>? meetupPlaces;
+  final List<PaymentMethod>? paymentMethods;
+
+  const UpdateOfferRequest({
+    this.currency,
+    this.deliveryArea,
+    this.pickupArea,
+    this.urgencyLevel,
+    this.discount,
+    this.specialNote,
+    this.meetupPlaces,
+    this.paymentMethods,
+  });
+
+  Map<String, dynamic> toJson() => {
+        if (currency != null) 'currency': currency!.apiValue,
+        if (deliveryArea != null) 'deliveryArea': deliveryArea,
+        if (pickupArea != null) 'pickupArea': pickupArea,
+        if (urgencyLevel != null) 'urgencyLevel': urgencyLevel!.apiValue,
+        if (discount != null) 'discount': discount,
+        if (specialNote != null) 'specialNote': specialNote,
+        if (meetupPlaces != null) 'meetupPlaces': meetupPlaces,
+        // API sample uses display labels ("Cash", "PayPal")
+        if (paymentMethods != null)
+          'paymentMethods': paymentMethods!.map((m) => m.label).toList(),
       };
 }

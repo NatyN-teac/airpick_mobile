@@ -393,3 +393,72 @@ class DateTimeTile extends StatelessWidget {
     );
   }
 }
+
+// ── Dropdown — matches FormTextField sizing ────────────────────────────────────
+
+class FormDropdown<T> extends StatelessWidget {
+  final bool isDark;
+  final T value;
+  final List<T> options;
+  final String Function(T) label;
+  final ValueChanged<T> onChanged;
+
+  const FormDropdown({
+    super.key,
+    required this.isDark,
+    required this.value,
+    required this.options,
+    required this.label,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = isDark ? AppColors.darkBackground : AppColors.surface;
+    final border = isDark ? AppColors.darkBorder : AppColors.border;
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+
+    return DropdownButtonFormField<T>(
+      value: value,
+      style: TextStyle(
+          fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
+      dropdownColor: isDark ? AppColors.darkSurface : Colors.white,
+      icon: Icon(Icons.keyboard_arrow_down_rounded,
+          size: 18, color: textSecondary),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: surface,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+      ),
+      items: options
+          .map((o) => DropdownMenuItem<T>(
+                value: o,
+                child: Text(label(o),
+                    style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 13,
+                        color: textPrimary)),
+              ))
+          .toList(),
+      onChanged: (v) {
+        if (v != null) onChanged(v);
+      },
+    );
+  }
+}

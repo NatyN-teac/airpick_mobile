@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/skeleton_list.dart';
 import '../cubit/offer_requests_cubit.dart';
 import '../models/offer_request_models.dart';
 import '../repository/offer_request_repository.dart';
@@ -57,10 +58,7 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
 
     Widget content;
     if (state.loading && state.requests.isEmpty) {
-      content = _centeredFiller(const Center(
-        child: CircularProgressIndicator(
-            strokeWidth: 2, color: AppColors.primary),
-      ));
+      content = const SkeletonList();
     } else if (state.error != null && state.requests.isEmpty) {
       content = _centeredFiller(_ErrorState(
         message: state.error!,

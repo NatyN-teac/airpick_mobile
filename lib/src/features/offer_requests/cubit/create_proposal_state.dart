@@ -49,6 +49,7 @@ class CreateProposalState extends Equatable {
   final String note;
   final List<String> meetupPlaces;
   final List<PaymentMethod> paymentMethods;
+  final Currency currency;
   final List<ProposalItemDraft> items;
 
   // Submission
@@ -73,6 +74,7 @@ class CreateProposalState extends Equatable {
     this.note = '',
     this.meetupPlaces = const [],
     this.paymentMethods = const [],
+    this.currency = Currency.usd,
     this.items = const [],
     this.submitting = false,
     this.created = false,
@@ -96,6 +98,7 @@ class CreateProposalState extends Equatable {
       flightValid &&
       pickupArea.isNotEmpty &&
       deliveryArea.isNotEmpty &&
+      meetupPlaces.isNotEmpty &&
       paymentMethods.isNotEmpty &&
       selectedItems.isNotEmpty &&
       (partialAllowed || !isPartial) &&
@@ -120,6 +123,7 @@ class CreateProposalState extends Equatable {
     String? note,
     List<String>? meetupPlaces,
     List<PaymentMethod>? paymentMethods,
+    Currency? currency,
     List<ProposalItemDraft>? items,
     bool? submitting,
     bool? created,
@@ -142,6 +146,7 @@ class CreateProposalState extends Equatable {
         note: note ?? this.note,
         meetupPlaces: meetupPlaces ?? this.meetupPlaces,
         paymentMethods: paymentMethods ?? this.paymentMethods,
+        currency: currency ?? this.currency,
         items: items ?? this.items,
         submitting: submitting ?? this.submitting,
         created: created ?? this.created,
@@ -155,7 +160,7 @@ class CreateProposalState extends Equatable {
         fromAirport, toAirport,
         departureDate, departureTime, arrivalDate, arrivalTime,
         pickupArea, deliveryArea, discount, note,
-        meetupPlaces, paymentMethods, items,
+        meetupPlaces, paymentMethods, currency, items,
         submitting, created, error,
       ];
 }

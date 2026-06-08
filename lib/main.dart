@@ -10,13 +10,17 @@ import 'src/app/view/app_router.dart';
 import 'src/core/l10n/l10n.dart';
 import 'src/core/config/app_config.dart';
 import 'src/core/network/api_client.dart';
+import 'src/core/media/upload_repository.dart';
+import 'src/core/navigation/app_navigator.dart';
 import 'src/core/notifications/notification_service.dart';
+import 'src/features/chat/navigation/chat_deep_link.dart';
 import 'src/core/storage/token_storage.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/bloc/auth_bloc.dart';
 import 'src/features/auth/data/firebase_auth_service.dart';
 import 'src/features/auth/repository/auth_repository.dart';
 import 'src/features/home/cubit/user_mode_cubit.dart';
+import 'src/features/matches/repository/match_repository.dart';
 import 'src/features/offer_requests/cubit/offer_requests_cubit.dart';
 import 'src/features/onboarding/bloc/onboarding_bloc.dart';
 import 'src/features/onboarding/repository/onboarding_repository.dart';
@@ -25,6 +29,7 @@ import 'src/features/countries/repository/country_repository.dart';
 import 'src/features/flights/repository/flight_repository.dart';
 import 'src/features/items/repository/item_repository.dart';
 import 'src/features/offer_requests/repository/offer_request_repository.dart';
+import 'src/features/offers/cubit/offers_cubit.dart';
 import 'src/features/offers/repository/offer_repository.dart';
 import 'src/features/profile/cubit/current_user_cubit.dart';
 import 'src/features/profile/repository/user_repository.dart';
@@ -42,6 +47,8 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   const secureStorage = FlutterSecureStorage();
   await NotificationService.initialize();
+  // Route MATCH notifications to the chat screen (step 6).
+  NotificationService.onDeepLink = handleChatDeepLink;
 
   // Set environment — switch to AppEnvironment.prod for release
   AppConfig.environment = AppEnvironment.dev;
@@ -108,6 +115,12 @@ class AirpickApp extends StatelessWidget {
         RepositoryProvider<UserRepository>(
           create: (_) => UserRepository(apiClient),
         ),
+        RepositoryProvider<UploadRepository>(
+          create: (_) => UploadRepository(apiClient),
+        ),
+        RepositoryProvider<MatchRepository>(
+          create: (_) => MatchRepository(apiClient),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -150,6 +163,10 @@ class AirpickApp extends StatelessWidget {
             create: (context) =>
                 OfferRequestsCubit(context.read<OfferRequestRepository>()),
           ),
+          BlocProvider<OffersCubit>(
+            create: (context) =>
+                OffersCubit(context.read<OfferRepository>()),
+          ),
         ],
         child: BlocBuilder<ThemeCubit, ThemeMode>(
           builder: (context, themeMode) {
@@ -158,6 +175,7 @@ class AirpickApp extends StatelessWidget {
                 return MaterialApp(
                   title: 'Airpick',
                   debugShowCheckedModeBanner: false,
+                  navigatorKey: appNavigatorKey,
                   theme: AppTheme.light,
                   darkTheme: AppTheme.dark,
                   themeMode: themeMode,

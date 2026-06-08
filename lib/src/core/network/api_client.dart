@@ -56,6 +56,15 @@ class ApiClient {
     }
   }
 
+  // Used for endpoints that return 204 No Content.
+  Future<void> patchVoid(String path, {Map<String, dynamic>? data}) async {
+    try {
+      await _dio.patch(path, data: data);
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   Future<Map<String, dynamic>> put(
     String path,
     Map<String, dynamic> data,
@@ -116,6 +125,7 @@ class ApiClient {
     }
 
     final bodyDetail = data != null ? '\n${formatApiResponseBody(data)}' : '';
+    final detail = message != null ? '' : bodyDetail;
 
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
@@ -123,16 +133,16 @@ class ApiClient {
     }
 
     return switch (statusCode) {
-      400 => Exception(message ?? 'Invalid request.$bodyDetail'),
-      401 => Exception(message ?? 'Unauthorised. Please sign in again.$bodyDetail'),
+      400 => Exception(message ?? 'Invalid request.$detail'),
+      401 => Exception(message ?? 'Unauthorised. Please sign in again.$detail'),
       403 => Exception(
-          message ?? 'Access denied (403).$bodyDetail',
+          message ?? 'Access denied (403).$detail',
         ),
-      404 => Exception(message ?? 'Resource not found.$bodyDetail'),
-      422 => Exception(message ?? 'Validation failed.$bodyDetail'),
-      500 => Exception(message ?? 'Server error. Please try again later.$bodyDetail'),
+      404 => Exception(message ?? 'Resource not found.$detail'),
+      422 => Exception(message ?? 'Validation failed.$detail'),
+      500 => Exception(message ?? 'Server error. Please try again later.$detail'),
       _ => Exception(
-          message ?? e.message ?? 'Something went wrong.$bodyDetail',
+          message ?? e.message ?? 'Something went wrong.$detail',
         ),
     };
   }

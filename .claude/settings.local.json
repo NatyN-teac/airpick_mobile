@@ -11,7 +11,9 @@
       "Bash(flutter analyze *)",
       "Bash(flutter test *)",
       "Bash(flutter gen-l10n *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(sed -n '70,95p' lib/src/features/offers/widgets/create_offer_bubble.dart)",
+      "Bash(sed -n '/Future<void> showCreateOfferBubble/,/^\\) async {/p' lib/src/features/offers/widgets/create_offer_bubble.dart)"
     ]
   }
 }

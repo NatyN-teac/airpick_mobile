@@ -4,6 +4,7 @@ import '../../airports/models/airport.dart';
 import '../../flights/models/flight_models.dart';
 import '../../items/models/item_models.dart';
 import '../models/offer_models.dart';
+import '../models/offer_response.dart';
 
 enum CreateOfferStep { flight, offer }
 
@@ -88,6 +89,7 @@ class CreateOfferState extends Equatable {
   // Offer creation
   final bool creatingOffer;
   final bool offerCreated;
+  final OfferResponse? createdOffer;
   final String? offerError;
 
   const CreateOfferState({
@@ -125,6 +127,7 @@ class CreateOfferState extends Equatable {
     this.items = const [],
     this.creatingOffer = false,
     this.offerCreated = false,
+    this.createdOffer,
     this.offerError,
   });
 
@@ -163,6 +166,7 @@ class CreateOfferState extends Equatable {
     List<OfferItemDraft>? items,
     bool? creatingOffer,
     bool? offerCreated,
+    OfferResponse? createdOffer,
     String? offerError,
   }) =>
       CreateOfferState(
@@ -200,6 +204,7 @@ class CreateOfferState extends Equatable {
         items: items ?? this.items,
         creatingOffer: creatingOffer ?? this.creatingOffer,
         offerCreated: offerCreated ?? this.offerCreated,
+        createdOffer: createdOffer ?? this.createdOffer,
         offerError: offerError ?? this.offerError,
       );
 
@@ -241,6 +246,6 @@ class CreateOfferState extends Equatable {
         creatingFlight, flightId, flightError,
         pickupArea, deliveryArea, urgencyLevel, currency, discount, specialNote,
         meetupPlaces, paymentMethods, items,
-        creatingOffer, offerCreated, offerError,
+        creatingOffer, offerCreated, createdOffer, offerError,
       ];
 }

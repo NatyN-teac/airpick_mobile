@@ -5,6 +5,7 @@ import '../../airports/models/airport.dart';
 import '../../airports/repository/airport_repository.dart';
 import '../../offers/models/offer_models.dart';
 import '../../offers/widgets/form_widgets.dart';
+import '../../offers/widgets/meetup_places_field.dart';
 import '../cubit/create_proposal_cubit.dart';
 import '../cubit/create_proposal_state.dart';
 import '../models/offer_request_models.dart';
@@ -202,6 +203,17 @@ class CreateProposalScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
+                // ── Meetup places ─────────────────────────────────────
+                _SectionTitle('Meetup places', isDark: isDark),
+                const SizedBox(height: 8),
+                MeetupPlacesField(
+                  isDark: isDark,
+                  places: state.meetupPlaces,
+                  onAdd: cubit.addMeetupPlace,
+                  onRemove: cubit.removeMeetupPlace,
+                ),
+                const SizedBox(height: 20),
+
                 // ── Payment methods ─────────────────────────────────
                 _SectionTitle('Payment methods', isDark: isDark),
                 const SizedBox(height: 8),
@@ -253,6 +265,20 @@ class CreateProposalScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
+                // ── Currency ────────────────────────────────────────
+                _SectionTitle('Currency', isDark: isDark),
+                const SizedBox(height: 8),
+                FormLabel('Proposal currency', isDark: isDark),
+                const SizedBox(height: 6),
+                FormDropdown<Currency>(
+                  isDark: isDark,
+                  value: state.currency,
+                  options: Currency.values,
+                  label: (c) => c.label,
+                  onChanged: cubit.setCurrency,
+                ),
+                const SizedBox(height: 20),
+
                 // ── Items + prices ──────────────────────────────────
                 Row(
                   children: [
@@ -272,6 +298,7 @@ class CreateProposalScreen extends StatelessWidget {
                   ...state.items.map((d) => _ItemPriceRow(
                         draft: d,
                         isDark: isDark,
+                        currencySymbol: state.currency.symbol,
                         canDeselect: state.partialAllowed,
                         onToggle: () => cubit.toggleItem(d.item.id),
                         onPrice: (v) => cubit.setItemPrice(d.item.id, v),
@@ -287,6 +314,7 @@ class CreateProposalScreen extends StatelessWidget {
                         return _ItemPriceRow(
                           draft: d,
                           isDark: isDark,
+                          currencySymbol: state.currency.symbol,
                           canDeselect: state.partialAllowed,
                           onToggle: () => cubit.toggleItem(d.item.id),
                           onPrice: (v) => cubit.setItemPrice(d.item.id, v),
@@ -320,7 +348,8 @@ class CreateProposalScreen extends StatelessWidget {
                 // ── Submit ──────────────────────────────────────────
                 Row(
                   children: [
-                    Text('Total  \$${state.total.toStringAsFixed(2)}',
+                    Text(
+                        'Total  ${state.currency.symbol}${state.total.toStringAsFixed(2)} ${state.currency.apiValue}',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 15,
@@ -424,6 +453,7 @@ class _SectionTitle extends StatelessWidget {
 class _ItemPriceRow extends StatelessWidget {
   final ProposalItemDraft draft;
   final bool isDark;
+  final String currencySymbol;
   final bool canDeselect;
   final VoidCallback onToggle;
   final ValueChanged<double> onPrice;
@@ -431,6 +461,7 @@ class _ItemPriceRow extends StatelessWidget {
   const _ItemPriceRow({
     required this.draft,
     required this.isDark,
+    required this.currencySymbol,
     required this.canDeselect,
     required this.onToggle,
     required this.onPrice,
@@ -506,7 +537,7 @@ class _ItemPriceRow extends StatelessWidget {
               style: TextStyle(
                   fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
               decoration: InputDecoration(
-                prefixText: '\$ ',
+                prefixText: '$currencySymbol ',
                 prefixStyle: TextStyle(
                     fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
                 hintText: 'Price',
