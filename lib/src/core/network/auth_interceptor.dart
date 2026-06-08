@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../session/app_session.dart';
+import '../session/session_expiry.dart';
 import '../storage/token_storage.dart';
 
 class AuthInterceptor extends Interceptor {
@@ -12,13 +13,15 @@ class AuthInterceptor extends Interceptor {
 
   AuthInterceptor(this._tokenStorage);
 
+  bool _isPublic(RequestOptions options) =>
+      _publicPaths.any((p) => options.path.contains(p));
+
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final isPublic = _publicPaths.any((p) => options.path.contains(p));
-    if (!isPublic) {
+    if (!_isPublic(options)) {
       final token = await _tokenStorage.getToken();
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
@@ -31,15 +34,12 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (err.response?.statusCode == 401) {
-      final isPublic =
-          _publicPaths.any((p) => err.requestOptions.path.contains(p));
-      if (!isPublic) {
-        // Clear stale token and signal the app to route to sign-in
-        _tokenStorage.clear();
-        AppSession.notifyUnauthorized();
-      }
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    if (!_isPublic(err.requestOptions) && isSessionExpiredResponse(err)) {
+      await AppSession.expireSession(_tokenStorage);
     }
     handler.next(err);
   }
