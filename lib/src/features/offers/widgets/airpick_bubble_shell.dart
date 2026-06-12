@@ -33,8 +33,8 @@ Future<void> showAirpickBubble(
     barrierColor: Colors.black.withValues(alpha: 0.35),
     barrierLabel: '',
     transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (dialogCtx, _, __) {
-      final dismiss = () => Navigator.of(dialogCtx).pop();
+    pageBuilder: (dialogCtx, _, _) {
+      void dismiss() => Navigator.of(dialogCtx).pop();
       return Localizations(
         locale: locale,
         delegates: AppLocalizations.localizationsDelegates,
@@ -49,7 +49,7 @@ Future<void> showAirpickBubble(
         ),
       );
     },
-    transitionBuilder: (_, animation, __, child) => FadeTransition(
+    transitionBuilder: (_, animation, _, child) => FadeTransition(
       opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
       child: ScaleTransition(
         scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
@@ -321,7 +321,7 @@ class BubbleCountdownRing extends StatelessWidget {
       tween: Tween(begin: 1.0, end: 0.0),
       duration: const Duration(seconds: 1),
       curve: Curves.linear,
-      builder: (_, v, __) => SizedBox(
+      builder: (_, v, _) => SizedBox(
         width: 36,
         height: 36,
         child: Stack(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
@@ -49,12 +50,12 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
     if (state.availableItems.isNotEmpty || state.itemsLoading) return;
     emit(state.copyWith(itemsLoading: true, itemsError: null));
     try {
-      print('[CreateOfferCubit] GET /items...');
+      debugPrint('[CreateOfferCubit] GET /items...');
       final list = await _items.fetchItems();
-      print('[CreateOfferCubit] items loaded: ${list.length}');
+      debugPrint('[CreateOfferCubit] items loaded: ${list.length}');
       emit(state.copyWith(availableItems: list, itemsLoading: false));
     } catch (e, st) {
-      print('[CreateOfferCubit] loadItems error: $e\n$st');
+      debugPrint('[CreateOfferCubit] loadItems error: $e\n$st');
       emit(state.copyWith(itemsLoading: false, itemsError: e.toString()));
     }
   }
@@ -135,16 +136,16 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
       ];
       final request =
           CreateFlightRequest(flightType: state.flightType, legs: legs);
-      print('[CreateOfferCubit] POST /flights payload: ${request.toJson()}');
+      debugPrint('[CreateOfferCubit] POST /flights payload: ${request.toJson()}');
       final flight = await _flights.createFlight(request);
-      print('[CreateOfferCubit] flight created id=${flight.id}');
+      debugPrint('[CreateOfferCubit] flight created id=${flight.id}');
       emit(state.copyWith(
         creatingFlight: false,
         flightId: flight.id,
         step: CreateOfferStep.offer,
       ));
     } catch (e, st) {
-      print('[CreateOfferCubit] createFlight error: $e\n$st');
+      debugPrint('[CreateOfferCubit] createFlight error: $e\n$st');
       emit(state.copyWith(
           creatingFlight: false, flightError: e.toString()));
     }

@@ -97,7 +97,7 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
             child: ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
               itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (context, _) => const SizedBox(height: 10),
               itemBuilder: (_, i) => _SampleActivityCard(
                 item: items[i],
                 isDark: isDark,

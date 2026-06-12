@@ -41,17 +41,14 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
                 onSelect: (s) =>
                     context.read<OfferRequestsCubit>().setFilter(s),
               ),
-            Expanded(
-              child: _body(context, state, isDark),
-            ),
+            Expanded(child: _body(context, state, isDark)),
           ],
         );
       },
     );
   }
 
-  Widget _body(
-      BuildContext context, OfferRequestsState state, bool isDark) {
+  Widget _body(BuildContext context, OfferRequestsState state, bool isDark) {
     // Pull-to-refresh always forces a fresh fetch, on every state.
     Future<void> refresh() =>
         context.read<OfferRequestsCubit>().load(force: true);
@@ -60,11 +57,9 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
     if (state.loading && state.requests.isEmpty) {
       content = const SkeletonList();
     } else if (state.error != null && state.requests.isEmpty) {
-      content = _centeredFiller(_ErrorState(
-        message: state.error!,
-        isDark: isDark,
-        onRetry: refresh,
-      ));
+      content = _centeredFiller(
+        _ErrorState(message: state.error!, isDark: isDark, onRetry: refresh),
+      );
     } else if (state.requests.isEmpty) {
       content = _centeredFiller(_EmptyState(isDark: isDark));
     } else if (state.visible.isEmpty) {
@@ -121,18 +116,18 @@ class _StatusFilterBar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
         itemCount: options.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (context, _) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
           final status = options[i];
           final active = status == selected;
-          final label =
-              status == null ? 'All' : offerRequestStatusLabel(status);
+          final label = status == null
+              ? 'All'
+              : offerRequestStatusLabel(status);
           return GestureDetector(
             onTap: () => onSelect(status),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 gradient: active ? AppColors.primaryGradient : null,
                 color: active
@@ -147,8 +142,7 @@ class _StatusFilterBar extends StatelessWidget {
                 boxShadow: active
                     ? [
                         BoxShadow(
-                          color:
-                              AppColors.primary.withValues(alpha: 0.25),
+                          color: AppColors.primary.withValues(alpha: 0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 3),
                         ),
@@ -165,8 +159,8 @@ class _StatusFilterBar extends StatelessWidget {
                     color: active
                         ? Colors.white
                         : (isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.textSecondary),
+                              ? AppColors.darkTextSecondary
+                              : AppColors.textSecondary),
                   ),
                 ),
               ),
@@ -186,19 +180,22 @@ class _FilterEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.filter_list_off_rounded,
-              size: 36, color: textSecondary),
+          Icon(Icons.filter_list_off_rounded, size: 36, color: textSecondary),
           const SizedBox(height: 10),
           Text(
             'No requests with this status',
             style: TextStyle(
-                fontFamily: 'Manrope', fontSize: 13, color: textSecondary),
+              fontFamily: 'Manrope',
+              fontSize: 13,
+              color: textSecondary,
+            ),
           ),
         ],
       ),
@@ -219,39 +216,51 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off_rounded,
-                size: 40, color: AppColors.error),
+            const Icon(
+              Icons.cloud_off_rounded,
+              size: 40,
+              color: AppColors.error,
+            ),
             const SizedBox(height: 12),
             Text(
               message.replaceFirst('Exception: ', ''),
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontFamily: 'Manrope', fontSize: 13, color: textSecondary),
+                fontFamily: 'Manrope',
+                fontSize: 13,
+                color: textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             GestureDetector(
               onTap: onRetry,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text('Retry',
-                    style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white)),
+                child: const Text(
+                  'Retry',
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],
@@ -281,10 +290,12 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
 
     return Center(
       child: Padding(
@@ -296,8 +307,7 @@ class _EmptyState extends StatelessWidget {
               tween: Tween(begin: 0.0, end: 1.0),
               duration: const Duration(milliseconds: 600),
               curve: Curves.easeOutBack,
-              builder: (_, v, child) =>
-                  Transform.scale(scale: v, child: child),
+              builder: (_, v, child) => Transform.scale(scale: v, child: child),
               child: Container(
                 width: 88,
                 height: 88,
@@ -364,45 +374,44 @@ class _RequestsList extends StatelessWidget {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, i) {
-                final req = requests[i];
-                final isNew = req.id == latestId;
-                final card = GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => openOfferRequestDetail(context, req),
-                  child: _OfferRequestCard(
-                    request: req,
-                    isDark: isDark,
-                    onEdit: req.canDelete ? () => onEdit(req) : null,
-                  ),
-                );
-                return _AnimatedCard(
-                  key: ValueKey(req.id),
-                  isNew: isNew,
-                  child: req.canDelete
-                      ? Dismissible(
-                          key: ValueKey('dismiss-${req.id}'),
-                          direction: DismissDirection.endToStart,
-                          background: const _DeleteSwipeBackground(),
-                          confirmDismiss: (_) => _confirmDelete(context, req),
-                          onDismissed: (_) {
-                            context.read<OfferRequestsCubit>().remove(req.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Request deleted',
-                                    style: TextStyle(fontFamily: 'Manrope')),
-                                backgroundColor: AppColors.success,
+            delegate: SliverChildBuilderDelegate((context, i) {
+              final req = requests[i];
+              final isNew = req.id == latestId;
+              final card = GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => openOfferRequestDetail(context, req),
+                child: _OfferRequestCard(
+                  request: req,
+                  isDark: isDark,
+                  onEdit: req.canDelete ? () => onEdit(req) : null,
+                ),
+              );
+              return _AnimatedCard(
+                key: ValueKey(req.id),
+                isNew: isNew,
+                child: req.canDelete
+                    ? Dismissible(
+                        key: ValueKey('dismiss-${req.id}'),
+                        direction: DismissDirection.endToStart,
+                        background: const _DeleteSwipeBackground(),
+                        confirmDismiss: (_) => _confirmDelete(context, req),
+                        onDismissed: (_) {
+                          context.read<OfferRequestsCubit>().remove(req.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Request deleted',
+                                style: TextStyle(fontFamily: 'Manrope'),
                               ),
-                            );
-                          },
-                          child: card,
-                        )
-                      : card,
-                );
-              },
-              childCount: requests.length,
-            ),
+                              backgroundColor: AppColors.success,
+                            ),
+                          );
+                        },
+                        child: card,
+                      )
+                    : card,
+              );
+            }, childCount: requests.length),
           ),
         ),
       ],
@@ -411,7 +420,9 @@ class _RequestsList extends StatelessWidget {
 
   // Shows confirmation, then deletes via the API. Returns true to dismiss.
   Future<bool> _confirmDelete(
-      BuildContext context, OfferRequestResponse req) async {
+    BuildContext context,
+    OfferRequestResponse req,
+  ) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final messenger = ScaffoldMessenger.of(context);
     final repo = context.read<OfferRequestRepository>();
@@ -428,8 +439,10 @@ class _RequestsList extends StatelessWidget {
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text(e.toString().replaceFirst('Exception: ', ''),
-              style: const TextStyle(fontFamily: 'Manrope')),
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+            style: const TextStyle(fontFamily: 'Manrope'),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -482,10 +495,12 @@ class _DeleteConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
 
     return Dialog(
       backgroundColor: bg,
@@ -502,8 +517,11 @@ class _DeleteConfirmDialog extends StatelessWidget {
                 color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.delete_outline_rounded,
-                  size: 26, color: AppColors.error),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                size: 26,
+                color: AppColors.error,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
@@ -657,29 +675,27 @@ class _OfferRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final textTertiary =
-        isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
-    final divider =
-        isDark ? AppColors.darkBorder : const Color(0xFFF1F5F9);
-
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
+    final textTertiary = isDark
+        ? AppColors.darkTextTertiary
+        : AppColors.textTertiary;
     return Container(
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color:
-                Colors.black.withValues(alpha: isDark ? 0.28 : 0.07),
+            color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.07),
             blurRadius: 24,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color:
-                Colors.black.withValues(alpha: isDark ? 0.10 : 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.10 : 0.03),
             blurRadius: 6,
             offset: const Offset(0, 1),
           ),
@@ -701,8 +717,11 @@ class _OfferRequestCard extends StatelessWidget {
                     color: AppColors.info.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.inventory_2_rounded,
-                      size: 20, color: AppColors.info),
+                  child: const Icon(
+                    Icons.inventory_2_rounded,
+                    size: 20,
+                    color: AppColors.info,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -722,8 +741,11 @@ class _OfferRequestCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          Icon(Icons.arrow_forward_rounded,
-                              size: 11, color: textTertiary),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 11,
+                            color: textTertiary,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             request.destinationCountry,
@@ -751,8 +773,11 @@ class _OfferRequestCard extends StatelessWidget {
                             color: AppColors.primary.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.edit_outlined,
-                              size: 15, color: AppColors.primary),
+                          child: const Icon(
+                            Icons.edit_outlined,
+                            size: 15,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -768,16 +793,18 @@ class _OfferRequestCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined,
-                      size: 13, color: textPrimary),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 13,
+                    color: textPrimary,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     _formatDate(request.preferredDate),
@@ -803,15 +830,20 @@ class _OfferRequestCard extends StatelessWidget {
                 // Item count
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.category_rounded,
-                          size: 11, color: AppColors.primary),
+                      const Icon(
+                        Icons.category_rounded,
+                        size: 11,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${request.items.length} item${request.items.length == 1 ? '' : 's'}',
@@ -830,7 +862,9 @@ class _OfferRequestCard extends StatelessWidget {
                 if (request.partialProposalAccepted)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.info.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
@@ -849,8 +883,11 @@ class _OfferRequestCard extends StatelessWidget {
                 // Proposal count
                 Row(
                   children: [
-                    Icon(Icons.people_outline_rounded,
-                        size: 13, color: textSecondary),
+                    Icon(
+                      Icons.people_outline_rounded,
+                      size: 13,
+                      color: textSecondary,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${request.proposalCount} proposal${request.proposalCount == 1 ? '' : 's'}',
@@ -874,8 +911,18 @@ class _OfferRequestCard extends StatelessWidget {
     try {
       final parts = raw.split('-');
       const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       final month = months[int.parse(parts[1]) - 1];
       return '${parts[2]} $month ${parts[0]}';
@@ -890,37 +937,36 @@ class _StatusChip extends StatelessWidget {
   const _StatusChip({required this.status});
 
   Color get _color => switch (status) {
-        'OPEN' => AppColors.success,
-        'PENDING_ITEM_APPROVAL' => AppColors.warning,
-        'CLOSED' => AppColors.textDisabled,
-        _ => AppColors.info,
-      };
+    'OPEN' => AppColors.success,
+    'PENDING_ITEM_APPROVAL' => AppColors.warning,
+    'CLOSED' => AppColors.textDisabled,
+    _ => AppColors.info,
+  };
 
   String get _label => switch (status) {
-        'OPEN' => 'Open',
-        'PENDING_ITEM_APPROVAL' => 'Pending',
-        'CLOSED' => 'Closed',
-        _ => status,
-      };
+    'OPEN' => 'Open',
+    'PENDING_ITEM_APPROVAL' => 'Pending',
+    'CLOSED' => 'Closed',
+    _ => status,
+  };
 
   @override
   Widget build(BuildContext context) => Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: _color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          _label,
-          style: TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: _color,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: _color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Text(
+      _label,
+      style: TextStyle(
+        fontFamily: 'Manrope',
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: _color,
+      ),
+    ),
+  );
 }
 
 class _UrgencyBadge extends StatelessWidget {
@@ -928,27 +974,26 @@ class _UrgencyBadge extends StatelessWidget {
   const _UrgencyBadge({required this.label});
 
   Color get _color => switch (label) {
-        'Urgent' => AppColors.error,
-        'Flexible' => AppColors.info,
-        _ => AppColors.textSecondary,
-      };
+    'Urgent' => AppColors.error,
+    'Flexible' => AppColors.info,
+    _ => AppColors.textSecondary,
+  };
 
   @override
   Widget build(BuildContext context) => Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: _color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: _color,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: _color.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Text(
+      label,
+      style: TextStyle(
+        fontFamily: 'Manrope',
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+        color: _color,
+      ),
+    ),
+  );
 }

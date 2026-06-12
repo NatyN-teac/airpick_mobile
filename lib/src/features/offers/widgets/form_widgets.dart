@@ -422,7 +422,8 @@ class FormDropdown<T> extends StatelessWidget {
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
     return DropdownButtonFormField<T>(
-      value: value,
+      key: ValueKey(value),
+      initialValue: value,
       style: TextStyle(
           fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
       dropdownColor: isDark ? AppColors.darkSurface : Colors.white,

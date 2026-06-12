@@ -118,7 +118,7 @@ class EngagementsListScreen extends StatelessWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
               itemCount: state.items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (context, _) => const SizedBox(height: 10),
               itemBuilder: (_, i) => _EngagementCard(
                 item: state.items[i],
                 isDark: isDark,

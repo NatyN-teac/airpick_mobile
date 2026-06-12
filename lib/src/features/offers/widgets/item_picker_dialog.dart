@@ -365,7 +365,8 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                       _DialogLabel('Category', isDark: isDark),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<ItemCategory>(
-                        value: _newCategory,
+                        key: ValueKey(_newCategory),
+                        initialValue: _newCategory,
                         dropdownColor: isDark
                             ? AppColors.darkSurface
                             : Colors.white,

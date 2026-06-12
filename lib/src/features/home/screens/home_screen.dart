@@ -17,7 +17,12 @@ import '../widgets/home_app_bar.dart';
 import '../widgets/app_nav_bar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
+import '../../chat/cubit/chats_list_cubit.dart';
+import '../../chat/cubit/chats_list_state.dart';
+import '../../chat/repository/chat_repository.dart';
 import '../../chat/screens/chats_list_screen.dart';
+import '../../notifications/cubit/notifications_cubit.dart';
+import '../../notifications/cubit/notifications_state.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../airports/repository/airport_repository.dart';
 import '../../countries/repository/country_repository.dart';
@@ -69,6 +74,13 @@ class HomeScreen extends StatelessWidget {
           create: (context) => DeliveryTrackCubit(
             context.read<MatchRepository>(),
           ),
+        ),
+        BlocProvider(
+          create: (context) =>
+              ChatsListCubit(context.read<ChatRepository>())..load(),
+        ),
+        BlocProvider(
+          create: (_) => NotificationsCubit(),
         ),
       ],
       child: const _HomeView(),
@@ -143,41 +155,57 @@ class _HomeViewState extends State<_HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<NavCubit, int>(
-      builder: (context, currentIndex) {
-        return Scaffold(
-          appBar: HomeAppBar(
-            onSearchTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SearchScreen()),
-            ),
-          ),
-          body: IndexedStack(
-            index: currentIndex,
-            children: [
-              const _HomeTab(),
-              const ChatsListScreen(),
-              // Third tab switches with sender/carrier mode
-              BlocBuilder<UserModeCubit, UserMode>(
-                builder: (context, mode) => mode == UserMode.sender
-                    ? OfferRequestsScreen(
-                        onEdit: (req) =>
-                            _openRequestBubble(context, existing: req),
-                      )
-                    : OffersScreen(
-                        onEdit: (offer) => openEditOffer(context, offer),
+    return BlocBuilder<ChatsListCubit, ChatsListState>(
+      builder: (context, chatsState) {
+        return BlocBuilder<NotificationsCubit, NotificationsState>(
+          builder: (context, notificationsState) {
+            return BlocBuilder<NavCubit, int>(
+              builder: (context, currentIndex) {
+                final badgeCounts = <int, int>{
+                  if (chatsState.totalUnread > 0)
+                    1: chatsState.totalUnread,
+                  if (notificationsState.unreadCount > 0)
+                    3: notificationsState.unreadCount,
+                };
+
+                return Scaffold(
+                  appBar: HomeAppBar(
+                    onSearchTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SearchScreen()),
+                    ),
+                  ),
+                  body: IndexedStack(
+                    index: currentIndex,
+                    children: [
+                      const _HomeTab(),
+                      const ChatsListScreen(),
+                      // Third tab switches with sender/carrier mode
+                      BlocBuilder<UserModeCubit, UserMode>(
+                        builder: (context, mode) => mode == UserMode.sender
+                            ? OfferRequestsScreen(
+                                onEdit: (req) =>
+                                    _openRequestBubble(context, existing: req),
+                              )
+                            : OffersScreen(
+                                onEdit: (offer) =>
+                                    openEditOffer(context, offer),
+                              ),
                       ),
-              ),
-              const NotificationsScreen(),
-              const ProfileScreen(),
-            ],
-          ),
-          bottomNavigationBar: AppNavBar(
-            currentIndex: currentIndex,
-            onTap: (index) => context.read<NavCubit>().setTab(index),
-            badgeCounts: const {1: 2, 3: 3},
-            plusKey: _plusKey,
-            onPlusTap: () => _onPlusTap(context),
-          ),
+                      const NotificationsScreen(),
+                      const ProfileScreen(),
+                    ],
+                  ),
+                  bottomNavigationBar: AppNavBar(
+                    currentIndex: currentIndex,
+                    onTap: (index) => context.read<NavCubit>().setTab(index),
+                    badgeCounts: badgeCounts,
+                    plusKey: _plusKey,
+                    onPlusTap: () => _onPlusTap(context),
+                  ),
+                );
+              },
+            );
+          },
         );
       },
     );
@@ -547,7 +575,7 @@ class _InDeliveryPreview extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(20, 2, 20, 16),
         itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (context, _) => const SizedBox(width: 10),
         itemBuilder: (_, i) => DeliveryTrackCard(
           item: items[i],
           isDark: isDark,
@@ -606,8 +634,8 @@ class _InDeliverySkeleton extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(20, 2, 20, 16),
             itemCount: 2,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (_, __) => Container(
+            separatorBuilder: (context, _) => const SizedBox(width: 10),
+            itemBuilder: (context, _) => Container(
               width: cardWidth,
               decoration: BoxDecoration(
                 color: surface,
@@ -711,7 +739,7 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                 // Pulsing live badge
                 AnimatedBuilder(
                   animation: _c,
-                  builder: (_, __) {
+                  builder: (context, _) {
                     final t = Curves.easeInOut.transform(_c.value);
                     return Container(
                       width: 42,
@@ -807,7 +835,7 @@ class _LiveDot extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (_, __) {
+      builder: (context, _) {
         final t = Curves.easeInOut.transform(controller.value);
         return Container(
           width: 7,

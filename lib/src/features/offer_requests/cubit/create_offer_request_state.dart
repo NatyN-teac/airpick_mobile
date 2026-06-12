@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:uuid/uuid.dart';
 import '../../countries/models/country.dart';
 import '../../items/models/item_models.dart';
 import '../../offers/models/offer_models.dart';

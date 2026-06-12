@@ -34,9 +34,7 @@ class FirebaseAuthService {
     try {
       final account = await googleSignIn.authenticate();
       final auth = account.authentication;
-      final credential = GoogleAuthProvider.credential(
-        idToken: auth.idToken,
-      );
+      final credential = GoogleAuthProvider.credential(idToken: auth.idToken);
       final userCredential = await _auth.signInWithCredential(credential);
       return await _getFirebaseToken(userCredential);
     } on GoogleSignInException catch (e) {
@@ -73,11 +71,9 @@ class FirebaseAuthService {
         );
       }
 
-      final oauthCredential = OAuthProvider('apple.com').credential(
-        idToken: identityToken,
-        rawNonce: rawNonce,
-        accessToken: appleCredential.authorizationCode,
-      );
+      final oauthCredential = OAuthProvider(
+        'apple.com',
+      ).credential(idToken: identityToken, rawNonce: rawNonce);
 
       final userCredential = await _auth.signInWithCredential(oauthCredential);
       return await _getFirebaseToken(userCredential);
@@ -105,8 +101,10 @@ class FirebaseAuthService {
     const charset =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
-        .join();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
   }
 
   String _sha256(String input) {

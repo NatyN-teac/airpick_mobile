@@ -36,8 +36,8 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
 
   late Currency _currency = CurrencyX.fromApi(widget.offer.currency);
   late UrgencyLevel _urgency = UrgencyLevelX.fromApi(widget.offer.urgencyLevel);
-  late List<String> _meetups = [...widget.offer.meetupPlaces];
-  late Set<PaymentMethod> _payments = widget.offer.paymentMethods
+  late final List<String> _meetups = [...widget.offer.meetupPlaces];
+  late final Set<PaymentMethod> _payments = widget.offer.paymentMethods
       .map(PaymentMethodX.fromString)
       .whereType<PaymentMethod>()
       .toSet();
@@ -422,7 +422,8 @@ class _Dropdown<T> extends StatelessWidget {
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
     return DropdownButtonFormField<T>(
-      value: value,
+      key: ValueKey(value),
+      initialValue: value,
       isExpanded: true,
       style: TextStyle(fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
       dropdownColor: isDark ? AppColors.darkSurface : Colors.white,

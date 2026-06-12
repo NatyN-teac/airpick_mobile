@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../models/airport.dart';
 import '../../../core/network/api_client.dart';
 
@@ -10,7 +12,7 @@ class AirportRepository {
   Future<List<Airport>> fetchAirports() async {
     if (_cache != null) return _cache!;
     final response = await _client.get('/airports');
-    print('[AirportRepository] response: $response');
+    debugPrint('[AirportRepository] response: $response');
     final List<dynamic> data = response['content'] as List<dynamic>;
     _cache = data
         .map((e) => Airport.fromJson(e as Map<String, dynamic>) )

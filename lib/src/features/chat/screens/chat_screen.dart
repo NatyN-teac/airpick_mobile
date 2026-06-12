@@ -14,18 +14,25 @@ import '../cubit/chat_cubit.dart';
 import '../cubit/chat_state.dart';
 import '../models/chat.dart';
 import '../models/chat_message.dart';
+import '../cubit/chats_list_cubit.dart';
 import '../repository/chat_repository.dart';
 
 // Entry point — pushes the chat for a given match.
-void openChatScreen(
+Future<void> openChatScreen(
   BuildContext context,
   String matchId, {
   String? welcomeMessage,
   MatchResponse? initialMatch,
-}) {
+}) async {
   final api = context.read<ApiClient>();
   final tokenStorage = context.read<TokenStorage>();
-  Navigator.of(context).push(
+  ChatsListCubit? chatsListCubit;
+  try {
+    chatsListCubit = context.read<ChatsListCubit>();
+    chatsListCubit.clearUnreadForMatch(matchId);
+  } catch (_) {}
+
+  await Navigator.of(context).push(
     MaterialPageRoute(
       builder: (_) => BlocProvider(
         create: (_) => ChatCubit(
@@ -41,6 +48,10 @@ void openChatScreen(
       ),
     ),
   );
+
+  if (context.mounted && chatsListCubit != null) {
+    await chatsListCubit.reload();
+  }
 }
 
 class ChatScreen extends StatefulWidget {
@@ -84,7 +95,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return BlocConsumer<ChatCubit, ChatState>(
       listenWhen: (p, c) => p.messages.length != c.messages.length,
-      listener: (_, __) => _scrollToBottom(),
+      listener: (context, _) => _scrollToBottom(),
       builder: (context, state) {
         final ctx = state.context;
         final name = ctx?.otherPartyName ?? 'Chat';

@@ -51,12 +51,13 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final userId = await context.read<TokenStorage>().getUserId();
+      final tokenStorage = context.read<TokenStorage>();
+      final userRepository = context.read<UserRepository>();
+      final userId = await tokenStorage.getUserId();
       if (userId == null || userId.isEmpty) {
         throw Exception('User ID not found.');
       }
-      final result =
-          await context.read<UserRepository>().closeAccount(userId);
+      final result = await userRepository.closeAccount(userId);
       if (!result.isRemoved) {
         throw Exception(result.message ?? 'Account closure was not confirmed.');
       }

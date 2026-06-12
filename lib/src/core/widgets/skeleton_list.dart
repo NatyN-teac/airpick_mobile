@@ -25,8 +25,8 @@ class SkeletonList extends StatelessWidget {
             : const NeverScrollableScrollPhysics(),
         padding: padding,
         itemCount: count,
-        separatorBuilder: (_, __) => const SizedBox(height: 14),
-        itemBuilder: (_, __) => const _CardSkeleton(showSurface: true),
+        separatorBuilder: (context, _) => const SizedBox(height: 14),
+        itemBuilder: (context, _) => const _CardSkeleton(showSurface: true),
       ),
     );
   }
@@ -77,8 +77,8 @@ class SkeletonChatList extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
         itemCount: count,
-        separatorBuilder: (_, __) => const SizedBox(height: 2),
-        itemBuilder: (_, __) => const _ChatRowSkeleton(),
+        separatorBuilder: (context, _) => const SizedBox(height: 2),
+        itemBuilder: (context, _) => const _ChatRowSkeleton(),
       ),
     );
   }
@@ -121,9 +121,7 @@ class SkeletonEngagementTeaser extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Shimmer(
-        child: _EngagementTeaserSkeleton(),
-      ),
+      child: Shimmer(child: _EngagementTeaserSkeleton()),
     );
   }
 }
@@ -135,9 +133,7 @@ class _EngagementTeaserSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
       child: Row(
         children: const [
           ShimmerBox(width: 42, height: 42, radius: 13),

@@ -103,8 +103,6 @@ class BrowseRequestCard extends StatelessWidget {
     final surface = isDark ? AppColors.darkSurface : Colors.white;
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
     final textTertiary =
         isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
 

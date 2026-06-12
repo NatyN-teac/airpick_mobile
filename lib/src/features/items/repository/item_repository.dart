@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../models/item_models.dart';
 import '../../../core/network/api_client.dart';
 
@@ -10,7 +12,7 @@ class ItemRepository {
   Future<List<ItemModel>> fetchItems() async {
     if (_cache != null) return _cache!;
     final response = await _client.get('/items');
-    print("response is: ${(response)}");
+    debugPrint('response is: $response');
     _cache = (response['content'] as List<dynamic>)
         .map((e) => ItemModel.fromJson(e as Map<String, dynamic>))
         .toList();

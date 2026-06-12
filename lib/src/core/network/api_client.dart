@@ -20,7 +20,25 @@ class ApiClient {
           'ngrok-skip-browser-warning': 'true',
         },
       ),
-    )..interceptors.add(AuthInterceptor(tokenStorage));
+    );
+    _dio.interceptors.addAll([
+      AuthInterceptor(tokenStorage),
+      InterceptorsWrapper(
+        onResponse: (response, handler) {
+          final request = response.requestOptions;
+          if (_isAuthPath(request.path)) {
+            logApi(
+              tag: 'AuthApi',
+              method: request.method,
+              path: request.path,
+              statusCode: response.statusCode,
+              body: response.data,
+            );
+          }
+          handler.next(response);
+        },
+      ),
+    ]);
   }
 
   Future<Map<String, dynamic>> post(
@@ -77,10 +95,7 @@ class ApiClient {
     }
   }
 
-  Future<Map<String, dynamic>> postMultipart(
-    String path,
-    FormData data,
-  ) async {
+  Future<Map<String, dynamic>> postMultipart(String path, FormData data) async {
     try {
       final response = await _dio.post(
         path,
@@ -111,7 +126,7 @@ class ApiClient {
     final method = e.requestOptions.method;
 
     logApi(
-      tag: 'ApiClient',
+      tag: _isAuthPath(path) ? 'AuthApi' : 'ApiClient',
       method: method,
       path: path,
       statusCode: statusCode,
@@ -135,15 +150,16 @@ class ApiClient {
     return switch (statusCode) {
       400 => Exception(message ?? 'Invalid request.$detail'),
       401 => Exception(message ?? 'Unauthorised. Please sign in again.$detail'),
-      403 => Exception(
-          message ?? 'Access denied (403).$detail',
-        ),
+      403 => Exception(message ?? 'Access denied (403).$detail'),
       404 => Exception(message ?? 'Resource not found.$detail'),
       422 => Exception(message ?? 'Validation failed.$detail'),
-      500 => Exception(message ?? 'Server error. Please try again later.$detail'),
-      _ => Exception(
-          message ?? e.message ?? 'Something went wrong.$detail',
-        ),
+      500 => Exception(
+        message ?? 'Server error. Please try again later.$detail',
+      ),
+      _ => Exception(message ?? e.message ?? 'Something went wrong.$detail'),
     };
   }
+
+  bool _isAuthPath(String path) =>
+      path.contains('/users/register') || path.contains('/users/login');
 }

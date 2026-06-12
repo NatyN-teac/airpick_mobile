@@ -140,7 +140,7 @@ class _DeliveryTrackListScreenState extends State<DeliveryTrackListScreen> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                           itemCount: items.length,
-                          separatorBuilder: (_, __) =>
+                          separatorBuilder: (context, _) =>
                               const SizedBox(height: 12),
                           itemBuilder: (_, i) => DeliveryTrackCard(
                             item: items[i],

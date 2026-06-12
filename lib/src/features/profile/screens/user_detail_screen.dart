@@ -145,12 +145,13 @@ class _UserDetailScreenState extends State<UserDetailScreen>
     if (hasLocal) _enterCtrl.forward(from: 0);
 
     try {
-      final userId = await context.read<TokenStorage>().getUserId();
+      final tokenStorage = context.read<TokenStorage>();
+      final userRepository = context.read<UserRepository>();
+      final userId = await tokenStorage.getUserId();
       if (userId == null || userId.isEmpty) {
         throw Exception('User ID not found.');
       }
-      final detail =
-          await context.read<UserRepository>().getUserProfile(userId);
+      final detail = await userRepository.getUserProfile(userId);
       if (!mounted) return;
       final current = context.read<CurrentUserCubit>().state;
       if (current != null) {
@@ -523,7 +524,7 @@ class _AnimatedBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      builder: (_, __) {
+      builder: (context, _) {
         final t = interval.transform(animation.value);
         return Opacity(
           opacity: t,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../countries/models/country.dart';
@@ -91,7 +92,7 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
       emit(state.copyWith(
           availableCountries: list, countriesLoading: false));
     } catch (e, st) {
-      print('[CreateOfferRequestCubit] loadCountries error: $e\n$st');
+      debugPrint('[CreateOfferRequestCubit] loadCountries error: $e\n$st');
       emit(state.copyWith(
           countriesLoading: false, countriesError: e.toString()));
     }
@@ -103,12 +104,12 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
     if (state.availableItems.isNotEmpty || state.itemsLoading) return;
     emit(state.copyWith(itemsLoading: true, itemsError: null));
     try {
-      print('[CreateOfferRequestCubit] GET /items...');
+      debugPrint('[CreateOfferRequestCubit] GET /items...');
       final list = await _items.fetchItems();
-      print('[CreateOfferRequestCubit] items loaded: ${list.length}');
+      debugPrint('[CreateOfferRequestCubit] items loaded: ${list.length}');
       emit(state.copyWith(availableItems: list, itemsLoading: false));
     } catch (e, st) {
-      print('[CreateOfferRequestCubit] loadItems error: $e\n$st');
+      debugPrint('[CreateOfferRequestCubit] loadItems error: $e\n$st');
       emit(state.copyWith(itemsLoading: false, itemsError: e.toString()));
     }
   }
@@ -202,10 +203,10 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
           hasManualItem: hasManualItem,
           items: itemRequests,
         );
-        print('[CreateOfferRequestCubit] PATCH /offer-requests/${state.editingId}: ${request.toJson()}');
+        debugPrint('[CreateOfferRequestCubit] PATCH /offer-requests/${state.editingId}: ${request.toJson()}');
         result = await _offerRequests.updateOfferRequest(
             state.editingId!, request);
-        print('[CreateOfferRequestCubit] updated id=${result.id}');
+        debugPrint('[CreateOfferRequestCubit] updated id=${result.id}');
       } else {
         final request = CreateOfferRequestRequest(
           sourceCountry: state.sourceCountry!.name,
@@ -218,13 +219,13 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
           hasManualItem: hasManualItem,
           items: itemRequests,
         );
-        print('[CreateOfferRequestCubit] POST /offer-requests: ${request.toJson()}');
+        debugPrint('[CreateOfferRequestCubit] POST /offer-requests: ${request.toJson()}');
         result = await _offerRequests.createOfferRequest(request);
-        print('[CreateOfferRequestCubit] created id=${result.id}');
+        debugPrint('[CreateOfferRequestCubit] created id=${result.id}');
       }
       emit(state.copyWith(submitting: false, created: true, result: result));
     } catch (e, st) {
-      print('[CreateOfferRequestCubit] submit error: $e\n$st');
+      debugPrint('[CreateOfferRequestCubit] submit error: $e\n$st');
       emit(state.copyWith(submitting: false, error: e.toString()));
     }
   }

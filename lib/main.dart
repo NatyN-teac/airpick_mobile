@@ -14,6 +14,7 @@ import 'src/core/media/upload_repository.dart';
 import 'src/core/navigation/app_navigator.dart';
 import 'src/core/notifications/notification_service.dart';
 import 'src/features/chat/navigation/chat_deep_link.dart';
+import 'src/features/chat/repository/chat_repository.dart';
 import 'src/core/storage/token_storage.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/bloc/auth_bloc.dart';
@@ -120,6 +121,9 @@ class AirpickApp extends StatelessWidget {
         ),
         RepositoryProvider<MatchRepository>(
           create: (_) => MatchRepository(apiClient),
+        ),
+        RepositoryProvider<ChatRepository>(
+          create: (_) => ChatRepository(apiClient),
         ),
       ],
       child: MultiBlocProvider(

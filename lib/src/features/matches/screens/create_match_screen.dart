@@ -541,7 +541,7 @@ class _MatchItemRow extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${currency}${item.pricePerItem.toStringAsFixed(2)} / ${item.unitLabel}  ·  ${OfferResponse.formatQuantity(max)} available',
+                      '$currency${item.pricePerItem.toStringAsFixed(2)} / ${item.unitLabel}  ·  ${OfferResponse.formatQuantity(max)} available',
                       style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 11,
@@ -553,7 +553,7 @@ class _MatchItemRow extends StatelessWidget {
               ),
               if (selected)
                 Text(
-                  '${currency}${draft.lineTotal.toStringAsFixed(2)}',
+                  '$currency${draft.lineTotal.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 13,

@@ -29,6 +29,7 @@ dependencies:
   crypto: ^3.0.7
   # Networking
   dio: ^5.8.0
+  logger: ^2.7.0
   # Realtime chat (STOMP over WebSocket / SockJS)
   stomp_dart_client: ^2.1.0
   # Secure storage
