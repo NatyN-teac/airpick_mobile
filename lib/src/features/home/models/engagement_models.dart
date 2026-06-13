@@ -161,6 +161,11 @@ class MatchEngagement {
   ChatParticipant? otherParty({required bool viewerIsCarrier}) =>
       viewerIsCarrier ? shipper : carrier;
 
+  bool get hasAvailableChat =>
+      chatId?.trim().isNotEmpty == true &&
+      const {'ACCEPTED', 'IN_PROGRESS', 'IN_DELIVERY', 'COMPLETED'}
+          .contains(status.toUpperCase());
+
   factory MatchEngagement.fromJson(Map<String, dynamic> json) {
     ChatParticipant? participant(dynamic raw) =>
         raw is Map<String, dynamic> ? ChatParticipant.fromJson(raw) : null;

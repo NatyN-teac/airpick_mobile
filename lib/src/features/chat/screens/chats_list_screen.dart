@@ -40,6 +40,7 @@ class ChatsListScreen extends StatelessWidget {
     final matches = state.response?.matchedOffers ?? const <MatchEngagement>[];
     final isCarrier = state.response?.mode.toUpperCase() == 'CARRIER';
     return matches
+        .where((match) => match.hasAvailableChat)
         .map(
           (m) {
             final other = m.otherParty(viewerIsCarrier: isCarrier);
@@ -66,10 +67,8 @@ class ChatsListScreen extends StatelessWidget {
   static List<ChatSummary> _resolveChats(
     ChatsListState chatsState,
     EngagementState engagementState,
-  ) {
-    if (chatsState.chats.isNotEmpty) return chatsState.chats;
-    return _summariesFromEngagements(engagementState);
-  }
+  ) =>
+      _summariesFromEngagements(engagementState);
 
   @override
   Widget build(BuildContext context) {
@@ -84,8 +83,7 @@ class ChatsListScreen extends StatelessWidget {
             final chats = _resolveChats(chatsState, engagementState);
             final viewerIsCarrier =
                 context.watch<UserModeCubit>().state == UserMode.carrier;
-            final usingApi = chatsState.chats.isNotEmpty;
-            final loading = chatsState.loading && chats.isEmpty;
+            final loading = engagementState.loading && chats.isEmpty;
 
             return Column(
               children: [
@@ -129,7 +127,7 @@ class ChatsListScreen extends StatelessWidget {
                                       engagementState),
                                   isDark: isDark,
                                   viewerIsCarrier: viewerIsCarrier,
-                                  showUnread: usingApi,
+                                  showUnread: false,
                                 ),
                               ),
                             ),
@@ -143,10 +141,7 @@ class ChatsListScreen extends StatelessWidget {
   }
 
   static Future<void> _refresh(BuildContext context) async {
-    await Future.wait([
-      context.read<ChatsListCubit>().reload(),
-      context.read<EngagementCubit>().load(force: true),
-    ]);
+    await context.read<EngagementCubit>().load(force: true);
   }
 }
 

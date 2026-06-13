@@ -94,10 +94,11 @@ class ChatState extends Equatable {
     MatchResponse? match,
     bool? isCarrier,
     bool? pickingUp,
+    bool clearError = false,
   }) =>
       ChatState(
         status: status ?? this.status,
-        error: error,
+        error: clearError ? null : error ?? this.error,
         chatId: chatId ?? this.chatId,
         currentUserId: currentUserId ?? this.currentUserId,
         messages: messages ?? this.messages,

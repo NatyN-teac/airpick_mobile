@@ -167,6 +167,11 @@ class MatchResponse {
     );
   }
 
+  bool get hasAvailableChat =>
+      chatId?.trim().isNotEmpty == true &&
+      const {'ACCEPTED', 'IN_PROGRESS', 'IN_DELIVERY', 'COMPLETED'}
+          .contains(status.toUpperCase());
+
   static FlightResponse? _parseFlight(dynamic raw) {
     if (raw is! Map<String, dynamic>) return null;
     try {

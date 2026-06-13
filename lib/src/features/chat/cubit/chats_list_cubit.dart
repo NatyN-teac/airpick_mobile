@@ -4,24 +4,11 @@ import '../repository/chat_repository.dart';
 import 'chats_list_state.dart';
 
 class ChatsListCubit extends Cubit<ChatsListState> {
-  final ChatRepository _repo;
-  bool _loadedOnce = false;
-
-  ChatsListCubit(this._repo) : super(const ChatsListState());
+  ChatsListCubit(ChatRepository _) : super(const ChatsListState());
 
   Future<void> load({bool force = false}) async {
-    if (_loadedOnce && !force) return;
-    emit(state.copyWith(loading: true, error: null));
-    try {
-      final chats = await _repo.fetchChats();
-      _loadedOnce = true;
-      emit(state.copyWith(chats: chats, loading: false));
-    } catch (e) {
-      emit(state.copyWith(
-        loading: false,
-        error: e.toString().replaceFirst('Exception: ', ''),
-      ));
-    }
+    // The backend currently has no GET /chats inbox endpoint. Chat rows are
+    // derived from accepted matches in EngagementCubit instead.
   }
 
   Future<void> reload() => load(force: true);

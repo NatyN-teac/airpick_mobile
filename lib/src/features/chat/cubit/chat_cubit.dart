@@ -38,9 +38,19 @@ class ChatCubit extends Cubit<ChatState> {
 
   // Steps 1-4 of the backend guide.
   Future<void> open() async {
-    emit(state.copyWith(status: ChatStatus.loading, error: null));
+    emit(state.copyWith(status: ChatStatus.loading, clearError: true));
     try {
       final userId = await _tokenStorage.getUserId() ?? '';
+      final usedCachedMatch = initialMatch?.hasAvailableChat == true;
+      final match =
+          usedCachedMatch ? initialMatch! : await _matches.getMatch(matchId);
+      if (!match.hasAvailableChat) {
+        throw Exception(
+          match.status.toUpperCase() == 'PENDING'
+              ? 'Chat will be available after the carrier accepts this match.'
+              : 'Chat is not available for this match.',
+        );
+      }
       final chat = await _repo.getChatByMatch(matchId);
       debugPrint(
           '[Chat] history loaded: chatId=${chat.chatId}, messages=${chat.messages.length}, userId=$userId');
@@ -51,16 +61,18 @@ class ChatCubit extends Cubit<ChatState> {
         messages: chat.messages,
         context: _enrichedContext(
           chat.contextForUser(userId),
-          state.match,
+          match,
         ),
         isCarrier: chat.carrier != null && chat.carrier!.id == userId,
+        match: match,
+        clearError: true,
       ));
       // 2. mark read (best-effort)
       if (chat.chatId.isNotEmpty) {
         _repo.markRead(chat.chatId).catchError((_) {});
       }
-      // Fetch match details (items + status) — the chat room omits them.
-      _loadMatch();
+      // Refresh details when navigation supplied a cached match snapshot.
+      if (usedCachedMatch) _loadMatch();
       // 3 + 4. connect + subscribe
       await _socket.connect(
         matchId: matchId,
@@ -110,7 +122,7 @@ class ChatCubit extends Cubit<ChatState> {
   // Carrier confirms pickup with a photo — once per match.
   Future<void> startPickup({required String photoPath}) async {
     if (!state.canPickUp || state.pickingUp) return;
-    emit(state.copyWith(pickingUp: true, error: null));
+    emit(state.copyWith(pickingUp: true, clearError: true));
     try {
       final updated =
           await _matches.uploadPickupPhoto(matchId, File(photoPath));
@@ -170,7 +182,10 @@ class ChatCubit extends Cubit<ChatState> {
       sentAt: DateTime.now(),
       pending: true,
     );
-    emit(state.copyWith(messages: [...state.messages, optimistic], error: null));
+    emit(state.copyWith(
+      messages: [...state.messages, optimistic],
+      clearError: true,
+    ));
     try {
       _socket.send(text);
     } catch (e) {

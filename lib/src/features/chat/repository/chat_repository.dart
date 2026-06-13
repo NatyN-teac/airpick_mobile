@@ -2,35 +2,11 @@ import 'package:flutter/foundation.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
 import '../models/chat.dart';
-import '../models/chat_summary.dart';
 
 class ChatRepository {
   final ApiClient _client;
 
   ChatRepository(this._client);
-
-  // GET /api/v1/chats — inbox summaries (unread + last message).
-  Future<List<ChatSummary>> fetchChats() async {
-    final response = await _client.get('/chats');
-    debugPrint('[Chat] GET /chats → $response');
-    if (response['success'] == false) {
-      throw Exception(
-        apiResponseMessage(response) ?? 'Failed to load conversations.',
-      );
-    }
-    final raw = response['content'] ?? response['data'];
-    final list = raw is List<dynamic>
-        ? raw
-        : raw is Map<String, dynamic>
-            ? (raw['chats'] ?? raw['content'] ?? raw['items'])
-            : null;
-    if (list is! List<dynamic>) return [];
-    return list
-        .whereType<Map<String, dynamic>>()
-        .map(ChatSummary.fromJson)
-        .where((s) => s.matchId.isNotEmpty)
-        .toList();
-  }
 
   // GET /api/v1/chats/match/{matchId} — chat room + message history.
   Future<Chat> getChatByMatch(String matchId) async {
