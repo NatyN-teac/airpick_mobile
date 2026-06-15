@@ -15,9 +15,7 @@ class MatchRepository {
 
   Map<String, dynamic> _payload(Map<String, dynamic> response) {
     if (response['success'] == false) {
-      throw Exception(
-        apiResponseMessage(response) ?? 'Match request failed.',
-      );
+      throw Exception(apiResponseMessage(response) ?? 'Match request failed.');
     }
     final data = response['content'] ?? response['data'];
     if (data is Map<String, dynamic>) return data;
@@ -48,8 +46,10 @@ class MatchRepository {
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(photo.path, filename: name),
     });
-    final response =
-        await _client.postMultipart('/matches/$matchId/pickup-photo', formData);
+    final response = await _client.postMultipart(
+      '/matches/$matchId/pickup-photo',
+      formData,
+    );
     debugPrint('[Match] POST /matches/$matchId/pickup-photo → $response');
     return MatchResponse.fromJson(_payload(response));
   }
