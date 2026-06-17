@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
+import '../../../core/widgets/state_message.dart';
 import '../../countries/models/country.dart';
 import '../../countries/repository/country_repository.dart';
 import '../../countries/widgets/country_picker_field.dart';
@@ -44,19 +45,22 @@ class _BrowseOfferRequestsPreviewState
         if (state.loading && state.requests.isEmpty) {
           return const SkeletonPreviewList(count: 3);
         }
-        if (state.requests.isEmpty) {
-          return Padding(
+        if (state.error != null && state.requests.isEmpty) {
+          return AppErrorState(
+            title: 'Could not load requests',
+            message: state.error!,
+            onRetry: () =>
+                context.read<BrowseOfferRequestsCubit>().load(force: true),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: Text(
-              'No requests available right now.',
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 13,
-                color: widget.isDark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.textSecondary,
-              ),
-            ),
+          );
+        }
+        if (state.requests.isEmpty) {
+          return const AppEmptyState(
+            icon: Icons.inventory_2_outlined,
+            title: 'No requests available',
+            message:
+                'Open shipper requests will show here when senders post them.',
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           );
         }
         final preview = state.requests.take(3).toList();
@@ -68,8 +72,11 @@ class _BrowseOfferRequestsPreviewState
                 child: BrowseRequestCard(
                   request: req,
                   isDark: widget.isDark,
-                  onTap: () => showBrowseRequestDetail(context, req,
-                      onSendProposal: () => launchSendProposal(context, req)),
+                  onTap: () => showBrowseRequestDetail(
+                    context,
+                    req,
+                    onSendProposal: () => launchSendProposal(context, req),
+                  ),
                   onSendProposal: () => launchSendProposal(context, req),
                 ),
               ),
@@ -101,8 +108,9 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
 
     return Scaffold(
       backgroundColor: bg,
@@ -114,14 +122,16 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back_rounded, color: textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Browse Requests',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: textPrimary,
-              letterSpacing: -0.3,
-            )),
+        title: Text(
+          'Browse Requests',
+          style: TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: textPrimary,
+            letterSpacing: -0.3,
+          ),
+        ),
         actions: [
           BlocBuilder<BrowseOfferRequestsCubit, BrowseOfferRequestsState>(
             builder: (context, state) => IconButton(
@@ -134,7 +144,9 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
                       right: -1,
                       top: -1,
                       child: CircleAvatar(
-                          radius: 4, backgroundColor: AppColors.primary),
+                        radius: 4,
+                        backgroundColor: AppColors.primary,
+                      ),
                     ),
                 ],
               ),
@@ -149,18 +161,28 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
           if (state.loading && state.requests.isEmpty) {
             return const SkeletonList();
           }
+          if (state.error != null && state.requests.isEmpty) {
+            return Center(
+              child: AppErrorState(
+                title: 'Could not load requests',
+                message: state.error!,
+                onRetry: () =>
+                    context.read<BrowseOfferRequestsCubit>().load(force: true),
+              ),
+            );
+          }
           if (state.requests.isEmpty) {
             return Center(
-              child: Text(
-                state.hasFilters
-                    ? 'No requests match your filters.'
-                    : 'No requests available.',
-                style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 13,
-                    color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.textSecondary),
+              child: AppEmptyState(
+                icon: state.hasFilters
+                    ? Icons.filter_list_off_rounded
+                    : Icons.inventory_2_outlined,
+                title: state.hasFilters
+                    ? 'No matching requests'
+                    : 'No requests available',
+                message: state.hasFilters
+                    ? 'Try clearing the filters or searching another route.'
+                    : 'Open shipper requests will show here when senders post them.',
               ),
             );
           }
@@ -179,8 +201,11 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
                   child: BrowseRequestCard(
                     request: req,
                     isDark: isDark,
-                    onTap: () => showBrowseRequestDetail(context, req,
-                        onSendProposal: () => launchSendProposal(context, req)),
+                    onTap: () => showBrowseRequestDetail(
+                      context,
+                      req,
+                      onSendProposal: () => launchSendProposal(context, req),
+                    ),
                     onSendProposal: () => launchSendProposal(context, req),
                   ),
                 );
@@ -192,8 +217,7 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
     );
   }
 
-  void _openFilterSheet(
-      BuildContext context, BrowseOfferRequestsState state) {
+  void _openFilterSheet(BuildContext context, BrowseOfferRequestsState state) {
     final cubit = context.read<BrowseOfferRequestsCubit>();
     final countryRepo = context.read<CountryRepository>();
     showModalBottomSheet<void>(
@@ -203,9 +227,11 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
       builder: (_) => _FilterSheet(
         initial: state,
         countryRepo: countryRepo,
-        onApply: (src, dst, city) =>
-            cubit.applyFilters(
-                sourceCountry: src, destinationCountry: dst, sourceCity: city),
+        onApply: (src, dst, city) => cubit.applyFilters(
+          sourceCountry: src,
+          destinationCountry: dst,
+          sourceCity: city,
+        ),
         onClear: cubit.clearFilters,
       ),
     );
@@ -232,8 +258,9 @@ class _FilterSheet extends StatefulWidget {
 }
 
 class _FilterSheetState extends State<_FilterSheet> {
-  late final TextEditingController _city =
-      TextEditingController(text: widget.initial.sourceCity ?? '');
+  late final TextEditingController _city = TextEditingController(
+    text: widget.initial.sourceCity ?? '',
+  );
   List<Country> _countries = [];
   bool _loading = true;
   Country? _src;
@@ -276,48 +303,57 @@ class _FilterSheetState extends State<_FilterSheet> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final mediaQuery = MediaQuery.of(context);
+    final bottomInset = mediaQuery.viewInsets.bottom;
+    final bottomSafeArea = mediaQuery.padding.bottom;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
-      padding: EdgeInsets.fromLTRB(
-          20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 28),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.textDisabled.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
+    return SafeArea(
+      top: false,
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: FractionallySizedBox(
+          heightFactor: 0.85,
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            padding: EdgeInsets.fromLTRB(20, 16, 20, bottomSafeArea + 28),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text('Filter requests',
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: textPrimary,
-                letterSpacing: -0.3,
-              )),
-          const SizedBox(height: 16),
-          Flexible(
             child: SingleChildScrollView(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.textDisabled.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Filter requests',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: textPrimary,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   _FilterLabel('Source country', isDark: isDark),
                   const SizedBox(height: 6),
                   CountryPickerField(
@@ -343,68 +379,75 @@ class _FilterSheetState extends State<_FilterSheet> {
                   _FilterLabel('Source city', isDark: isDark),
                   const SizedBox(height: 6),
                   _CityField(controller: _city, isDark: isDark),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            widget.onClear();
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.darkBackground
+                                  : AppColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Clear',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            widget.onApply(
+                              _src?.name,
+                              _dst?.name,
+                              _city.text.trim().isEmpty
+                                  ? null
+                                  : _city.text.trim(),
+                            );
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'Apply',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    widget.onClear();
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    decoration: BoxDecoration(
-                      color:
-                          isDark ? AppColors.darkBackground : AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text('Clear',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: textPrimary,
-                        )),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    widget.onApply(
-                      _src?.name,
-                      _dst?.name,
-                      _city.text.trim().isEmpty ? null : _city.text.trim(),
-                    );
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text('Apply',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        )),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -417,15 +460,15 @@ class _FilterLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        text,
-        style: TextStyle(
-          fontFamily: 'Manrope',
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.3,
-          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-        ),
-      );
+    text,
+    style: TextStyle(
+      fontFamily: 'Manrope',
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.3,
+      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+    ),
+  );
 }
 
 class _CityField extends StatelessWidget {
@@ -437,34 +480,38 @@ class _CityField extends StatelessWidget {
   Widget build(BuildContext context) {
     final surface = isDark ? AppColors.darkBackground : AppColors.surface;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
 
     return TextField(
       controller: controller,
-      style:
-          TextStyle(fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
+      style: TextStyle(fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
       decoration: InputDecoration(
         hintText: 'Any',
         hintStyle: TextStyle(
-            fontFamily: 'Manrope',
-            fontSize: 13,
-            color:
-                isDark ? AppColors.darkTextTertiary : AppColors.textTertiary),
+          fontFamily: 'Manrope',
+          fontSize: 13,
+          color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+        ),
         filled: true,
         fillColor: surface,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 10,
+        ),
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: border)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: border),
+        ),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: border)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: border),
+        ),
         focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: AppColors.primary, width: 1.5)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
       ),
     );
   }

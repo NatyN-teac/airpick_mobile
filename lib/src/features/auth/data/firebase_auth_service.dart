@@ -88,7 +88,8 @@ class FirebaseAuthService {
   Future<void> signOut() => _auth.signOut();
 
   Future<String> _getFirebaseToken(UserCredential credential) async {
-    final token = await credential.user?.getIdToken();
+    // Force-refresh the ID token so registration uses the latest Firebase JWT.
+    final token = await credential.user?.getIdToken(true);
     if (token == null) {
       throw const AuthConfigurationException(
         'Failed to retrieve Firebase ID token.',

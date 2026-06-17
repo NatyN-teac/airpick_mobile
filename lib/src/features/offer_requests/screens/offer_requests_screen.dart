@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
+import '../../../core/widgets/state_message.dart';
 import '../cubit/offer_requests_cubit.dart';
 import '../models/offer_request_models.dart';
 import '../repository/offer_request_repository.dart';
@@ -58,12 +59,28 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
       content = const SkeletonList();
     } else if (state.error != null && state.requests.isEmpty) {
       content = _centeredFiller(
-        _ErrorState(message: state.error!, isDark: isDark, onRetry: refresh),
+        AppErrorState(
+          title: 'Could not load requests',
+          message: state.error!,
+          onRetry: refresh,
+        ),
       );
     } else if (state.requests.isEmpty) {
-      content = _centeredFiller(_EmptyState(isDark: isDark));
+      content = _centeredFiller(
+        const AppEmptyState(
+          icon: Icons.inventory_2_outlined,
+          title: 'No requests yet',
+          message: 'Tap + to create a request for items you need delivered.',
+        ),
+      );
     } else if (state.visible.isEmpty) {
-      content = _centeredFiller(_FilterEmptyState(isDark: isDark));
+      content = _centeredFiller(
+        const AppEmptyState(
+          icon: Icons.filter_list_off_rounded,
+          title: 'No requests with this status',
+          message: 'Choose another status filter to see your other requests.',
+        ),
+      );
     } else {
       content = _RequestsList(
         requests: state.visible,
@@ -172,104 +189,6 @@ class _StatusFilterBar extends StatelessWidget {
   }
 }
 
-// ── Filter empty / error states ───────────────────────────────────────────────
-
-class _FilterEmptyState extends StatelessWidget {
-  final bool isDark;
-  const _FilterEmptyState({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final textSecondary = isDark
-        ? AppColors.darkTextSecondary
-        : AppColors.textSecondary;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.filter_list_off_rounded, size: 36, color: textSecondary),
-          const SizedBox(height: 10),
-          Text(
-            'No requests with this status',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 13,
-              color: textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  final String message;
-  final bool isDark;
-  final VoidCallback onRetry;
-
-  const _ErrorState({
-    required this.message,
-    required this.isDark,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textSecondary = isDark
-        ? AppColors.darkTextSecondary
-        : AppColors.textSecondary;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.cloud_off_rounded,
-              size: 40,
-              color: AppColors.error,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message.replaceFirst('Exception: ', ''),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 13,
-                color: textSecondary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: onRetry,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'Retry',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // Pushes the view-only detail screen.
 Future<void> openOfferRequestDetail(
   BuildContext context,
@@ -280,75 +199,6 @@ Future<void> openOfferRequestDetail(
       builder: (_) => OfferRequestDetailScreen(request: request),
     ),
   );
-}
-
-// ── Empty state ───────────────────────────────────────────────────────────────
-
-class _EmptyState extends StatelessWidget {
-  final bool isDark;
-  const _EmptyState({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final textPrimary = isDark
-        ? AppColors.darkTextPrimary
-        : AppColors.textPrimary;
-    final textSecondary = isDark
-        ? AppColors.darkTextSecondary
-        : AppColors.textSecondary;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 600),
-              curve: Curves.easeOutBack,
-              builder: (_, v, child) => Transform.scale(scale: v, child: child),
-              child: Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.inventory_2_outlined,
-                  size: 44,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'No requests yet',
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: textPrimary,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tap + to create your first offer request and let carriers find you.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 13,
-                color: textSecondary,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ── Requests list ─────────────────────────────────────────────────────────────

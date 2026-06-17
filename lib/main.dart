@@ -1,10 +1,12 @@
 import 'package:airpick/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'firebase_options.dart';
 import 'src/app/bloc/app_bloc.dart';
 import 'src/app/view/app_router.dart';
 import 'src/core/l10n/l10n.dart';
@@ -42,7 +44,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Firebase
-  await Firebase.initializeApp();
+  await _initializeFirebase();
 
   // Shared services
   final prefs = await SharedPreferences.getInstance();
@@ -55,6 +57,18 @@ void main() async {
   AppConfig.environment = AppEnvironment.dev;
 
   runApp(AirpickApp(prefs: prefs, secureStorage: secureStorage));
+}
+
+Future<void> _initializeFirebase() async {
+  if (defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    return;
+  }
+
+  await Firebase.initializeApp();
 }
 
 class AirpickApp extends StatelessWidget {
@@ -78,12 +92,8 @@ class AirpickApp extends StatelessWidget {
         RepositoryProvider<IOnboardingRepository>(
           create: (_) => const OnboardingRepository(),
         ),
-        RepositoryProvider<TokenStorage>(
-          create: (_) => tokenStorage,
-        ),
-        RepositoryProvider<ApiClient>(
-          create: (_) => apiClient,
-        ),
+        RepositoryProvider<TokenStorage>(create: (_) => tokenStorage),
+        RepositoryProvider<ApiClient>(create: (_) => apiClient),
         RepositoryProvider<IAuthRepository>(
           create: (_) => AuthRepository(
             firebaseService: FirebaseAuthService(),
@@ -92,9 +102,7 @@ class AirpickApp extends StatelessWidget {
             settings: settingsRepo,
           ),
         ),
-        RepositoryProvider<SettingsRepository>(
-          create: (_) => settingsRepo,
-        ),
+        RepositoryProvider<SettingsRepository>(create: (_) => settingsRepo),
         RepositoryProvider<AirportRepository>(
           create: (_) => AirportRepository(apiClient),
         ),
@@ -129,8 +137,7 @@ class AirpickApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider<ThemeCubit>(
-            create: (context) =>
-                ThemeCubit(context.read<SettingsRepository>()),
+            create: (context) => ThemeCubit(context.read<SettingsRepository>()),
           ),
           BlocProvider<LocaleCubit>(
             create: (context) =>
@@ -143,14 +150,11 @@ class AirpickApp extends StatelessWidget {
             )..add(const AppStarted()),
           ),
           BlocProvider<OnboardingBloc>(
-            create: (context) => OnboardingBloc(
-              context.read<IOnboardingRepository>(),
-            ),
+            create: (context) =>
+                OnboardingBloc(context.read<IOnboardingRepository>()),
           ),
           BlocProvider<AuthBloc>(
-            create: (context) => AuthBloc(
-              context.read<IAuthRepository>(),
-            ),
+            create: (context) => AuthBloc(context.read<IAuthRepository>()),
           ),
           BlocProvider<CurrentUserCubit>(
             create: (context) =>
@@ -168,8 +172,7 @@ class AirpickApp extends StatelessWidget {
                 OfferRequestsCubit(context.read<OfferRequestRepository>()),
           ),
           BlocProvider<OffersCubit>(
-            create: (context) =>
-                OffersCubit(context.read<OfferRepository>()),
+            create: (context) => OffersCubit(context.read<OfferRepository>()),
           ),
         ],
         child: BlocBuilder<ThemeCubit, ThemeMode>(

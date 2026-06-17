@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_message.dart';
 import '../cubit/notifications_cubit.dart';
 import '../cubit/notifications_state.dart';
 import '../models/app_notification.dart';
@@ -14,10 +15,12 @@ class NotificationsScreen extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<NotificationsCubit>();
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        final textPrimary =
-            isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-        final textSecondary =
-            isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+        final textPrimary = isDark
+            ? AppColors.darkTextPrimary
+            : AppColors.textPrimary;
+        final textSecondary = isDark
+            ? AppColors.darkTextSecondary
+            : AppColors.textSecondary;
 
         final unread = state.items.where((n) => !n.read).toList();
         final earlier = state.items.where((n) => n.read).toList();
@@ -29,19 +32,31 @@ class NotificationsScreen extends StatelessWidget {
 
         if (unread.isNotEmpty) {
           rows.add(_SectionLabel('New', isDark: isDark, accent: true));
-          rows.addAll(unread.map((n) => animate(_NotificationTile(
-                notification: n,
-                isDark: isDark,
-                onTap: () => cubit.markRead(n.id),
-              ))));
+          rows.addAll(
+            unread.map(
+              (n) => animate(
+                _NotificationTile(
+                  notification: n,
+                  isDark: isDark,
+                  onTap: () => cubit.markRead(n.id),
+                ),
+              ),
+            ),
+          );
         }
         if (earlier.isNotEmpty) {
           rows.add(_SectionLabel('Earlier', isDark: isDark));
-          rows.addAll(earlier.map((n) => animate(_NotificationTile(
-                notification: n,
-                isDark: isDark,
-                onTap: () {},
-              ))));
+          rows.addAll(
+            earlier.map(
+              (n) => animate(
+                _NotificationTile(
+                  notification: n,
+                  isDark: isDark,
+                  onTap: () {},
+                ),
+              ),
+            ),
+          );
         }
 
         return Column(
@@ -55,14 +70,16 @@ class NotificationsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Notifications',
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                              color: textPrimary,
-                            )),
+                        Text(
+                          'Notifications',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            color: textPrimary,
+                          ),
+                        ),
                         const SizedBox(height: 1),
                         Text(
                           state.unreadCount == 0
@@ -84,7 +101,9 @@ class NotificationsScreen extends StatelessWidget {
                       onTap: state.unreadCount == 0 ? null : cubit.markAllRead,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 7),
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -92,16 +111,21 @@ class NotificationsScreen extends StatelessWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.done_all_rounded,
-                                size: 14, color: AppColors.primary),
+                            Icon(
+                              Icons.done_all_rounded,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
                             SizedBox(width: 5),
-                            Text('Mark all read',
-                                style: TextStyle(
-                                  fontFamily: 'Manrope',
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
-                                )),
+                            Text(
+                              'Mark all read',
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -112,7 +136,12 @@ class NotificationsScreen extends StatelessWidget {
             ),
             Expanded(
               child: state.items.isEmpty
-                  ? _EmptyState(isDark: isDark)
+                  ? const AppEmptyState(
+                      icon: Icons.notifications_none_rounded,
+                      title: 'No notifications',
+                      message:
+                          'Updates about matches and deliveries land here.',
+                    )
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(14, 2, 14, 28),
                       children: rows,
@@ -149,8 +178,8 @@ class _SectionLabel extends StatelessWidget {
               color: accent
                   ? AppColors.primary
                   : (isDark
-                      ? AppColors.darkTextTertiary
-                      : AppColors.textTertiary),
+                        ? AppColors.darkTextTertiary
+                        : AppColors.textTertiary),
             ),
           ),
         ],
@@ -176,12 +205,15 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final n = notification;
     final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final textTertiary =
-        isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
+    final textTertiary = isDark
+        ? AppColors.darkTextTertiary
+        : AppColors.textTertiary;
 
     return GestureDetector(
       onTap: onTap,
@@ -225,8 +257,9 @@ class _NotificationTile extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 13.5,
-                            fontWeight:
-                                n.read ? FontWeight.w600 : FontWeight.w800,
+                            fontWeight: n.read
+                                ? FontWeight.w600
+                                : FontWeight.w800,
                             color: textPrimary,
                             letterSpacing: -0.2,
                           ),
@@ -292,8 +325,10 @@ class _AnimatedEntryState extends State<_AnimatedEntry>
     vsync: this,
     duration: const Duration(milliseconds: 420),
   );
-  late final Animation<double> _fade =
-      CurvedAnimation(parent: _c, curve: Curves.easeOut);
+  late final Animation<double> _fade = CurvedAnimation(
+    parent: _c,
+    curve: Curves.easeOut,
+  );
   late final Animation<Offset> _slide = Tween<Offset>(
     begin: const Offset(0, 0.10),
     end: Offset.zero,
@@ -315,51 +350,7 @@ class _AnimatedEntryState extends State<_AnimatedEntry>
 
   @override
   Widget build(BuildContext context) => FadeTransition(
-        opacity: _fade,
-        child: SlideTransition(position: _slide, child: widget.child),
-      );
-}
-
-// ── Empty state ───────────────────────────────────────────────────────────────
-
-class _EmptyState extends StatelessWidget {
-  final bool isDark;
-  const _EmptyState({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.notifications_none_rounded,
-                size: 40, color: AppColors.primary),
-          ),
-          const SizedBox(height: 18),
-          Text('No notifications',
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: textPrimary,
-              )),
-          const SizedBox(height: 6),
-          Text('Updates about matches and deliveries land here.',
-              style: TextStyle(
-                  fontFamily: 'Manrope', fontSize: 13, color: textSecondary)),
-        ],
-      ),
-    );
-  }
+    opacity: _fade,
+    child: SlideTransition(position: _slide, child: widget.child),
+  );
 }

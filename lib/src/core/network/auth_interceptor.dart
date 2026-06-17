@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:logger/logger.dart';
 import '../session/app_session.dart';
 import '../session/session_expiry.dart';
 import '../storage/token_storage.dart';
@@ -6,10 +7,7 @@ import '../storage/token_storage.dart';
 class AuthInterceptor extends Interceptor {
   final TokenStorage _tokenStorage;
 
-  static const _publicPaths = [
-    '/users/register',
-    '/users/login',
-  ];
+  static const _publicPaths = ['/users/register', '/users/login'];
 
   AuthInterceptor(this._tokenStorage);
 
@@ -23,6 +21,7 @@ class AuthInterceptor extends Interceptor {
   ) async {
     if (!_isPublic(options)) {
       final token = await _tokenStorage.getToken();
+      // Logger().d(token);
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
       } else {

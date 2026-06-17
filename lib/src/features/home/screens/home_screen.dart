@@ -71,17 +71,14 @@ class HomeScreen extends StatelessWidget {
           )..load(),
         ),
         BlocProvider(
-          create: (context) => DeliveryTrackCubit(
-            context.read<MatchRepository>(),
-          ),
+          create: (context) =>
+              DeliveryTrackCubit(context.read<MatchRepository>()),
         ),
         BlocProvider(
           create: (context) =>
               ChatsListCubit(context.read<ChatRepository>())..load(),
         ),
-        BlocProvider(
-          create: (_) => NotificationsCubit(),
-        ),
+        BlocProvider(create: (_) => NotificationsCubit()),
       ],
       child: const _HomeView(),
     );
@@ -107,12 +104,12 @@ class _HomeViewState extends State<_HomeView> {
     context.read<ItemRepository>().fetchItems().ignore();
     context.read<CountryRepository>().fetchCountries().ignore();
     context.read<CurrentUserCubit>().refreshFromServer(
-          context.read<UserRepository>(),
-          context.read<TokenStorage>(),
-        );
+      context.read<UserRepository>(),
+      context.read<TokenStorage>(),
+    );
     context.read<DeliveryTrackCubit>().load(
-          mode: context.read<UserModeCubit>().state,
-        );
+      mode: context.read<UserModeCubit>().state,
+    );
   }
 
   void _onPlusTap(BuildContext context) {
@@ -137,8 +134,10 @@ class _HomeViewState extends State<_HomeView> {
   }
 
   // Opens the offer-request bubble for create (existing == null) or edit.
-  void _openRequestBubble(BuildContext context,
-      {OfferRequestResponse? existing}) {
+  void _openRequestBubble(
+    BuildContext context, {
+    OfferRequestResponse? existing,
+  }) {
     final listCubit = context.read<OfferRequestsCubit>();
     showCreateOfferRequestBubble(
       context,
@@ -162,8 +161,7 @@ class _HomeViewState extends State<_HomeView> {
             return BlocBuilder<NavCubit, int>(
               builder: (context, currentIndex) {
                 final badgeCounts = <int, int>{
-                  if (chatsState.totalUnread > 0)
-                    1: chatsState.totalUnread,
+                  if (chatsState.totalUnread > 0) 1: chatsState.totalUnread,
                   if (notificationsState.unreadCount > 0)
                     3: notificationsState.unreadCount,
                 };
@@ -241,28 +239,33 @@ class _HomeTabState extends State<_HomeTab> {
   Future<void> _refreshHome(UserMode mode) async {
     final futures = <Future<void>>[
       context.read<CurrentUserCubit>().refreshFromServer(
-            context.read<UserRepository>(),
-            context.read<TokenStorage>(),
-          ),
+        context.read<UserRepository>(),
+        context.read<TokenStorage>(),
+      ),
       context.read<ItemRepository>().fetchItems(),
       context.read<CountryRepository>().fetchCountries(),
     ];
     if (mode == UserMode.sender) {
       futures.add(context.read<BrowseOffersCubit>().load(force: true));
     } else {
-      futures.add(
-          context.read<BrowseOfferRequestsCubit>().load(force: true));
+      futures.add(context.read<BrowseOfferRequestsCubit>().load(force: true));
     }
     futures.add(context.read<EngagementCubit>().load(force: true));
-    futures.add(context.read<DeliveryTrackCubit>().load(mode: mode, force: true));
+    futures.add(
+      context.read<DeliveryTrackCubit>().load(mode: mode, force: true),
+    );
     await Future.wait(futures);
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
 
     return BlocListener<UserModeCubit, UserMode>(
       listenWhen: (prev, next) => prev != next,
@@ -270,158 +273,169 @@ class _HomeTabState extends State<_HomeTab> {
         context.read<DeliveryTrackCubit>().load(mode: mode, force: true);
       },
       child: BlocBuilder<UserModeCubit, UserMode>(
-      builder: (context, mode) {
-        return RefreshIndicator(
-          color: AppColors.primary,
-          onRefresh: () => _refreshHome(mode),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(bottom: 32),
-            child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Greeting + mode pill ──────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Good to have you back 👋',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      "What's happening today?",
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.4,
-                        color: textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _ModePill(
-                      mode: mode,
-                      onTap: () => _showModePicker(context, mode),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── In delivery ───────────────────────────────────────────
-              BlocBuilder<DeliveryTrackCubit, DeliveryTrackState>(
-                builder: (context, trackState) {
-                  if (trackState.loading && !trackState.hasDeliveries) {
-                    return const Column(
+        builder: (context, mode) {
+          return RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () => _refreshHome(mode),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Greeting + mode pill ──────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 20),
-                        _InDeliverySkeleton(),
-                        SizedBox(height: 15),
+                        Text(
+                          'Good to have you back 👋',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "What's happening today?",
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                            color: textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _ModePill(
+                          mode: mode,
+                          onTap: () => _showModePicker(context, mode),
+                        ),
                       ],
-                    );
-                  }
-                  if (!trackState.hasDeliveries) {
-                    return const SizedBox.shrink();
-                  }
-                  final preview =
-                      trackState.data!.preview(limit: 5);
-                  return Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      _SectionHeader(
-                        title: 'In delivery',
-                        isDark: isDark,
-                        onSeeAll: () => openDeliveryTrackList(context),
-                      ),
-                      const SizedBox(height: 12),
-                      _InDeliveryPreview(
-                        items: preview,
-                        isDark: isDark,
-                        viewerIsCarrier: mode == UserMode.carrier,
-                      ),
-                      const SizedBox(height: 15),
-                    ],
-                  );
-                },
-              ),
+                    ),
+                  ),
 
-              // ── Engagements ───────────────────────────────────────────
-              BlocBuilder<EngagementCubit, EngagementState>(
-                builder: (context, engState) {
-                  if (engState.loading && engState.items.isEmpty) {
-                    return const Column(
-                      children: [
-                        SizedBox(height: 20),
-                        SkeletonEngagementTeaser(),
-                        SizedBox(height: 28),
-                      ],
-                    );
-                  }
-                  if (engState.items.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return Column(
-                    children: [
-                      _SectionHeader(
-                        title: 'Engagements',
-                        isDark: isDark,
-                        onSeeAll: () => _openEngagements(context),
-                      ),
-                      const SizedBox(height: 14),
-                      _EngagementTeaser(
-                        isDark: isDark,
-                        items: engState.items,
-                        onSeeAll: () => _openEngagements(context),
-                      ),
-                      const SizedBox(height: 28),
-                    ],
-                  );
-                },
-              ),
+                  // ── In delivery ───────────────────────────────────────────
+                  BlocBuilder<DeliveryTrackCubit, DeliveryTrackState>(
+                    builder: (context, trackState) {
+                      if (trackState.loading && !trackState.hasDeliveries) {
+                        return const Column(
+                          children: [
+                            SizedBox(height: 20),
+                            _InDeliverySkeleton(),
+                            SizedBox(height: 15),
+                          ],
+                        );
+                      }
+                      if (!trackState.hasDeliveries) {
+                        return const SizedBox.shrink();
+                      }
+                      final preview = trackState.data!.preview(limit: 5);
+                      return Column(
+                        children: [
+                          const SizedBox(height: 20),
+                          _SectionHeader(
+                            title: 'In delivery',
+                            isDark: isDark,
+                            onSeeAll: () => openDeliveryTrackList(context),
+                          ),
+                          const SizedBox(height: 12),
+                          _InDeliveryPreview(
+                            items: preview,
+                            isDark: isDark,
+                            viewerIsCarrier: mode == UserMode.carrier,
+                          ),
+                          const SizedBox(height: 15),
+                        ],
+                      );
+                    },
+                  ),
 
-              // ── Available carriers / Offer requests ───────────────────
-              BlocBuilder<EngagementCubit, EngagementState>(
-                builder: (context, engState) {
-                  final noEngagements =
-                      !engState.loading && engState.items.isEmpty;
-                  final noDeliveries =
-                      !context.watch<DeliveryTrackCubit>().state.hasDeliveries;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (noDeliveries && noEngagements)
-                        const SizedBox(height: 20),
-                      _SectionHeader(
-                        title: mode == UserMode.sender
-                            ? 'Available carriers'
-                            : 'Offer requests',
-                        isDark: isDark,
-                        onSeeAll: mode == UserMode.carrier
-                            ? () => openBrowseSeeAll(context)
-                            : () => openBrowseOffersSeeAll(context),
-                      ),
-                      const SizedBox(height: 14),
-                      if (mode == UserMode.sender)
-                        BrowseOffersPreview(isDark: isDark)
-                      else
-                        BrowseOfferRequestsPreview(isDark: isDark),
-                    ],
-                  );
-                },
+                  // ── Engagements ───────────────────────────────────────────
+                  BlocBuilder<EngagementCubit, EngagementState>(
+                    builder: (context, engState) {
+                      if (engState.loading && engState.items.isEmpty) {
+                        return const Column(
+                          children: [
+                            SizedBox(height: 20),
+                            SkeletonEngagementTeaser(),
+                            SizedBox(height: 28),
+                          ],
+                        );
+                      }
+                      if (engState.items.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        children: [
+                          _SectionHeader(
+                            title: 'Engagements',
+                            isDark: isDark,
+                            onSeeAll: () => _openEngagements(context),
+                          ),
+                          const SizedBox(height: 14),
+                          _EngagementTeaser(
+                            isDark: isDark,
+                            items: engState.items,
+                            onSeeAll: () => _openEngagements(context),
+                          ),
+                          const SizedBox(height: 28),
+                        ],
+                      );
+                    },
+                  ),
+
+                  // ── Available carriers / Offer requests ───────────────────
+                  BlocBuilder<EngagementCubit, EngagementState>(
+                    builder: (context, engState) {
+                      final noEngagements =
+                          !engState.loading && engState.items.isEmpty;
+                      final noDeliveries = !context
+                          .watch<DeliveryTrackCubit>()
+                          .state
+                          .hasDeliveries;
+                      final sectionTitle = mode == UserMode.sender
+                          ? 'Available carriers'
+                          : 'Offer requests';
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (noDeliveries && noEngagements)
+                            const SizedBox(height: 20),
+                          if (mode == UserMode.sender)
+                            BlocBuilder<BrowseOffersCubit, BrowseOffersState>(
+                              builder: (context, offerState) => _SectionHeader(
+                                title: sectionTitle,
+                                isDark: isDark,
+                                onSeeAll: offerState.offers.isEmpty
+                                    ? null
+                                    : () => openBrowseOffersSeeAll(context),
+                              ),
+                            )
+                          else
+                            _SectionHeader(
+                              title: sectionTitle,
+                              isDark: isDark,
+                              onSeeAll: () => openBrowseSeeAll(context),
+                            ),
+                          const SizedBox(height: 14),
+                          if (mode == UserMode.sender)
+                            BrowseOffersPreview(isDark: isDark)
+                          else
+                            BrowseOfferRequestsPreview(isDark: isDark),
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        );
-      },
-    ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -438,9 +452,7 @@ class _HomeTabState extends State<_HomeTab> {
           context.read<BrowseOfferRequestsCubit>().load(force: true);
         }
         context.read<EngagementCubit>().load(force: true);
-        context
-            .read<DeliveryTrackCubit>()
-            .load(mode: mode, force: true);
+        context.read<DeliveryTrackCubit>().load(mode: mode, force: true);
         if (context.mounted) Navigator.of(context).pop();
       },
     );
@@ -513,7 +525,9 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
@@ -528,25 +542,29 @@ class _SectionHeader extends StatelessWidget {
               color: textPrimary,
             ),
           ),
-          GestureDetector(
-            onTap: onSeeAll,
-            child: Row(
-              children: [
-                const Text(
-                  'See all',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+          if (onSeeAll != null)
+            GestureDetector(
+              onTap: onSeeAll,
+              child: Row(
+                children: [
+                  const Text(
+                    'See all',
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 11,
                     color: AppColors.primary,
                   ),
-                ),
-                const SizedBox(width: 2),
-                const Icon(Icons.arrow_forward_ios_rounded,
-                    size: 11, color: AppColors.primary),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -685,10 +703,12 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
     final isDark = widget.isDark;
     final latest = widget.items.first;
     final count = widget.items.length;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -703,8 +723,9 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.secondary
-                        .withValues(alpha: 0.08 + 0.16 * t),
+                    color: AppColors.secondary.withValues(
+                      alpha: 0.08 + 0.16 * t,
+                    ),
                     blurRadius: 14 + 14 * t,
                     spreadRadius: 0.5 * t,
                     offset: const Offset(0, 4),
@@ -732,7 +753,8 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
               ),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                  color: AppColors.secondary.withValues(alpha: 0.18)),
+                color: AppColors.secondary.withValues(alpha: 0.18),
+              ),
             ),
             child: Row(
               children: [
@@ -745,12 +767,16 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: AppColors.secondary
-                            .withValues(alpha: 0.10 + 0.08 * t),
+                        color: AppColors.secondary.withValues(
+                          alpha: 0.10 + 0.08 * t,
+                        ),
                         borderRadius: BorderRadius.circular(13),
                       ),
-                      child: const Icon(Icons.bolt_rounded,
-                          size: 22, color: AppColors.secondary),
+                      child: const Icon(
+                        Icons.bolt_rounded,
+                        size: 22,
+                        color: AppColors.secondary,
+                      ),
                     );
                   },
                 ),
@@ -792,8 +818,10 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                 const SizedBox(width: 8),
                 // See all pill
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
@@ -805,16 +833,21 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('See all',
-                          style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          )),
+                      Text(
+                        'See all',
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
                       SizedBox(width: 2),
-                      Icon(Icons.arrow_forward_rounded,
-                          size: 13, color: Colors.white),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 13,
+                        color: Colors.white,
+                      ),
                     ],
                   ),
                 ),

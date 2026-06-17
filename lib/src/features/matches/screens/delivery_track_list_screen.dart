@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_message.dart';
 import '../../chat/screens/chat_screen.dart';
 import '../../home/cubit/user_mode_cubit.dart';
 import '../cubit/delivery_track_cubit.dart';
@@ -33,8 +34,9 @@ class _DeliveryTrackListScreenState extends State<DeliveryTrackListScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
     final mode = context.watch<UserModeCubit>().state;
     final viewerIsCarrier = mode == UserMode.carrier;
 
@@ -64,6 +66,15 @@ class _DeliveryTrackListScreenState extends State<DeliveryTrackListScreen> {
               ),
             );
           }
+          if (state.error != null && state.data == null) {
+            return Center(
+              child: AppErrorState(
+                title: 'Could not load deliveries',
+                message: state.error!,
+                onRetry: () => context.read<DeliveryTrackCubit>().reload(),
+              ),
+            );
+          }
 
           final data = state.data;
           final items = data?.filtered(_filter) ?? const [];
@@ -85,26 +96,28 @@ class _DeliveryTrackListScreenState extends State<DeliveryTrackListScreen> {
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 12,
-                            fontWeight:
-                                selected ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
                             color: selected
                                 ? Colors.white
                                 : (isDark
-                                    ? AppColors.darkTextSecondary
-                                    : AppColors.textSecondary),
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.textSecondary),
                           ),
                         ),
                         selected: selected,
                         showCheckmark: false,
                         selectedColor: AppColors.primary,
-                        backgroundColor:
-                            isDark ? AppColors.darkSurface : Colors.white,
+                        backgroundColor: isDark
+                            ? AppColors.darkSurface
+                            : Colors.white,
                         side: BorderSide(
                           color: selected
                               ? AppColors.primary
                               : (isDark
-                                  ? AppColors.darkBorder
-                                  : AppColors.border),
+                                    ? AppColors.darkBorder
+                                    : AppColors.border),
                         ),
                         onSelected: (_) => setState(() => _filter = f),
                       ),
@@ -127,7 +140,6 @@ class _DeliveryTrackListScreenState extends State<DeliveryTrackListScreen> {
               Expanded(
                 child: items.isEmpty
                     ? _EmptyFilterState(
-                        isDark: isDark,
                         filter: _filter,
                         onRefresh: () =>
                             context.read<DeliveryTrackCubit>().reload(),
@@ -168,23 +180,13 @@ class _DeliveryTrackListScreenState extends State<DeliveryTrackListScreen> {
 }
 
 class _EmptyFilterState extends StatelessWidget {
-  final bool isDark;
   final DeliveryTrackFilter filter;
   final Future<void> Function() onRefresh;
 
-  const _EmptyFilterState({
-    required this.isDark,
-    required this.filter,
-    required this.onRefresh,
-  });
+  const _EmptyFilterState({required this.filter, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: onRefresh,
@@ -192,36 +194,12 @@ class _EmptyFilterState extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           SizedBox(height: MediaQuery.of(context).size.height * 0.22),
-          Icon(
-            Icons.local_shipping_outlined,
-            size: 52,
-            color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
-          ),
-          const SizedBox(height: 12),
-          Center(
-            child: Text(
-              filter == DeliveryTrackFilter.all
-                  ? 'No active deliveries'
-                  : 'No ${filter.label.toLowerCase()} deliveries',
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: textPrimary,
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Center(
-            child: Text(
-              'Deliveries appear here after pickup and while en route.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 13,
-                color: textSecondary,
-              ),
-            ),
+          AppEmptyState(
+            icon: Icons.local_shipping_outlined,
+            title: filter == DeliveryTrackFilter.all
+                ? 'No active deliveries'
+                : 'No ${filter.label.toLowerCase()} deliveries',
+            message: 'Deliveries appear here after pickup and while en route.',
           ),
         ],
       ),

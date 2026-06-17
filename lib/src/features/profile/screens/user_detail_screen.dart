@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_message.dart';
 import '../../offers/widgets/airpick_bubble_shell.dart';
 import '../../offers/widgets/form_widgets.dart';
 import '../cubit/current_user_cubit.dart';
@@ -42,14 +43,14 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   _FormBaseline? _baseline;
 
   List<TextEditingController> get _textControllers => [
-        _firstName,
-        _middleName,
-        _lastName,
-        _city,
-        _state,
-        _country,
-        _bio,
-      ];
+    _firstName,
+    _middleName,
+    _lastName,
+    _city,
+    _state,
+    _country,
+    _bio,
+  ];
 
   @override
   void initState() {
@@ -112,15 +113,15 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   }
 
   _FormBaseline _currentFormValues() => _FormBaseline(
-        firstName: _firstName.text.trim(),
-        middleName: _middleName.text.trim(),
-        lastName: _lastName.text.trim(),
-        city: _city.text.trim(),
-        state: _state.text.trim(),
-        country: _country.text.trim(),
-        bio: _bio.text.trim(),
-        dob: _dob,
-      );
+    firstName: _firstName.text.trim(),
+    middleName: _middleName.text.trim(),
+    lastName: _lastName.text.trim(),
+    city: _city.text.trim(),
+    state: _state.text.trim(),
+    country: _country.text.trim(),
+    bio: _bio.text.trim(),
+    dob: _dob,
+  );
 
   void _captureBaseline() {
     _baseline = _currentFormValues();
@@ -155,8 +156,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
       if (!mounted) return;
       final current = context.read<CurrentUserCubit>().state;
       if (current != null) {
-        final updated =
-            ProfileSnapshot.fromDetail(detail, current: current);
+        final updated = ProfileSnapshot.fromDetail(detail, current: current);
         context.read<CurrentUserCubit>().updateProfile(updated);
         _snapshot = updated;
       }
@@ -216,7 +216,9 @@ class _UserDetailScreenState extends State<UserDetailScreen>
         SnackBar(
           content: Text(validationError),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -235,14 +237,15 @@ class _UserDetailScreenState extends State<UserDetailScreen>
         profilePictureUrl: _snapshot?.profilePictureUrl,
         dob: formatProfileDob(_dob!),
       );
-      final detail =
-          await context.read<UserRepository>().updateUserProfile(request);
+      final detail = await context.read<UserRepository>().updateUserProfile(
+        request,
+      );
       if (!mounted) return;
       context.read<CurrentUserCubit>().applySavedDetails(
-            request: request,
-            detail: detail,
-            emailFallback: _email,
-          );
+        request: request,
+        detail: detail,
+        emailFallback: _email,
+      );
       _snapshot = context.read<CurrentUserCubit>().state;
       _applyDetail(detail);
       setState(() {
@@ -296,184 +299,230 @@ class _UserDetailScreenState extends State<UserDetailScreen>
               child: CircularProgressIndicator(color: AppColors.primary),
             )
           : _error != null && _email == null
-              ? _ErrorBody(message: _error!, onRetry: _load)
-              : AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, anim) => FadeTransition(
-                    opacity: anim,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.06),
-                        end: Offset.zero,
-                      ).animate(anim),
-                      child: child,
-                    ),
-                  ),
-                  child: _showSuccess
-                      ? BubbleSuccessScreen(
-                          key: const ValueKey('success'),
-                          isDark: isDark,
-                          onDismiss: () => Navigator.pop(context),
-                          title: 'Profile Updated!',
-                          subtitle: 'Your details have been saved.',
-                        )
-                      : Column(
-                          key: const ValueKey('form'),
-                          children: [
-                            Expanded(
-                              child: AnimatedOpacity(
-                                opacity: _showForm ? 1 : 0,
-                                duration: const Duration(milliseconds: 350),
-                                curve: Curves.easeOut,
-                                child: ListView(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                                  children: [
-                            if (_error != null) ...[
-                              const SizedBox(height: 12),
-                              _AnimatedBlock(
-                                animation: _enterCtrl,
-                                interval: const Interval(0.1, 0.3),
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.warning
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: AppColors.warning
-                                          .withValues(alpha: 0.25),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.info_outline_rounded,
-                                          size: 18, color: AppColors.warning),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _error!,
-                                          style: const TextStyle(
-                                            fontFamily: 'Manrope',
-                                            fontSize: 12,
-                                            color: AppColors.warning,
+          ? AppErrorState(
+              title: 'Could not load profile',
+              message: _error!,
+              onRetry: _load,
+            )
+          : AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.06),
+                    end: Offset.zero,
+                  ).animate(anim),
+                  child: child,
+                ),
+              ),
+              child: _showSuccess
+                  ? BubbleSuccessScreen(
+                      key: const ValueKey('success'),
+                      isDark: isDark,
+                      onDismiss: () => Navigator.pop(context),
+                      title: 'Profile Updated!',
+                      subtitle: 'Your details have been saved.',
+                    )
+                  : Column(
+                      key: const ValueKey('form'),
+                      children: [
+                        Expanded(
+                          child: AnimatedOpacity(
+                            opacity: _showForm ? 1 : 0,
+                            duration: const Duration(milliseconds: 350),
+                            curve: Curves.easeOut,
+                            child: ListView(
+                              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                              children: [
+                                if (_error != null) ...[
+                                  const SizedBox(height: 12),
+                                  _AnimatedBlock(
+                                    animation: _enterCtrl,
+                                    interval: const Interval(0.1, 0.3),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.warning.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppColors.warning.withValues(
+                                            alpha: 0.25,
                                           ),
                                         ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.info_outline_rounded,
+                                            size: 18,
+                                            color: AppColors.warning,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              _error!,
+                                              style: const TextStyle(
+                                                fontFamily: 'Manrope',
+                                                fontSize: 12,
+                                                color: AppColors.warning,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 24),
+                                _AnimatedBlock(
+                                  animation: _enterCtrl,
+                                  interval: const Interval(0.15, 0.45),
+                                  child: _SectionHeader(
+                                    title: 'Personal',
+                                    icon: Icons.person_outline_rounded,
+                                    isDark: isDark,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                _field(
+                                  0.2,
+                                  isDark,
+                                  'First name *',
+                                  _firstName,
+                                  hint: 'First name',
+                                ),
+                                _field(
+                                  0.25,
+                                  isDark,
+                                  'Middle name',
+                                  _middleName,
+                                  hint: 'Optional',
+                                ),
+                                _field(
+                                  0.3,
+                                  isDark,
+                                  'Last name *',
+                                  _lastName,
+                                  hint: 'Last name',
+                                ),
+                                _AnimatedBlock(
+                                  animation: _enterCtrl,
+                                  interval: const Interval(0.32, 0.52),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 16),
+                                      FormLabel(
+                                        'Date of birth *',
+                                        isDark: isDark,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      DateTimeTile(
+                                        isDark: isDark,
+                                        label: 'Date of birth',
+                                        value: _dob,
+                                        onTap: _pickDob,
+                                      ),
+                                      if (_dob != null) ...[
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          DateFormat(
+                                            'EEEE, MMMM d, yyyy',
+                                          ).format(_dob!),
+                                          style: TextStyle(
+                                            fontFamily: 'Manrope',
+                                            fontSize: 11,
+                                            color: isDark
+                                                ? AppColors.darkTextTertiary
+                                                : AppColors.textTertiary,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 28),
+                                _AnimatedBlock(
+                                  animation: _enterCtrl,
+                                  interval: const Interval(0.38, 0.62),
+                                  child: _SectionHeader(
+                                    title: 'Location',
+                                    icon: Icons.location_on_outlined,
+                                    isDark: isDark,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                _field(
+                                  0.42,
+                                  isDark,
+                                  'City *',
+                                  _city,
+                                  hint: 'City',
+                                ),
+                                _field(
+                                  0.47,
+                                  isDark,
+                                  'State / Region',
+                                  _state,
+                                  hint: 'Optional',
+                                ),
+                                _field(
+                                  0.52,
+                                  isDark,
+                                  'Country *',
+                                  _country,
+                                  hint: 'Country',
+                                ),
+                                const SizedBox(height: 28),
+                                _AnimatedBlock(
+                                  animation: _enterCtrl,
+                                  interval: const Interval(0.55, 0.78),
+                                  child: _SectionHeader(
+                                    title: 'About',
+                                    icon: Icons.notes_rounded,
+                                    isDark: isDark,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                _AnimatedBlock(
+                                  animation: _enterCtrl,
+                                  interval: const Interval(0.6, 0.85),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      FormLabel('Bio', isDark: isDark),
+                                      const SizedBox(height: 6),
+                                      FormTextField(
+                                        isDark: isDark,
+                                        hint:
+                                            'Tell others a little about yourself',
+                                        controller: _bio,
+                                        maxLines: 4,
+                                        onChanged: (_) {},
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
-                            ],
-                            const SizedBox(height: 24),
-                            _AnimatedBlock(
-                              animation: _enterCtrl,
-                              interval: const Interval(0.15, 0.45),
-                              child: _SectionHeader(
-                                title: 'Personal',
-                                icon: Icons.person_outline_rounded,
-                                isDark: isDark,
-                              ),
+                              ],
                             ),
-                            const SizedBox(height: 12),
-                            _field(0.2, isDark, 'First name *', _firstName,
-                                hint: 'First name'),
-                            _field(0.25, isDark, 'Middle name', _middleName,
-                                hint: 'Optional'),
-                            _field(0.3, isDark, 'Last name *', _lastName,
-                                hint: 'Last name'),
-                            _AnimatedBlock(
-                              animation: _enterCtrl,
-                              interval: const Interval(0.32, 0.52),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 16),
-                                  FormLabel('Date of birth *', isDark: isDark),
-                                  const SizedBox(height: 6),
-                                  DateTimeTile(
-                                    isDark: isDark,
-                                    label: 'Date of birth',
-                                    value: _dob,
-                                    onTap: _pickDob,
-                                  ),
-                                  if (_dob != null) ...[
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      DateFormat('EEEE, MMMM d, yyyy')
-                                          .format(_dob!),
-                                      style: TextStyle(
-                                        fontFamily: 'Manrope',
-                                        fontSize: 11,
-                                        color: isDark
-                                            ? AppColors.darkTextTertiary
-                                            : AppColors.textTertiary,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            _AnimatedBlock(
-                              animation: _enterCtrl,
-                              interval: const Interval(0.38, 0.62),
-                              child: _SectionHeader(
-                                title: 'Location',
-                                icon: Icons.location_on_outlined,
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            _field(0.42, isDark, 'City *', _city, hint: 'City'),
-                            _field(0.47, isDark, 'State / Region', _state,
-                                hint: 'Optional'),
-                            _field(0.52, isDark, 'Country *', _country,
-                                hint: 'Country'),
-                            const SizedBox(height: 28),
-                            _AnimatedBlock(
-                              animation: _enterCtrl,
-                              interval: const Interval(0.55, 0.78),
-                              child: _SectionHeader(
-                                title: 'About',
-                                icon: Icons.notes_rounded,
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            _AnimatedBlock(
-                              animation: _enterCtrl,
-                              interval: const Interval(0.6, 0.85),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  FormLabel('Bio', isDark: isDark),
-                                  const SizedBox(height: 6),
-                                  FormTextField(
-                                    isDark: isDark,
-                                    hint: 'Tell others a little about yourself',
-                                    controller: _bio,
-                                    maxLines: 4,
-                                    onChanged: (_) {},
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                        _SaveBar(
+                          saving: _saving,
+                          hasChanges: _hasChanges,
+                          onSave: _save,
+                          isDark: isDark,
+                        ),
+                      ],
                     ),
-                    _SaveBar(
-                      saving: _saving,
-                      hasChanges: _hasChanges,
-                      onSave: _save,
-                      isDark: isDark,
-                    ),
-                  ],
-                ),
-                ),
+            ),
     );
   }
 
@@ -551,8 +600,9 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
 
     return Row(
       children: [
@@ -627,10 +677,10 @@ class _SaveBar extends StatelessWidget {
             color: saving
                 ? AppColors.primary.withValues(alpha: 0.5)
                 : enabled
-                    ? null
-                    : (isDark
-                        ? AppColors.darkSurface
-                        : AppColors.border.withValues(alpha: 0.45)),
+                ? null
+                : (isDark
+                      ? AppColors.darkSurface
+                      : AppColors.border.withValues(alpha: 0.45)),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Material(
@@ -657,8 +707,8 @@ class _SaveBar extends StatelessWidget {
                           color: enabled
                               ? Colors.white
                               : (isDark
-                                  ? AppColors.darkTextTertiary
-                                  : AppColors.textTertiary),
+                                    ? AppColors.darkTextTertiary
+                                    : AppColors.textTertiary),
                           letterSpacing: -0.2,
                         ),
                       ),
@@ -707,54 +757,13 @@ class _FormBaseline {
 
   @override
   int get hashCode => Object.hash(
-        firstName,
-        middleName,
-        lastName,
-        city,
-        state,
-        country,
-        bio,
-        dob,
-      );
-}
-
-class _ErrorBody extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorBody({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 48, color: AppColors.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontFamily: 'Manrope'),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onRetry,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Retry',
-                  style: TextStyle(fontFamily: 'Manrope')),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    firstName,
+    middleName,
+    lastName,
+    city,
+    state,
+    country,
+    bio,
+    dob,
+  );
 }

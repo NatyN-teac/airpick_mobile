@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_message.dart';
 import '../../items/models/item_models.dart';
 
 // ── Entry point — cubit-agnostic ──────────────────────────────────────────────
@@ -14,7 +15,7 @@ Future<List<ItemModel>> showItemPickerDialog(
   String? itemsError,
   required VoidCallback onRetry,
   required Future<ItemModel?> Function(String name, ItemCategory category)
-      onCreate,
+  onCreate,
 }) async {
   final result = await showDialog<List<ItemModel>>(
     context: context,
@@ -37,7 +38,8 @@ class ItemPickerDialog extends StatefulWidget {
   final bool isLoading;
   final String? itemsError;
   final VoidCallback onRetry;
-  final Future<ItemModel?> Function(String name, ItemCategory category) onCreate;
+  final Future<ItemModel?> Function(String name, ItemCategory category)
+  onCreate;
 
   const ItemPickerDialog({
     super.key,
@@ -113,10 +115,12 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
     final surface = isDark ? AppColors.darkBackground : AppColors.surface;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
 
@@ -150,8 +154,11 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                   ),
                   if (_showCreate)
                     IconButton(
-                      icon: Icon(Icons.arrow_back_rounded,
-                          color: textSecondary, size: 20),
+                      icon: Icon(
+                        Icons.arrow_back_rounded,
+                        color: textSecondary,
+                        size: 20,
+                      ),
                       onPressed: () => setState(() {
                         _showCreate = false;
                         _createError = null;
@@ -160,8 +167,11 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                     )
                   else
                     IconButton(
-                      icon: Icon(Icons.close_rounded,
-                          color: textSecondary, size: 20),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: textSecondary,
+                        size: 20,
+                      ),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                 ],
@@ -177,36 +187,47 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                   controller: _searchCtrl,
                   onChanged: (v) => setState(() => _query = v),
                   style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 13,
-                      color: textPrimary),
+                    fontFamily: 'Manrope',
+                    fontSize: 13,
+                    color: textPrimary,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Search items…',
                     hintStyle: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 13,
-                        color: isDark
-                            ? AppColors.darkTextTertiary
-                            : AppColors.textTertiary),
-                    prefixIcon: Icon(Icons.search_rounded,
-                        size: 18,
-                        color: isDark
-                            ? AppColors.darkTextTertiary
-                            : AppColors.textTertiary),
+                      fontFamily: 'Manrope',
+                      fontSize: 13,
+                      color: isDark
+                          ? AppColors.darkTextTertiary
+                          : AppColors.textTertiary,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      size: 18,
+                      color: isDark
+                          ? AppColors.darkTextTertiary
+                          : AppColors.textTertiary,
+                    ),
                     filled: true,
                     fillColor: surface,
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: border)),
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: border),
+                    ),
                     enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: border)),
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: border),
+                    ),
                     focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                            color: AppColors.primary, width: 1.5)),
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 1.5,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -217,37 +238,40 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                 child: widget.isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: AppColors.primary))
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
                     : widget.itemsError != null
-                        ? _ErrorView(
-                            error: widget.itemsError!,
-                            onRetry: widget.onRetry,
-                            isDark: isDark,
-                          )
-                        : filtered.isEmpty
-                            ? Center(
-                                child: Text(
-                                  _query.isEmpty
-                                      ? 'No items available'
-                                      : 'No results for "$_query"',
-                                  style: TextStyle(
-                                      fontFamily: 'Manrope',
-                                      fontSize: 13,
-                                      color: textSecondary),
-                                ),
-                              )
-                            : _ItemList(
-                                grouped: grouped,
-                                selectedIds: _selectedIds,
-                                isDark: isDark,
-                                onToggle: (item) => setState(() {
-                                  if (_selectedIds.contains(item.id)) {
-                                    _selectedIds.remove(item.id);
-                                  } else {
-                                    _selectedIds.add(item.id);
-                                  }
-                                }),
-                              ),
+                    ? AppErrorState(
+                        title: 'Could not load items',
+                        message: widget.itemsError!,
+                        onRetry: widget.onRetry,
+                        padding: const EdgeInsets.all(24),
+                      )
+                    : filtered.isEmpty
+                    ? AppEmptyState(
+                        icon: Icons.inventory_2_outlined,
+                        title: _query.isEmpty
+                            ? 'No items available'
+                            : 'No matching items',
+                        message: _query.isEmpty
+                            ? 'Items will appear here when they are available.'
+                            : 'No results for "$_query". Try another item name.',
+                        padding: const EdgeInsets.all(24),
+                      )
+                    : _ItemList(
+                        grouped: grouped,
+                        selectedIds: _selectedIds,
+                        isDark: isDark,
+                        onToggle: (item) => setState(() {
+                          if (_selectedIds.contains(item.id)) {
+                            _selectedIds.remove(item.id);
+                          } else {
+                            _selectedIds.add(item.id);
+                          }
+                        }),
+                      ),
               ),
 
               // ── Footer: Done + Add custom ─────────────────────────
@@ -260,24 +284,22 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                           ? null
                           : () {
                               final selected = widget.availableItems
-                                  .where(
-                                      (i) => _selectedIds.contains(i.id))
+                                  .where((i) => _selectedIds.contains(i.id))
                                   .toList();
                               Navigator.of(context).pop(selected);
                             },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         width: double.infinity,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           gradient: _selectedIds.isNotEmpty
                               ? AppColors.primaryGradient
                               : null,
                           color: _selectedIds.isEmpty
                               ? (isDark
-                                  ? AppColors.darkBorder
-                                  : const Color(0xFFE2E8F0))
+                                    ? AppColors.darkBorder
+                                    : const Color(0xFFE2E8F0))
                               : null,
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -303,8 +325,11 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_rounded,
-                              size: 14, color: AppColors.primary),
+                          Icon(
+                            Icons.add_rounded,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             "Can't find it? Add custom",
@@ -334,31 +359,40 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                       TextField(
                         controller: _nameCtrl,
                         style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 13,
-                            color: textPrimary),
+                          fontFamily: 'Manrope',
+                          fontSize: 13,
+                          color: textPrimary,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'e.g. Nike Air Max',
                           hintStyle: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 13,
-                              color: isDark
-                                  ? AppColors.darkTextTertiary
-                                  : AppColors.textTertiary),
+                            fontFamily: 'Manrope',
+                            fontSize: 13,
+                            color: isDark
+                                ? AppColors.darkTextTertiary
+                                : AppColors.textTertiary,
+                          ),
                           filled: true,
                           fillColor: surface,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: border)),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: border),
+                          ),
                           enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: border)),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: border),
+                          ),
                           focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                  color: AppColors.primary, width: 1.5)),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -371,32 +405,45 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                             ? AppColors.darkSurface
                             : Colors.white,
                         style: TextStyle(
-                            fontFamily: 'Manrope',
-                            fontSize: 13,
-                            color: textPrimary),
-                        icon: Icon(Icons.keyboard_arrow_down_rounded,
-                            size: 18, color: textSecondary),
+                          fontFamily: 'Manrope',
+                          fontSize: 13,
+                          color: textPrimary,
+                        ),
+                        icon: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 18,
+                          color: textSecondary,
+                        ),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: surface,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: border)),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: border),
+                          ),
                           enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: border)),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: border),
+                          ),
                           focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(
-                                  color: AppColors.primary, width: 1.5)),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                          ),
                         ),
                         items: ItemCategory.values
-                            .map((c) => DropdownMenuItem(
-                                  value: c,
-                                  child: Text(c.label),
-                                ))
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c,
+                                child: Text(c.label),
+                              ),
+                            )
                             .toList(),
                         onChanged: (v) {
                           if (v != null) {
@@ -407,26 +454,27 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                       const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
-                          color:
-                              AppColors.primary.withValues(alpha: 0.06),
+                          color: AppColors.primary.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.info_outline_rounded,
-                                size: 14,
-                                color: AppColors.primary
-                                    .withValues(alpha: 0.7)),
+                            Icon(
+                              Icons.info_outline_rounded,
+                              size: 14,
+                              color: AppColors.primary.withValues(alpha: 0.7),
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Measured in ${_newCategory.defaultMeasurement.$2.label}',
                               style: TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 12,
-                                color: AppColors.primary
-                                    .withValues(alpha: 0.8),
+                                color: AppColors.primary.withValues(alpha: 0.8),
                               ),
                             ),
                           ],
@@ -434,11 +482,14 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                       ),
                       if (_createError != null) ...[
                         const SizedBox(height: 10),
-                        Text(_createError!,
-                            style: const TextStyle(
-                                fontFamily: 'Manrope',
-                                fontSize: 12,
-                                color: AppColors.error)),
+                        Text(
+                          _createError!,
+                          style: const TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 12,
+                            color: AppColors.error,
+                          ),
+                        ),
                       ],
                       const SizedBox(height: 20),
                       SizedBox(
@@ -446,8 +497,7 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                         child: GestureDetector(
                           onTap: _creating ? null : _submit,
                           child: Container(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 13),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
                             decoration: BoxDecoration(
                               gradient: AppColors.primaryGradient,
                               borderRadius: BorderRadius.circular(12),
@@ -458,8 +508,9 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                                       width: 18,
                                       height: 18,
                                       child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white),
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   )
                                 : const Text(
@@ -504,19 +555,24 @@ class _ItemList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final textTertiary =
-        isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
+    final textTertiary = isDark
+        ? AppColors.darkTextTertiary
+        : AppColors.textTertiary;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
     final categories = grouped.keys.toList();
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: categories.fold<int>(
-          0, (sum, cat) => sum + 1 + (grouped[cat]?.length ?? 0)),
+        0,
+        (sum, cat) => sum + 1 + (grouped[cat]?.length ?? 0),
+      ),
       itemBuilder: (_, index) {
         int cursor = 0;
         for (final cat in categories) {
@@ -546,14 +602,15 @@ class _ItemList extends StatelessWidget {
                 duration: const Duration(milliseconds: 150),
                 margin: const EdgeInsets.only(bottom: 6),
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 10),
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: selected
                       ? AppColors.primary.withValues(alpha: 0.07)
                       : Colors.transparent,
                   border: Border.all(
-                    color:
-                        selected ? AppColors.primary : border,
+                    color: selected ? AppColors.primary : border,
                     width: selected ? 1.5 : 1,
                   ),
                   borderRadius: BorderRadius.circular(10),
@@ -573,13 +630,16 @@ class _ItemList extends StatelessWidget {
                           color: selected
                               ? AppColors.primary
                               : (isDark
-                                  ? AppColors.darkBorder
-                                  : AppColors.border),
+                                    ? AppColors.darkBorder
+                                    : AppColors.border),
                         ),
                       ),
                       child: selected
-                          ? const Icon(Icons.check_rounded,
-                              size: 13, color: Colors.white)
+                          ? const Icon(
+                              Icons.check_rounded,
+                              size: 13,
+                              color: Colors.white,
+                            )
                           : null,
                     ),
                     const SizedBox(width: 10),
@@ -615,61 +675,6 @@ class _ItemList extends StatelessWidget {
   }
 }
 
-// ── Error view ────────────────────────────────────────────────────────────────
-
-class _ErrorView extends StatelessWidget {
-  final String error;
-  final VoidCallback onRetry;
-  final bool isDark;
-
-  const _ErrorView(
-      {required this.error,
-      required this.onRetry,
-      required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 36, color: AppColors.error),
-            const SizedBox(height: 12),
-            Text(error,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 12,
-                    color: AppColors.error)),
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: onRetry,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text('Retry',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    )),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 class _DialogLabel extends StatelessWidget {
@@ -679,15 +684,13 @@ class _DialogLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        text,
-        style: TextStyle(
-          fontFamily: 'Manrope',
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.3,
-          color: isDark
-              ? AppColors.darkTextSecondary
-              : AppColors.textSecondary,
-        ),
-      );
+    text,
+    style: TextStyle(
+      fontFamily: 'Manrope',
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.3,
+      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+    ),
+  );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
+import '../../../core/widgets/state_message.dart';
 import '../cubit/browse_offers_cubit.dart';
 import '../models/offer_response.dart';
 import '../repository/offer_repository.dart';
@@ -42,44 +43,19 @@ class _BrowseOffersPreviewState extends State<BrowseOffersPreview> {
           return const SkeletonPreviewList(count: 3);
         }
         if (state.error != null && state.offers.isEmpty) {
-          return Padding(
+          return AppErrorState(
+            title: 'Could not load carriers',
+            message: state.error!,
+            onRetry: () => context.read<BrowseOffersCubit>().load(force: true),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: Column(
-              children: [
-                Text(
-                  'Could not load carriers.',
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 13,
-                    color: widget.isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () =>
-                      context.read<BrowseOffersCubit>().load(force: true),
-                  child: const Text('Retry',
-                      style: TextStyle(fontFamily: 'Manrope')),
-                ),
-              ],
-            ),
           );
         }
         if (state.offers.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: Text(
-              'No carriers available right now.',
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 13,
-                color: widget.isDark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.textSecondary,
-              ),
-            ),
+          return const AppEmptyState(
+            icon: Icons.flight_takeoff_rounded,
+            title: 'No carriers available',
+            message: 'Available carriers will show here when they post trips.',
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           );
         }
         final preview = state.offers.take(3).toList();
@@ -122,8 +98,9 @@ class BrowseOffersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
 
     return Scaffold(
       backgroundColor: bg,
@@ -151,17 +128,23 @@ class BrowseOffersScreen extends StatelessWidget {
           if (state.loading && state.offers.isEmpty) {
             return const SkeletonList();
           }
-          if (state.offers.isEmpty) {
+          if (state.error != null && state.offers.isEmpty) {
             return Center(
-              child: Text(
-                'No carriers available.',
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 13,
-                  color: isDark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.textSecondary,
-                ),
+              child: AppErrorState(
+                title: 'Could not load carriers',
+                message: state.error!,
+                onRetry: () =>
+                    context.read<BrowseOffersCubit>().load(force: true),
+              ),
+            );
+          }
+          if (state.offers.isEmpty) {
+            return const Center(
+              child: AppEmptyState(
+                icon: Icons.flight_takeoff_rounded,
+                title: 'No carriers available',
+                message:
+                    'Available carriers will show here when they post trips.',
               ),
             );
           }
@@ -178,8 +161,7 @@ class BrowseOffersScreen extends StatelessWidget {
                 child: BrowseOfferCard(
                   offer: state.offers[i],
                   isDark: isDark,
-                  onMatch: () =>
-                      launchBrowseMatch(context, state.offers[i]),
+                  onMatch: () => launchBrowseMatch(context, state.offers[i]),
                 ),
               ),
             ),

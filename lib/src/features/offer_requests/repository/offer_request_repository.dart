@@ -1,3 +1,5 @@
+import 'package:logger/logger.dart';
+
 import '../../../core/network/api_client.dart';
 import '../../matches/models/match_models.dart';
 import '../models/offer_request_models.dart';
@@ -9,16 +11,20 @@ class OfferRequestRepository {
   OfferRequestRepository(this._client);
 
   Future<OfferRequestResponse> createOfferRequest(
-      CreateOfferRequestRequest request) async {
-    final response =
-        await _client.post('/offer-requests', request.toJson());
+    CreateOfferRequestRequest request,
+  ) async {
+    final response = await _client.post('/offer-requests', request.toJson());
     return OfferRequestResponse.fromJson(_payload(response));
   }
 
   Future<OfferRequestResponse> updateOfferRequest(
-      String id, UpdateOfferRequestRequest request) async {
-    final response =
-        await _client.patch('/offer-requests/$id', request.toJson());
+    String id,
+    UpdateOfferRequestRequest request,
+  ) async {
+    final response = await _client.patch(
+      '/offer-requests/$id',
+      request.toJson(),
+    );
     return OfferRequestResponse.fromJson(_payload(response));
   }
 
@@ -26,8 +32,7 @@ class OfferRequestRepository {
     final response = await _client.get('/offer-requests/me');
     final list = (response['content'] ?? response['data']) as List<dynamic>;
     return list
-        .map((e) =>
-            OfferRequestResponse.fromJson(e as Map<String, dynamic>))
+        .map((e) => OfferRequestResponse.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
@@ -42,8 +47,7 @@ class OfferRequestRepository {
         'sourceCountry': sourceCountry,
       if (destinationCountry != null && destinationCountry.isNotEmpty)
         'destinationCountry': destinationCountry,
-      if (sourceCity != null && sourceCity.isNotEmpty)
-        'sourceCity': sourceCity,
+      if (sourceCity != null && sourceCity.isNotEmpty) 'sourceCity': sourceCity,
     };
     final query = params.isEmpty
         ? ''
@@ -51,8 +55,33 @@ class OfferRequestRepository {
     final response = await _client.get('/offer-requests/browse$query');
     final list = (response['content'] ?? response['data']) as List<dynamic>;
     return list
-        .map((e) =>
-            OfferRequestResponse.fromJson(e as Map<String, dynamic>))
+        .map((e) => OfferRequestResponse.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  // GET /api/v1/matches/track/shipper/search?sourceCountry=...
+  Future<List<OfferRequestResponse>> searchShipperRequests({
+    String? sourceCountry,
+    String? sourceCity,
+    String? destinationCountry,
+  }) async {
+    final params = <String, String>{
+      if (sourceCountry != null && sourceCountry.isNotEmpty)
+        'sourceCountry': sourceCountry.trim(),
+      if (sourceCity != null && sourceCity.isNotEmpty)
+        'sourceCity': sourceCity.trim(),
+      if (destinationCountry != null && destinationCountry.isNotEmpty)
+        'destinationCountry': destinationCountry.trim(),
+    };
+
+    final query = params.isEmpty
+        ? ''
+        : '?${params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&')}';
+    final response = await _client.get('/matches/track/shipper/search$query');
+    final list =
+        (response['content'] ?? response['data'] ?? []) as List<dynamic>;
+    return list
+        .map((e) => OfferRequestResponse.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
@@ -62,9 +91,13 @@ class OfferRequestRepository {
 
   // Carrier sends a proposal against a request.
   Future<void> createProposal(
-      String requestId, CreateProposalRequest request) async {
+    String requestId,
+    CreateProposalRequest request,
+  ) async {
     await _client.post(
-        '/offer-requests/$requestId/proposals', request.toJson());
+      '/offer-requests/$requestId/proposals',
+      request.toJson(),
+    );
   }
 
   // Carrier withdraws a sent proposal.

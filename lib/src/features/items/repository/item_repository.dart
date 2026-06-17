@@ -12,7 +12,6 @@ class ItemRepository {
   Future<List<ItemModel>> fetchItems() async {
     if (_cache != null) return _cache!;
     final response = await _client.get('/items');
-    debugPrint('response is: $response');
     _cache = (response['content'] as List<dynamic>)
         .map((e) => ItemModel.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -31,8 +30,9 @@ class ItemRepository {
       'measurementType': measurementType.apiValue,
       'measurementUnit': measurementUnit.apiValue,
     });
-    final created =
-        ItemModel.fromJson(response['data'] as Map<String, dynamic>);
+    final created = ItemModel.fromJson(
+      response['data'] as Map<String, dynamic>,
+    );
     _cache = [...?_cache, created];
     return created;
   }

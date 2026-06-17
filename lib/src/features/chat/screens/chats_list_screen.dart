@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
+import '../../../core/widgets/state_message.dart';
 import '../../home/cubit/user_mode_cubit.dart';
 import '../../home/cubit/engagement_cubit.dart';
 import '../../home/models/engagement_models.dart';
@@ -39,42 +40,36 @@ class ChatsListScreen extends StatelessWidget {
   static List<ChatSummary> _summariesFromEngagements(EngagementState state) {
     final matches = state.response?.matchedOffers ?? const <MatchEngagement>[];
     final isCarrier = state.response?.mode.toUpperCase() == 'CARRIER';
-    return matches
-        .where((match) => match.hasAvailableChat)
-        .map(
-          (m) {
-            final other = m.otherParty(viewerIsCarrier: isCarrier);
-            return ChatSummary(
-              matchId: m.id,
-              title: m.matchedItems.isNotEmpty
-                  ? m.matchedItems.map((i) => i.itemName).take(2).join(', ')
-                  : 'Match',
-              otherPartyName: other?.displayName,
-              otherPartyAvatarUrl: other?.profilePictureUrl,
-              lastMessage: m.status.replaceAll('_', ' '),
-              lastMessageAt: DateTime.tryParse(m.updatedAt),
-            );
-          },
-        )
-        .toList()
-      ..sort((a, b) {
-        final at = a.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bt = b.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return bt.compareTo(at);
-      });
+    return matches.where((match) => match.hasAvailableChat).map((m) {
+      final other = m.otherParty(viewerIsCarrier: isCarrier);
+      return ChatSummary(
+        matchId: m.id,
+        title: m.matchedItems.isNotEmpty
+            ? m.matchedItems.map((i) => i.itemName).take(2).join(', ')
+            : 'Match',
+        otherPartyName: other?.displayName,
+        otherPartyAvatarUrl: other?.profilePictureUrl,
+        lastMessage: m.status.replaceAll('_', ' '),
+        lastMessageAt: DateTime.tryParse(m.updatedAt),
+      );
+    }).toList()..sort((a, b) {
+      final at = a.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bt = b.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return bt.compareTo(at);
+    });
   }
 
   static List<ChatSummary> _resolveChats(
     ChatsListState chatsState,
     EngagementState engagementState,
-  ) =>
-      _summariesFromEngagements(engagementState);
+  ) => _summariesFromEngagements(engagementState);
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
 
     return BlocBuilder<ChatsListCubit, ChatsListState>(
       builder: (context, chatsState) {
@@ -107,30 +102,28 @@ class ChatsListScreen extends StatelessWidget {
                   child: loading
                       ? const SkeletonChatList()
                       : chats.isEmpty
-                          ? _EmptyState(
-                              isDark: isDark,
-                              onRefresh: () => _refresh(context),
-                            )
-                          : RefreshIndicator(
-                              color: AppColors.primary,
-                              onRefresh: () => _refresh(context),
-                              child: ListView.separated(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                padding:
-                                    const EdgeInsets.fromLTRB(12, 4, 12, 24),
-                                itemCount: chats.length,
-                                separatorBuilder: (context, _) =>
-                                    const SizedBox(height: 2),
-                                itemBuilder: (_, i) => _ChatTile(
-                                  summary: chats[i],
-                                  match: _matchFor(chats[i].matchId,
-                                      engagementState),
-                                  isDark: isDark,
-                                  viewerIsCarrier: viewerIsCarrier,
-                                  showUnread: false,
-                                ),
+                      ? _EmptyState(onRefresh: () => _refresh(context))
+                      : RefreshIndicator(
+                          color: AppColors.primary,
+                          onRefresh: () => _refresh(context),
+                          child: ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+                            itemCount: chats.length,
+                            separatorBuilder: (context, _) =>
+                                const SizedBox(height: 2),
+                            itemBuilder: (_, i) => _ChatTile(
+                              summary: chats[i],
+                              match: _matchFor(
+                                chats[i].matchId,
+                                engagementState,
                               ),
+                              isDark: isDark,
+                              viewerIsCarrier: viewerIsCarrier,
+                              showUnread: false,
                             ),
+                          ),
+                        ),
                 ),
               ],
             );
@@ -162,11 +155,14 @@ class _ChatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final partyName = summary.otherPartyName ??
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
+    final partyName =
+        summary.otherPartyName ??
         match?.otherParty(viewerIsCarrier: viewerIsCarrier)?.displayName;
     final avatarName = partyName ?? summary.title;
     final hasUnread = showUnread && summary.unreadCount > 0;
@@ -262,7 +258,9 @@ class _ChatTile extends StatelessWidget {
                 if (hasUnread)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 1),
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
                     constraints: const BoxConstraints(minWidth: 18),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
@@ -291,18 +289,12 @@ class _ChatTile extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  final bool isDark;
   final Future<void> Function() onRefresh;
 
-  const _EmptyState({required this.isDark, required this.onRefresh});
+  const _EmptyState({required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: onRefresh,
@@ -310,28 +302,10 @@ class _EmptyState extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           SizedBox(height: MediaQuery.of(context).size.height * 0.22),
-          Icon(Icons.chat_bubble_outline_rounded,
-              size: 56, color: textSecondary.withValues(alpha: 0.5)),
-          const SizedBox(height: 16),
-          Text(
-            'No conversations yet',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: textPrimary,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Matched deliveries will appear here.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 13,
-              color: textSecondary,
-            ),
+          const AppEmptyState(
+            icon: Icons.chat_bubble_outline_rounded,
+            title: 'No conversations yet',
+            message: 'Matched deliveries will appear here.',
           ),
         ],
       ),

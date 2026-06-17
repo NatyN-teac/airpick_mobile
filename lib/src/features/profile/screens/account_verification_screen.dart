@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_message.dart';
 import '../../offers/widgets/airpick_bubble_shell.dart';
 import '../cubit/account_verification_cubit.dart';
 import '../cubit/current_user_cubit.dart';
@@ -120,9 +121,12 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
           }
 
           if (state.status == AccountVerificationStatus.failure) {
-            return _FailureBody(
-              message: state.error ?? 'Failed to load verification status.',
-              onRetry: () => context.read<AccountVerificationCubit>().load(),
+            return Center(
+              child: AppErrorState(
+                title: 'Could not load verification',
+                message: state.error ?? 'Failed to load verification status.',
+                onRetry: () => context.read<AccountVerificationCubit>().load(),
+              ),
             );
           }
 
@@ -177,17 +181,25 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                           slivers: [
                             SliverToBoxAdapter(
                               child: Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  12,
+                                  20,
+                                  0,
+                                ),
                                 child: FadeTransition(
                                   opacity: _enterCtrl,
                                   child: SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0, 0.04),
-                                      end: Offset.zero,
-                                    ).animate(CurvedAnimation(
-                                      parent: _enterCtrl,
-                                      curve: Curves.easeOutCubic,
-                                    )),
+                                    position:
+                                        Tween<Offset>(
+                                          begin: const Offset(0, 0.04),
+                                          end: Offset.zero,
+                                        ).animate(
+                                          CurvedAnimation(
+                                            parent: _enterCtrl,
+                                            curve: Curves.easeOutCubic,
+                                          ),
+                                        ),
                                     child: Column(
                                       children: [
                                         VerificationHero(
@@ -200,7 +212,9 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                                           isDark: isDark,
                                         ),
                                         const SizedBox(height: 24),
-                                        VerificationChecklistCard(isDark: isDark),
+                                        VerificationChecklistCard(
+                                          isDark: isDark,
+                                        ),
                                         if (rejectionMessage != null) ...[
                                           const SizedBox(height: 16),
                                           VerificationRejectionCard(
@@ -234,7 +248,9 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                           color: Colors.black.withValues(alpha: 0.2),
                           child: Center(
                             child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 40),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 40,
+                              ),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
                                 vertical: 20,
@@ -341,8 +357,11 @@ class _VeriffStartBar extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.verified_user_outlined,
-                              color: Colors.white, size: 20),
+                          const Icon(
+                            Icons.verified_user_outlined,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             label,
@@ -372,47 +391,6 @@ class _VeriffStartBar extends StatelessWidget {
                     ? AppColors.darkTextTertiary
                     : AppColors.textTertiary,
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FailureBody extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _FailureBody({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 48, color: AppColors.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontFamily: 'Manrope'),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onRetry,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Retry',
-                  style: TextStyle(fontFamily: 'Manrope')),
             ),
           ],
         ),

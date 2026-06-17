@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_message.dart';
 import '../../matches/models/match_models.dart';
 import '../../matches/repository/match_repository.dart';
 import '../service/chat_socket.dart';
@@ -88,10 +89,12 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
 
     return BlocConsumer<ChatCubit, ChatState>(
       listenWhen: (p, c) => p.messages.length != c.messages.length,
@@ -154,8 +157,11 @@ class _ChatScreenState extends State<ChatScreen> {
             actions: [
               IconButton(
                 tooltip: 'Match details',
-                icon: const Icon(Icons.inventory_2_outlined,
-                    color: AppColors.primary, size: 20),
+                icon: const Icon(
+                  Icons.inventory_2_outlined,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
                 onPressed: () => _showMatchSheet(context, state),
               ),
               const SizedBox(width: 4),
@@ -194,7 +200,8 @@ class _ChatScreenState extends State<ChatScreen> {
               _Composer(
                 controller: _input,
                 isDark: isDark,
-                enabled: state.status == ChatStatus.ready &&
+                enabled:
+                    state.status == ChatStatus.ready &&
                     state.connState == ChatConnState.connected,
                 onSend: () {
                   context.read<ChatCubit>().send(_input.text);
@@ -211,51 +218,28 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _body(BuildContext context, ChatState state, bool isDark) {
     if (state.status == ChatStatus.loading) {
       return const Center(
-          child: CircularProgressIndicator(
-              strokeWidth: 2, color: AppColors.primary));
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: AppColors.primary,
+        ),
+      );
     }
     if (state.status == ChatStatus.error) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_rounded,
-                size: 36, color: AppColors.error),
-            const SizedBox(height: 10),
-            Text(state.error ?? 'Could not load chat',
-                style: const TextStyle(
-                    fontFamily: 'Manrope', fontSize: 13)),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => context.read<ChatCubit>().retry(),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text('Retry',
-                    style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white)),
-              ),
-            ),
-          ],
+        child: AppErrorState(
+          title: 'Could not load chat',
+          message: state.error ?? 'Could not load chat',
+          onRetry: () => context.read<ChatCubit>().retry(),
         ),
       );
     }
     if (state.messages.isEmpty) {
-      return Center(
-        child: Text('Say hello 👋',
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 14,
-              color: isDark
-                  ? AppColors.darkTextSecondary
-                  : AppColors.textSecondary,
-            )),
+      return const Center(
+        child: AppEmptyState(
+          icon: Icons.chat_bubble_outline_rounded,
+          title: 'No messages yet',
+          message: 'Start the conversation when you are ready.',
+        ),
       );
     }
     return ListView.builder(
@@ -306,12 +290,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Color _statusColor(ChatConnState s) => switch (s) {
-        ChatConnState.connected => AppColors.success,
-        ChatConnState.connecting ||
-        ChatConnState.reconnecting =>
-          AppColors.warning,
-        ChatConnState.disconnected => AppColors.textDisabled,
-      };
+    ChatConnState.connected => AppColors.success,
+    ChatConnState.connecting || ChatConnState.reconnecting => AppColors.warning,
+    ChatConnState.disconnected => AppColors.textDisabled,
+  };
 
   bool _sameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
@@ -338,22 +320,28 @@ class _StatusLine extends StatelessWidget {
         return Text(
           route!,
           style: TextStyle(
-              fontFamily: 'Manrope', fontSize: 11, color: textSecondary),
+            fontFamily: 'Manrope',
+            fontSize: 11,
+            color: textSecondary,
+          ),
           overflow: TextOverflow.ellipsis,
         );
       }
       return Text(
         itemSummary,
         style: TextStyle(
-            fontFamily: 'Manrope', fontSize: 11, color: textSecondary),
+          fontFamily: 'Manrope',
+          fontSize: 11,
+          color: textSecondary,
+        ),
         overflow: TextOverflow.ellipsis,
       );
     }
     final label = connState == ChatConnState.reconnecting
         ? 'reconnecting…'
         : connState == ChatConnState.connecting
-            ? 'connecting…'
-            : 'offline';
+        ? 'connecting…'
+        : 'offline';
     return Text(
       label,
       style: const TextStyle(
@@ -382,10 +370,12 @@ class _MatchBanner extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
     final route = state.routeLabel;
     final status = state.displayStatus;
 
@@ -397,9 +387,7 @@ class _MatchBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.25),
-          ),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
@@ -410,8 +398,11 @@ class _MatchBanner extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.local_shipping_rounded,
-                  size: 17, color: AppColors.primary),
+              child: const Icon(
+                Icons.local_shipping_rounded,
+                size: 17,
+                color: AppColors.primary,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -460,15 +451,20 @@ class _MatchBanner extends StatelessWidget {
             ),
             const Row(
               children: [
-                Text('Match',
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    )),
-                Icon(Icons.keyboard_arrow_down_rounded,
-                    size: 16, color: AppColors.primary),
+                Text(
+                  'Match',
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
               ],
             ),
           ],
@@ -500,7 +496,9 @@ class _DeliveryNotice extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            forCarrier ? Icons.local_shipping_rounded : Icons.check_circle_outline,
+            forCarrier
+                ? Icons.local_shipping_rounded
+                : Icons.check_circle_outline,
             size: 16,
             color: color,
           ),
@@ -593,8 +591,11 @@ class _PickupBar extends StatelessWidget {
                   : const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.camera_alt_outlined,
-                            size: 16, color: Colors.white),
+                        Icon(
+                          Icons.camera_alt_outlined,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'Pick up',
@@ -650,14 +651,18 @@ class _PickupPhotoSheetState extends State<_PickupPhotoSheet> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.photo_library_outlined),
-                  title: const Text('Photo library',
-                      style: TextStyle(fontFamily: 'Manrope')),
+                  title: const Text(
+                    'Photo library',
+                    style: TextStyle(fontFamily: 'Manrope'),
+                  ),
                   onTap: () => Navigator.pop(ctx, ImageSource.gallery),
                 ),
                 ListTile(
                   leading: const Icon(Icons.camera_alt_outlined),
-                  title: const Text('Camera',
-                      style: TextStyle(fontFamily: 'Manrope')),
+                  title: const Text(
+                    'Camera',
+                    style: TextStyle(fontFamily: 'Manrope'),
+                  ),
                   onTap: () => Navigator.pop(ctx, ImageSource.camera),
                 ),
               ],
@@ -673,8 +678,9 @@ class _PickupPhotoSheetState extends State<_PickupPhotoSheet> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
 
     return Container(
       decoration: BoxDecoration(
@@ -741,11 +747,13 @@ class _PickupPhotoSheetState extends State<_PickupPhotoSheet> {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_a_photo_outlined,
-                            size: 32,
-                            color: isDark
-                                ? AppColors.darkTextTertiary
-                                : AppColors.textTertiary),
+                        Icon(
+                          Icons.add_a_photo_outlined,
+                          size: 32,
+                          color: isDark
+                              ? AppColors.darkTextTertiary
+                              : AppColors.textTertiary,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Tap to add photo',
@@ -774,8 +782,7 @@ class _PickupPhotoSheetState extends State<_PickupPhotoSheet> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                gradient:
-                    _photoPath != null ? AppColors.primaryGradient : null,
+                gradient: _photoPath != null ? AppColors.primaryGradient : null,
                 color: _photoPath == null ? AppColors.textDisabled : null,
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -806,10 +813,12 @@ class _MatchDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     final bg = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
     final context = state.context;
     final items = state.match?.matchedItems ?? const [];
     final route = state.routeLabel ?? '';
@@ -911,10 +920,12 @@ class _MatchDetailSheet extends StatelessWidget {
 
   Widget _kv(String k, String v, bool isDark) {
     if (v.isEmpty) return const SizedBox.shrink();
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -956,10 +967,12 @@ class _MatchItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
     final qtyLabel = item.quantity == item.quantity.roundToDouble()
         ? item.quantity.toInt().toString()
         : item.quantity.toString();
@@ -983,8 +996,11 @@ class _MatchItemRow extends StatelessWidget {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.inventory_2_outlined,
-                size: 18, color: AppColors.primary),
+            child: const Icon(
+              Icons.inventory_2_outlined,
+              size: 18,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1030,24 +1046,30 @@ class _Bubble extends StatelessWidget {
   final ChatMessage message;
   final bool mine;
   final bool isDark;
-  const _Bubble(
-      {required this.message, required this.mine, required this.isDark});
+  const _Bubble({
+    required this.message,
+    required this.mine,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
     final mineColor = AppColors.primary.withValues(alpha: 0.14);
     final theirsColor = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final textTertiary =
-        isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textTertiary = isDark
+        ? AppColors.darkTextTertiary
+        : AppColors.textTertiary;
 
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 3),
         constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.74),
+          maxWidth: MediaQuery.of(context).size.width * 0.74,
+        ),
         padding: const EdgeInsets.fromLTRB(12, 9, 12, 7),
         decoration: BoxDecoration(
           color: mine ? mineColor : theirsColor,
@@ -1060,7 +1082,8 @@ class _Bubble extends StatelessWidget {
           border: mine
               ? null
               : Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.border),
+                  color: isDark ? AppColors.darkBorder : AppColors.border,
+                ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -1088,8 +1111,11 @@ class _Bubble extends StatelessWidget {
                 ),
                 if (mine && message.pending) ...[
                   const SizedBox(width: 3),
-                  Icon(Icons.access_time_rounded,
-                      size: 10, color: textTertiary),
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 10,
+                    color: textTertiary,
+                  ),
                 ],
               ],
             ),
@@ -1108,7 +1134,8 @@ class _DaySeparator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final label = (date.year == now.year &&
+    final label =
+        (date.year == now.year &&
             date.month == now.month &&
             date.day == now.day)
         ? 'Today'
@@ -1148,13 +1175,18 @@ class _Composer extends StatelessWidget {
     final surface = isDark ? AppColors.darkSurface : Colors.white;
     final fieldBg = isDark ? AppColors.darkBackground : AppColors.surface;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
-    final textPrimary =
-        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
 
     return Container(
       color: surface,
       padding: EdgeInsets.fromLTRB(
-          12, 8, 12, MediaQuery.of(context).padding.bottom + 8),
+        12,
+        8,
+        12,
+        MediaQuery.of(context).padding.bottom + 8,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -1166,29 +1198,40 @@ class _Composer extends StatelessWidget {
               maxLines: 5,
               textCapitalization: TextCapitalization.sentences,
               style: TextStyle(
-                  fontFamily: 'Manrope', fontSize: 14, color: textPrimary),
+                fontFamily: 'Manrope',
+                fontSize: 14,
+                color: textPrimary,
+              ),
               decoration: InputDecoration(
                 hintText: 'Message…',
                 hintStyle: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 14,
-                    color: isDark
-                        ? AppColors.darkTextTertiary
-                        : AppColors.textTertiary),
+                  fontFamily: 'Manrope',
+                  fontSize: 14,
+                  color: isDark
+                      ? AppColors.darkTextTertiary
+                      : AppColors.textTertiary,
+                ),
                 filled: true,
                 fillColor: fieldBg,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(color: border)),
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: BorderSide(color: border),
+                ),
                 enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(color: border)),
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: BorderSide(color: border),
+                ),
                 focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide:
-                        const BorderSide(color: AppColors.primary, width: 1.5)),
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 1.5,
+                  ),
+                ),
               ),
             ),
           ),
@@ -1202,8 +1245,11 @@ class _Composer extends StatelessWidget {
                 gradient: AppColors.primaryGradient,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_upward_rounded,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_upward_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -1232,7 +1278,10 @@ class _Avatar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     Widget avatar;
     if (url != null && url!.isNotEmpty) {
-      avatar = CircleAvatar(radius: size / 2, backgroundImage: NetworkImage(url!));
+      avatar = CircleAvatar(
+        radius: size / 2,
+        backgroundImage: NetworkImage(url!),
+      );
     } else {
       final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
       avatar = Container(
@@ -1247,13 +1296,15 @@ class _Avatar extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Center(
-          child: Text(initial,
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: size * 0.4,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-              )),
+          child: Text(
+            initial,
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: size * 0.4,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
         ),
       );
     }
@@ -1291,12 +1342,12 @@ class _StatusPill extends StatelessWidget {
   const _StatusPill({required this.status});
 
   Color get _color => switch (status.toUpperCase()) {
-        'MATCHED' || 'ACCEPTED' => AppColors.success,
-        'IN_PROGRESS' || 'IN_DELIVERY' || 'IN_TRANSIT' => AppColors.info,
-        'COLLECTED' => AppColors.info,
-        'COMPLETED' => AppColors.textSecondary,
-        _ => AppColors.primary,
-      };
+    'MATCHED' || 'ACCEPTED' => AppColors.success,
+    'IN_PROGRESS' || 'IN_DELIVERY' || 'IN_TRANSIT' => AppColors.info,
+    'COLLECTED' => AppColors.info,
+    'COMPLETED' => AppColors.textSecondary,
+    _ => AppColors.primary,
+  };
 
   String get _label {
     final s = status.replaceAll('_', ' ').toLowerCase();
@@ -1305,17 +1356,19 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-        decoration: BoxDecoration(
-          color: _color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(_label,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: _color,
-            )),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+    decoration: BoxDecoration(
+      color: _color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      _label,
+      style: TextStyle(
+        fontFamily: 'Manrope',
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: _color,
+      ),
+    ),
+  );
 }
