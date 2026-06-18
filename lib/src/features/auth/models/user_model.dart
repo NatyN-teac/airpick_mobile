@@ -50,6 +50,7 @@ class UserProfile {
   final String? country;
   final String? profilePictureUrl;
   final String? bio;
+  final String? dob;
   final String createdAt;
   final String updatedAt;
 
@@ -64,6 +65,7 @@ class UserProfile {
     this.country,
     this.profilePictureUrl,
     this.bio,
+    this.dob,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -80,6 +82,7 @@ class UserProfile {
       country: json['country'] as String?,
       profilePictureUrl: json['profilePictureUrl'] as String?,
       bio: json['bio'] as String?,
+      dob: json['dob'] as String? ?? json['dateOfBirth'] as String?,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
     );

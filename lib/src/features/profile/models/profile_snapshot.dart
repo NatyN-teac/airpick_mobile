@@ -12,6 +12,7 @@ class ProfileSnapshot {
   final String? state;
   final String? country;
   final String? bio;
+  final String? dob;
   final String? profilePictureUrl;
   final bool isVerified;
   final String? verificationStatus;
@@ -25,42 +26,43 @@ class ProfileSnapshot {
     this.state,
     this.country,
     this.bio,
+    this.dob,
     this.profilePictureUrl,
     this.isVerified = false,
     this.verificationStatus,
   });
 
   factory ProfileSnapshot.fromUser(UserModel user) => ProfileSnapshot(
-        email: user.email,
-        firstName: user.profile.firstName,
-        middleName: user.profile.middleName,
-        lastName: user.profile.lastName,
-        city: user.profile.city,
-        state: user.profile.state,
-        country: user.profile.country,
-        bio: user.profile.bio,
-        profilePictureUrl: user.profile.profilePictureUrl,
-        isVerified: user.profile.isVerified,
-      );
+    email: user.email,
+    firstName: user.profile.firstName,
+    middleName: user.profile.middleName,
+    lastName: user.profile.lastName,
+    city: user.profile.city,
+    state: user.profile.state,
+    country: user.profile.country,
+    bio: user.profile.bio,
+    dob: user.profile.dob,
+    profilePictureUrl: user.profile.profilePictureUrl,
+    isVerified: user.profile.isVerified,
+  );
 
   factory ProfileSnapshot.fromDetail(
     UserProfileDetail detail, {
     required ProfileSnapshot current,
-  }) =>
-      ProfileSnapshot(
-        email: detail.email ?? current.email,
-        firstName: detail.firstName ?? current.firstName,
-        middleName: detail.middleName ?? current.middleName,
-        lastName: detail.lastName ?? current.lastName,
-        city: detail.city ?? current.city,
-        state: detail.state ?? current.state,
-        country: detail.country ?? current.country,
-        bio: detail.bio ?? current.bio,
-        profilePictureUrl:
-            detail.profilePictureUrl ?? current.profilePictureUrl,
-        isVerified: detail.isVerified,
-        verificationStatus: current.verificationStatus,
-      );
+  }) => ProfileSnapshot(
+    email: detail.email ?? current.email,
+    firstName: detail.firstName ?? current.firstName,
+    middleName: detail.middleName ?? current.middleName,
+    lastName: detail.lastName ?? current.lastName,
+    city: detail.city ?? current.city,
+    state: detail.state ?? current.state,
+    country: detail.country ?? current.country,
+    bio: detail.bio ?? current.bio,
+    dob: detail.dob ?? current.dob,
+    profilePictureUrl: detail.profilePictureUrl ?? current.profilePictureUrl,
+    isVerified: detail.isVerified,
+    verificationStatus: current.verificationStatus,
+  );
 
   /// Applies saved form values on top of any API response so the profile
   /// header updates immediately even when PUT returns partial/null fields.
@@ -80,6 +82,7 @@ class ProfileSnapshot {
       state: _trimOrNull(request.state),
       country: request.country.trim(),
       bio: _trimOrNull(request.bio),
+      dob: request.dob.trim(),
       profilePictureUrl:
           _trimOrNull(request.profilePictureUrl) ?? merged.profilePictureUrl,
     );
@@ -101,24 +104,26 @@ class ProfileSnapshot {
         state: json['state'] as String?,
         country: json['country'] as String?,
         bio: json['bio'] as String?,
+        dob: json['dob'] as String?,
         profilePictureUrl: json['profilePictureUrl'] as String?,
         isVerified: json['isVerified'] as bool? ?? false,
         verificationStatus: json['verificationStatus'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
-        'email': email,
-        'firstName': firstName,
-        'middleName': middleName,
-        'lastName': lastName,
-        'city': city,
-        'state': state,
-        'country': country,
-        'bio': bio,
-        'profilePictureUrl': profilePictureUrl,
-        'isVerified': isVerified,
-        'verificationStatus': verificationStatus,
-      };
+    'email': email,
+    'firstName': firstName,
+    'middleName': middleName,
+    'lastName': lastName,
+    'city': city,
+    'state': state,
+    'country': country,
+    'bio': bio,
+    'dob': dob,
+    'profilePictureUrl': profilePictureUrl,
+    'isVerified': isVerified,
+    'verificationStatus': verificationStatus,
+  };
 
   ProfileSnapshot copyWith({
     String? email,
@@ -129,23 +134,24 @@ class ProfileSnapshot {
     String? state,
     String? country,
     String? bio,
+    String? dob,
     String? profilePictureUrl,
     bool? isVerified,
     String? verificationStatus,
-  }) =>
-      ProfileSnapshot(
-        email: email ?? this.email,
-        firstName: firstName ?? this.firstName,
-        middleName: middleName ?? this.middleName,
-        lastName: lastName ?? this.lastName,
-        city: city ?? this.city,
-        state: state ?? this.state,
-        country: country ?? this.country,
-        bio: bio ?? this.bio,
-        profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
-        isVerified: isVerified ?? this.isVerified,
-        verificationStatus: verificationStatus ?? this.verificationStatus,
-      );
+  }) => ProfileSnapshot(
+    email: email ?? this.email,
+    firstName: firstName ?? this.firstName,
+    middleName: middleName ?? this.middleName,
+    lastName: lastName ?? this.lastName,
+    city: city ?? this.city,
+    state: state ?? this.state,
+    country: country ?? this.country,
+    bio: bio ?? this.bio,
+    dob: dob ?? this.dob,
+    profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+    isVerified: isVerified ?? this.isVerified,
+    verificationStatus: verificationStatus ?? this.verificationStatus,
+  );
 
   String encode() => jsonEncode(toJson());
   static ProfileSnapshot decode(String s) =>

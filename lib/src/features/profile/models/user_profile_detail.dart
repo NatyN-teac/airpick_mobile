@@ -33,25 +33,34 @@ class UserProfileDetail {
     this.updatedAt,
   });
 
-  factory UserProfileDetail.fromJson(Map<String, dynamic> json) =>
-      UserProfileDetail(
-        userId: json['userId'] as String?,
-        profileId: json['id'] as String?,
-        firstName: json['firstName'] as String?,
-        middleName: json['middleName'] as String?,
-        lastName: json['lastName'] as String?,
-        isVerified: json['isVerified'] as bool? ?? false,
-        city: json['city'] as String?,
-        state: json['state'] as String?,
-        country: json['country'] as String?,
-        bio: json['bio'] as String?,
-        dob: json['dob'] as String? ?? json['dateOfBirth'] as String?,
-        email: json['email'] as String?,
-        profilePictureUrl: json['profilePictureUrl'] as String? ??
-            json['profilePicUrl'] as String?,
-        createdAt: json['createdAt'] as String?,
-        updatedAt: json['updatedAt'] as String?,
-      );
+  factory UserProfileDetail.fromJson(Map<String, dynamic> json) {
+    final nestedProfile = json['profile'] is Map<String, dynamic>
+        ? json['profile'] as Map<String, dynamic>
+        : json['userProfile'] is Map<String, dynamic>
+        ? json['userProfile'] as Map<String, dynamic>
+        : null;
+    final profile = nestedProfile ?? json;
+
+    return UserProfileDetail(
+      userId: (profile['userId'] ?? json['userId'] ?? json['id']) as String?,
+      profileId: profile['id'] as String?,
+      firstName: profile['firstName'] as String?,
+      middleName: profile['middleName'] as String?,
+      lastName: profile['lastName'] as String?,
+      isVerified: profile['isVerified'] as bool? ?? false,
+      city: profile['city'] as String?,
+      state: profile['state'] as String?,
+      country: profile['country'] as String?,
+      bio: profile['bio'] as String?,
+      dob: profile['dob'] as String? ?? profile['dateOfBirth'] as String?,
+      email: (profile['email'] ?? json['email']) as String?,
+      profilePictureUrl:
+          profile['profilePictureUrl'] as String? ??
+          profile['profilePicUrl'] as String?,
+      createdAt: profile['createdAt'] as String?,
+      updatedAt: profile['updatedAt'] as String?,
+    );
+  }
 }
 
 class UpdateUserProfileRequest {
@@ -78,16 +87,16 @@ class UpdateUserProfileRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'firstName': firstName.trim(),
-        'middleName': _nullableTrim(middleName),
-        'lastName': lastName.trim(),
-        'city': city.trim(),
-        'state': _nullableTrim(state),
-        'country': country.trim(),
-        'bio': _nullableTrim(bio),
-        'profilePictureUrl': _nullableTrim(profilePictureUrl),
-        'dob': dob.trim(),
-      };
+    'firstName': firstName.trim(),
+    'middleName': _nullableTrim(middleName),
+    'lastName': lastName.trim(),
+    'city': city.trim(),
+    'state': _nullableTrim(state),
+    'country': country.trim(),
+    'bio': _nullableTrim(bio),
+    'profilePictureUrl': _nullableTrim(profilePictureUrl),
+    'dob': dob.trim(),
+  };
 
   static String? _nullableTrim(String? value) {
     if (value == null) return null;

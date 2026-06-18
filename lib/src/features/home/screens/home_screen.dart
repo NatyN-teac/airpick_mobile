@@ -36,6 +36,7 @@ import '../../offers/screens/offers_screen.dart';
 import '../../offers/widgets/create_offer_bubble.dart';
 import '../../profile/cubit/current_user_cubit.dart';
 import '../../profile/repository/user_repository.dart';
+import '../../../core/utils/verification_gate.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../search/screens/search_screen.dart';
@@ -113,6 +114,9 @@ class _HomeViewState extends State<_HomeView> {
   }
 
   void _onPlusTap(BuildContext context) {
+    // TODO: restore this later
+    // if (!requireVerified(context)) return;
+
     // Switch to the activity tab (index 2) so created items land there
     context.read<NavCubit>().setTab(2);
 

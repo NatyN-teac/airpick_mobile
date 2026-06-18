@@ -92,6 +92,7 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
       _creating = true;
       _createError = null;
     });
+    final messenger = ScaffoldMessenger.of(context);
     final item = await widget.onCreate(name, _newCategory);
     if (!mounted) return;
     if (item != null) {
@@ -103,6 +104,16 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
         _query = '';
         _searchCtrl.clear();
       });
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            '"${item.name}" added',
+            style: const TextStyle(fontFamily: 'Manrope'),
+          ),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } else {
       setState(() {
         _creating = false;

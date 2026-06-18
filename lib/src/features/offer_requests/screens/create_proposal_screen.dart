@@ -6,6 +6,7 @@ import '../../airports/repository/airport_repository.dart';
 import '../../offers/models/offer_models.dart';
 import '../../offers/widgets/form_widgets.dart';
 import '../../offers/widgets/meetup_places_field.dart';
+import '../../../core/utils/verification_gate.dart';
 import '../cubit/create_proposal_cubit.dart';
 import '../cubit/create_proposal_state.dart';
 import '../models/offer_request_models.dart';
@@ -19,6 +20,8 @@ void openCreateProposal(
   OfferRequestResponse request, {
   VoidCallback? onSent,
 }) {
+  if (!requireVerified(context)) return;
+
   Navigator.of(context).push(
     MaterialPageRoute(
       builder: (_) => BlocProvider(

@@ -95,20 +95,21 @@ class _UserDetailScreenState extends State<UserDetailScreen>
     _state.text = snap.state ?? '';
     _country.text = snap.country ?? '';
     _bio.text = snap.bio ?? '';
+    _dob = parseProfileDob(snap.dob);
     _ignoreFormChanges = false;
   }
 
-  void _applyDetail(UserProfileDetail detail) {
+  void _applyDetail(UserProfileDetail detail, {ProfileSnapshot? fallback}) {
     _ignoreFormChanges = true;
     _email = detail.email ?? _email;
-    _firstName.text = detail.firstName ?? '';
-    _middleName.text = detail.middleName ?? '';
-    _lastName.text = detail.lastName ?? '';
-    _city.text = detail.city ?? '';
-    _state.text = detail.state ?? '';
-    _country.text = detail.country ?? '';
-    _bio.text = detail.bio ?? '';
-    _dob = parseProfileDob(detail.dob);
+    _firstName.text = detail.firstName ?? fallback?.firstName ?? '';
+    _middleName.text = detail.middleName ?? fallback?.middleName ?? '';
+    _lastName.text = detail.lastName ?? fallback?.lastName ?? '';
+    _city.text = detail.city ?? fallback?.city ?? '';
+    _state.text = detail.state ?? fallback?.state ?? '';
+    _country.text = detail.country ?? fallback?.country ?? '';
+    _bio.text = detail.bio ?? fallback?.bio ?? '';
+    _dob = parseProfileDob(detail.dob) ?? parseProfileDob(fallback?.dob);
     _ignoreFormChanges = false;
   }
 
@@ -155,13 +156,13 @@ class _UserDetailScreenState extends State<UserDetailScreen>
       final detail = await userRepository.getUserProfile(userId);
       if (!mounted) return;
       final current = context.read<CurrentUserCubit>().state;
-      if (current != null) {
-        final updated = ProfileSnapshot.fromDetail(detail, current: current);
-        context.read<CurrentUserCubit>().updateProfile(updated);
-        _snapshot = updated;
-      }
+      final base =
+          current ?? ProfileSnapshot(email: detail.email ?? _email ?? '');
+      final updated = ProfileSnapshot.fromDetail(detail, current: base);
+      context.read<CurrentUserCubit>().updateProfile(updated);
+      _snapshot = updated;
       setState(() {
-        _applyDetail(detail);
+        _applyDetail(detail, fallback: _snapshot);
         _loading = false;
         _error = null;
         _showForm = true;
@@ -247,7 +248,11 @@ class _UserDetailScreenState extends State<UserDetailScreen>
         emailFallback: _email,
       );
       _snapshot = context.read<CurrentUserCubit>().state;
-      _applyDetail(detail);
+      if (_snapshot != null) {
+        _seedFromSnapshot(_snapshot);
+      } else {
+        _applyDetail(detail);
+      }
       setState(() {
         _captureBaseline();
         _saving = false;

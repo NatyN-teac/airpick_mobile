@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 
 import '../models/item_models.dart';
 import '../../../core/network/api_client.dart';
@@ -30,8 +31,11 @@ class ItemRepository {
       'measurementType': measurementType.apiValue,
       'measurementUnit': measurementUnit.apiValue,
     });
+
+    // Logger().d(response);
+
     final created = ItemModel.fromJson(
-      response['data'] as Map<String, dynamic>,
+      (response['content'] ?? response['data']) as Map<String, dynamic>,
     );
     _cache = [...?_cache, created];
     return created;

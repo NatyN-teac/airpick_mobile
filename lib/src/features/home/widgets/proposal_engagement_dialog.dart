@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/media/upload_repository.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/verification_gate.dart';
 import '../../matches/models/match_models.dart';
 import '../../offer_requests/models/proposal_models.dart';
 import '../../offers/widgets/airpick_bubble_shell.dart';
@@ -180,6 +181,7 @@ class _ProposalEngagementDialogBodyState
   }
 
   Future<void> _accept() async {
+    if (!requireVerified(context)) return;
     if (!_hasValidReceiver) {
       _snack(
         _receiverNeeded
