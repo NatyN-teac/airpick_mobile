@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:logger/logger.dart';
 import '../session/app_session.dart';
 import '../session/session_expiry.dart';
 import '../storage/token_storage.dart';

@@ -1,6 +1,3 @@
-import 'package:flutter/foundation.dart';
-import 'package:logger/logger.dart';
-
 import '../models/item_models.dart';
 import '../../../core/network/api_client.dart';
 

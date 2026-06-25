@@ -1,4 +1,4 @@
-package com.airdash.delivery.app
+package com.airpick.delivery.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -36,7 +36,6 @@ import '../../offers/screens/offers_screen.dart';
 import '../../offers/widgets/create_offer_bubble.dart';
 import '../../profile/cubit/current_user_cubit.dart';
 import '../../profile/repository/user_repository.dart';
-import '../../../core/utils/verification_gate.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../search/screens/search_screen.dart';
