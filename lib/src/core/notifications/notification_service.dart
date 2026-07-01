@@ -25,6 +25,20 @@ class NotificationService {
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
       onDidReceiveNotificationResponse: _onTap,
     );
+
+    // Create the Android channel up-front so notifications post reliably on
+    // Android 8+ (a channel is required before the first show()).
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _channelId,
+        _channelName,
+        description: _channelDesc,
+        importance: Importance.high,
+      ),
+    );
   }
 
   static Future<void> requestPermissions() async {

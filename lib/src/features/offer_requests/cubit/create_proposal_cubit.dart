@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/notifications/app_notifications.dart';
+import '../../../core/utils/app_refresh_bus.dart';
 import '../../airports/models/airport.dart';
 import '../../airports/repository/airport_repository.dart';
 import '../../flights/models/flight_models.dart';
@@ -128,6 +130,9 @@ class CreateProposalCubit extends Cubit<CreateProposalState> {
               .toList(),
         ),
       );
+      // Broadcast so the (out-of-subtree) engagements list reloads live.
+      AppRefreshBus.instance.emit(RefreshTopic.engagements);
+      AppNotifications.proposalSent();
       emit(state.copyWith(submitting: false, created: true));
     } catch (e) {
       emit(state.copyWith(

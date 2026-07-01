@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/notifications/app_notifications.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../auth/models/user_model.dart';
 import '../../settings/repository/settings_repository.dart';
@@ -19,6 +20,13 @@ class CurrentUserCubit extends Cubit<ProfileSnapshot?> {
   }
 
   void updateProfile(ProfileSnapshot profile) {
+    // Fire a one-off local notification the moment the user becomes verified
+    // (false -> true), regardless of which path flipped it (Veriff result or a
+    // server refresh).
+    final wasVerified = state?.isVerified ?? false;
+    if (!wasVerified && profile.isVerified) {
+      AppNotifications.verified();
+    }
     _profileSyncGen++;
     emit(profile);
     _settings.saveProfile(profile);

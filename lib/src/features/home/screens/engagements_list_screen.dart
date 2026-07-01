@@ -35,9 +35,13 @@ class EngagementsListScreen extends StatelessWidget {
   }
 
   static void openViewAll(BuildContext context) {
+    final cubit = context.read<EngagementCubit>();
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const EngagementActivityScreen(),
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: const EngagementActivityScreen(),
+        ),
       ),
     );
   }

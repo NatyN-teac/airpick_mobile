@@ -93,8 +93,6 @@ class _HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<_HomeView> {
-  final _plusKey = GlobalKey();
-
   @override
   void initState() {
     super.initState();
@@ -112,19 +110,16 @@ class _HomeViewState extends State<_HomeView> {
     );
   }
 
-  void _onPlusTap(BuildContext context) {
+  // Opens the mode-appropriate create form as a bottom sheet.
+  void _onCreateTap(BuildContext context) {
     // TODO: restore this later
     // if (!requireVerified(context)) return;
-
-    // Switch to the activity tab (index 2) so created items land there
-    context.read<NavCubit>().setTab(2);
 
     final mode = context.read<UserModeCubit>().state;
     if (mode == UserMode.carrier) {
       final offersCubit = context.read<OffersCubit>();
       showCreateOfferBubble(
         context,
-        plusKey: _plusKey,
         airports: context.read<AirportRepository>(),
         flights: context.read<FlightRepository>(),
         offers: context.read<OfferRepository>(),
@@ -144,7 +139,6 @@ class _HomeViewState extends State<_HomeView> {
     final listCubit = context.read<OfferRequestsCubit>();
     showCreateOfferRequestBubble(
       context,
-      plusKey: _plusKey,
       items: context.read<ItemRepository>(),
       offerRequests: context.read<OfferRequestRepository>(),
       countries: context.read<CountryRepository>(),
@@ -184,10 +178,12 @@ class _HomeViewState extends State<_HomeView> {
                       BlocBuilder<UserModeCubit, UserMode>(
                         builder: (context, mode) => mode == UserMode.sender
                             ? OfferRequestsScreen(
+                                onCreate: () => _onCreateTap(context),
                                 onEdit: (req) =>
                                     _openRequestBubble(context, existing: req),
                               )
                             : OffersScreen(
+                                onCreate: () => _onCreateTap(context),
                                 onEdit: (offer) =>
                                     openEditOffer(context, offer),
                               ),
@@ -200,8 +196,10 @@ class _HomeViewState extends State<_HomeView> {
                     currentIndex: currentIndex,
                     onTap: (index) => context.read<NavCubit>().setTab(index),
                     badgeCounts: badgeCounts,
-                    plusKey: _plusKey,
-                    onPlusTap: () => _onPlusTap(context),
+                    centerLabel:
+                        context.watch<UserModeCubit>().state == UserMode.sender
+                        ? 'Requests'
+                        : 'Offers',
                   ),
                 );
               },

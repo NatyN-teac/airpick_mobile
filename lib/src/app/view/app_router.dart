@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/app_bloc.dart';
+import '../../core/notifications/app_notifications.dart';
 import '../../core/session/app_session.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/auth/bloc/auth_bloc.dart';
@@ -12,6 +13,7 @@ import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../core/storage/token_storage.dart';
 import '../../features/profile/cubit/current_user_cubit.dart';
 import '../../features/profile/repository/user_repository.dart';
+import '../../features/profile/screens/account_verification_screen.dart';
 
 class AppRouter extends StatefulWidget {
   const AppRouter({super.key});
@@ -59,6 +61,28 @@ class _AppRouterState extends State<AppRouter> {
                     .syncFromServer(UserModeX.fromApi(activeMode));
               }
               context.read<AppBloc>().add(const AppAuthCompleted());
+
+              // Brand-new account (no mode chosen yet and not verified): greet
+              // them with a welcome notification.
+              final isNewUser = !state.user.profile.isVerified &&
+                  (activeMode == null || activeMode.isEmpty);
+              if (isNewUser) {
+                AppNotifications.welcome();
+              }
+
+              // A freshly signed-in user who isn't verified yet is taken
+              // straight to account verification (on top of Home) so they can
+              // complete it before using the app. Verified users go to Home.
+              if (!state.user.profile.isVerified) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final navigator = Navigator.of(context, rootNavigator: true);
+                  navigator.push(
+                    MaterialPageRoute(
+                      builder: (_) => const AccountVerificationScreen(),
+                    ),
+                  );
+                });
+              }
             }
           },
         ),

@@ -3,57 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 
-class AppNavBar extends StatefulWidget {
+class AppNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
   final Map<int, int> badgeCounts;
-  final VoidCallback? onPlusTap;
-  final GlobalKey? plusKey;
+  // Label for the center tab (index 2). Switches with sender/carrier mode.
+  final String centerLabel;
 
   const AppNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     this.badgeCounts = const {},
-    this.onPlusTap,
-    this.plusKey,
+    required this.centerLabel,
   });
-
-  @override
-  State<AppNavBar> createState() => _AppNavBarState();
-}
-
-class _AppNavBarState extends State<AppNavBar> with TickerProviderStateMixin {
-  late AnimationController _plusController;
-  late Animation<double> _plusScale;
-
-  @override
-  void initState() {
-    super.initState();
-    _plusController = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-    _plusScale = Tween<double>(begin: 1.0, end: 0.88).animate(
-      CurvedAnimation(parent: _plusController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _plusController.dispose();
-    super.dispose();
-  }
-
-  void _onPlusTap() {
-    HapticFeedback.mediumImpact();
-    _plusController.forward().then((_) => _plusController.reverse());
-    widget.onPlusTap?.call();
-  }
 
   void _onTabTap(int index) {
     HapticFeedback.lightImpact();
-    widget.onTap(index);
+    onTap(index);
   }
 
   @override
@@ -85,8 +52,8 @@ class _AppNavBarState extends State<AppNavBar> with TickerProviderStateMixin {
                   iconFilled: CupertinoIcons.house_fill,
                   label: 'Home',
                   index: 0,
-                  currentIndex: widget.currentIndex,
-                  badgeCount: widget.badgeCounts[0] ?? 0,
+                  currentIndex: currentIndex,
+                  badgeCount: badgeCounts[0] ?? 0,
                   onTap: _onTabTap,
                   isDark: isDark,
                 ),
@@ -95,61 +62,28 @@ class _AppNavBarState extends State<AppNavBar> with TickerProviderStateMixin {
                   iconFilled: CupertinoIcons.chat_bubble_fill,
                   label: 'Chat',
                   index: 1,
-                  currentIndex: widget.currentIndex,
-                  badgeCount: widget.badgeCounts[1] ?? 0,
+                  currentIndex: currentIndex,
+                  badgeCount: badgeCounts[1] ?? 0,
                   onTap: _onTabTap,
                   isDark: isDark,
                 ),
-                // Plus button
-                Expanded(
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: _onPlusTap,
-                      child: AnimatedBuilder(
-                        animation: _plusScale,
-                        builder: (context, _) => Transform.scale(
-                          scale: _plusScale.value,
-                          child: Container(
-                            key: widget.plusKey,
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppColors.primary,
-                                  AppColors.primaryLight,
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary
-                                      .withValues(alpha: 0.38),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              CupertinoIcons.add,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                _NavItem(
+                  icon: CupertinoIcons.square_list,
+                  iconFilled: CupertinoIcons.square_list_fill,
+                  label: centerLabel,
+                  index: 2,
+                  currentIndex: currentIndex,
+                  badgeCount: badgeCounts[2] ?? 0,
+                  onTap: _onTabTap,
+                  isDark: isDark,
                 ),
                 _NavItem(
                   icon: CupertinoIcons.bell,
                   iconFilled: CupertinoIcons.bell_fill,
                   label: 'Alerts',
                   index: 3,
-                  currentIndex: widget.currentIndex,
-                  badgeCount: widget.badgeCounts[3] ?? 0,
+                  currentIndex: currentIndex,
+                  badgeCount: badgeCounts[3] ?? 0,
                   onTap: _onTabTap,
                   isDark: isDark,
                 ),
@@ -158,8 +92,8 @@ class _AppNavBarState extends State<AppNavBar> with TickerProviderStateMixin {
                   iconFilled: CupertinoIcons.person_fill,
                   label: 'Profile',
                   index: 4,
-                  currentIndex: widget.currentIndex,
-                  badgeCount: widget.badgeCounts[4] ?? 0,
+                  currentIndex: currentIndex,
+                  badgeCount: badgeCounts[4] ?? 0,
                   onTap: _onTabTap,
                   isDark: isDark,
                 ),

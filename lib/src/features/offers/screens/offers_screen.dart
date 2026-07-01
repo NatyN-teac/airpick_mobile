@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
+import '../../home/widgets/create_fab.dart';
 import '../cubit/offers_cubit.dart';
 import '../models/offer_response.dart';
 import '../repository/offer_repository.dart';
@@ -10,7 +11,15 @@ import 'offer_detail_screen.dart';
 
 class OffersScreen extends StatefulWidget {
   final ValueChanged<OfferResponse> onEdit;
-  const OffersScreen({super.key, required this.onEdit});
+
+  // Opens the create-offer bottom sheet.
+  final VoidCallback onCreate;
+
+  const OffersScreen({
+    super.key,
+    required this.onEdit,
+    required this.onCreate,
+  });
 
   @override
   State<OffersScreen> createState() => _OffersScreenState();
@@ -28,16 +37,23 @@ class _OffersScreenState extends State<OffersScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return BlocBuilder<OffersCubit, OffersState>(
       builder: (context, state) {
-        return Column(
-          children: [
-            if (state.offers.isNotEmpty)
-              _StatusFilterBar(
-                selected: state.statusFilter,
-                isDark: isDark,
-                onSelect: (s) => context.read<OffersCubit>().setFilter(s),
-              ),
-            Expanded(child: _body(context, state, isDark)),
-          ],
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          floatingActionButton: CreateFab(
+            label: 'Offer',
+            onTap: widget.onCreate,
+          ),
+          body: Column(
+            children: [
+              if (state.offers.isNotEmpty)
+                _StatusFilterBar(
+                  selected: state.statusFilter,
+                  isDark: isDark,
+                  onSelect: (s) => context.read<OffersCubit>().setFilter(s),
+                ),
+              Expanded(child: _body(context, state, isDark)),
+            ],
+          ),
         );
       },
     );

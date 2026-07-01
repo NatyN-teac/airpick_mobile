@@ -50,6 +50,9 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   const secureStorage = FlutterSecureStorage();
   await NotificationService.initialize();
+  // Ask for notification permission up-front (required on iOS and Android 13+;
+  // without this notifications are silently dropped).
+  await NotificationService.requestPermissions();
   // Route MATCH notifications to the chat screen (step 6).
   NotificationService.onDeepLink = handleChatDeepLink;
 

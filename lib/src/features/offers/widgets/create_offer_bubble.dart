@@ -17,16 +17,14 @@ import 'offer_form_step.dart';
 
 Future<void> showCreateOfferBubble(
   BuildContext context, {
-  required GlobalKey plusKey,
   required AirportRepository airports,
   required FlightRepository flights,
   required OfferRepository offers,
   required ItemRepository items,
   ValueChanged<OfferResponse>? onCreated,
 }) async {
-  await showAirpickBubble(
+  await showAirpickSheet(
     context,
-    plusKey: plusKey,
     contentBuilder: (dismiss) => BlocProvider(
       create: (_) => CreateOfferCubit(
         airports: airports,

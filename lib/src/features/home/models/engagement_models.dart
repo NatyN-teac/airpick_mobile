@@ -243,6 +243,28 @@ class EngagementResponse {
     items.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return items;
   }
+
+  /// All items of a single [kind], regardless of the active mode. Used by the
+  /// "View all" screen so the user can browse sent/received/matched separately.
+  List<EngagementListItem> itemsOfKind(EngagementKind kind) {
+    final items = <EngagementListItem>[];
+    switch (kind) {
+      case EngagementKind.proposalSent:
+        for (final p in proposalsSent) {
+          items.add(EngagementListItem.fromProposal(p, kind: kind));
+        }
+      case EngagementKind.proposalReceived:
+        for (final p in proposalsReceived) {
+          items.add(EngagementListItem.fromProposal(p, kind: kind));
+        }
+      case EngagementKind.match:
+        for (final m in matchedOffers) {
+          items.add(EngagementListItem.fromMatch(m));
+        }
+    }
+    items.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return items;
+  }
 }
 
 // ── UI view model ─────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
+import '../../home/widgets/create_fab.dart';
 import '../cubit/offer_requests_cubit.dart';
 import '../models/offer_request_models.dart';
 import '../repository/offer_request_repository.dart';
@@ -13,7 +14,14 @@ class OfferRequestsScreen extends StatefulWidget {
   // Home wires this to open the edit bubble anchored to the + button.
   final ValueChanged<OfferRequestResponse> onEdit;
 
-  const OfferRequestsScreen({super.key, required this.onEdit});
+  // Opens the create-request bottom sheet.
+  final VoidCallback onCreate;
+
+  const OfferRequestsScreen({
+    super.key,
+    required this.onEdit,
+    required this.onCreate,
+  });
 
   @override
   State<OfferRequestsScreen> createState() => _OfferRequestsScreenState();
@@ -32,18 +40,25 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
 
     return BlocBuilder<OfferRequestsCubit, OfferRequestsState>(
       builder: (context, state) {
-        return Column(
-          children: [
-            // Status filter — hidden until there's data to filter
-            if (state.requests.isNotEmpty)
-              _StatusFilterBar(
-                selected: state.statusFilter,
-                isDark: isDark,
-                onSelect: (s) =>
-                    context.read<OfferRequestsCubit>().setFilter(s),
-              ),
-            Expanded(child: _body(context, state, isDark)),
-          ],
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          floatingActionButton: CreateFab(
+            label: 'Request',
+            onTap: widget.onCreate,
+          ),
+          body: Column(
+            children: [
+              // Status filter — hidden until there's data to filter
+              if (state.requests.isNotEmpty)
+                _StatusFilterBar(
+                  selected: state.statusFilter,
+                  isDark: isDark,
+                  onSelect: (s) =>
+                      context.read<OfferRequestsCubit>().setFilter(s),
+                ),
+              Expanded(child: _body(context, state, isDark)),
+            ],
+          ),
         );
       },
     );

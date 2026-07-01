@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/app_refresh_bus.dart';
 import '../../matches/models/match_models.dart';
 import '../../offer_requests/models/proposal_models.dart';
 import '../../offer_requests/repository/offer_request_repository.dart';
@@ -44,8 +46,23 @@ class EngagementCubit extends Cubit<EngagementState> {
   final UserRepository _users;
   final OfferRequestRepository _proposals;
   bool _loadedOnce = false;
+  StreamSubscription<void>? _refreshSub;
 
-  EngagementCubit(this._users, this._proposals) : super(const EngagementState());
+  EngagementCubit(this._users, this._proposals)
+      : super(const EngagementState()) {
+    // Reload whenever a proposal is created/mutated anywhere in the app, so the
+    // engagements list updates live instead of only after an app restart.
+    _refreshSub =
+        AppRefreshBus.instance.on(RefreshTopic.engagements).listen((_) {
+      load(force: true);
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _refreshSub?.cancel();
+    return super.close();
+  }
 
   Future<void> load({bool force = false}) async {
     if (_loadedOnce && !force) return;

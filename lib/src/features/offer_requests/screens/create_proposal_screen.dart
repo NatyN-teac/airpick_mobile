@@ -190,6 +190,12 @@ class CreateProposalScreen extends StatelessWidget {
                 _SectionTitle('Pickup & delivery', isDark: isDark),
                 const SizedBox(height: 8),
                 FormLabel('Pickup area', isDark: isDark),
+                const SizedBox(height: 4),
+                _FieldHint(
+                  'The general area where you\'ll collect the items before your '
+                  'flight (e.g. a city or neighbourhood).',
+                  isDark: isDark,
+                ),
                 const SizedBox(height: 6),
                 FormTextField(
                   isDark: isDark,
@@ -208,6 +214,13 @@ class CreateProposalScreen extends StatelessWidget {
 
                 // ── Meetup places ─────────────────────────────────────
                 _SectionTitle('Meetup places', isDark: isDark),
+                const SizedBox(height: 4),
+                _FieldHint(
+                  'Specific spots where you can meet the sender in person to '
+                  'hand over or drop off the items (e.g. a mall, cafe or '
+                  'landmark).',
+                  isDark: isDark,
+                ),
                 const SizedBox(height: 8),
                 MeetupPlacesField(
                   isDark: isDark,
@@ -449,6 +462,23 @@ class _SectionTitle extends StatelessWidget {
           fontWeight: FontWeight.w800,
           letterSpacing: -0.2,
           color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+        ),
+      );
+}
+
+class _FieldHint extends StatelessWidget {
+  final String text;
+  final bool isDark;
+  const _FieldHint(this.text, {required this.isDark});
+
+  @override
+  Widget build(BuildContext context) => Text(
+        text,
+        style: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 11,
+          height: 1.35,
+          color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
         ),
       );
 }

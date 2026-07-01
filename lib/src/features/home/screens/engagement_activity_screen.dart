@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/skeleton_list.dart';
+import '../cubit/engagement_cubit.dart';
+import '../models/engagement_models.dart';
+import 'engagements_list_screen.dart';
 
-enum EngagementActivityFilter { proposals, matched }
+enum EngagementActivityFilter { sent, received, matched }
+
+extension _FilterX on EngagementActivityFilter {
+  String get label => switch (this) {
+        EngagementActivityFilter.sent => 'Sent',
+        EngagementActivityFilter.received => 'Received',
+        EngagementActivityFilter.matched => 'Matched',
+      };
+
+  EngagementKind get kind => switch (this) {
+        EngagementActivityFilter.sent => EngagementKind.proposalSent,
+        EngagementActivityFilter.received => EngagementKind.proposalReceived,
+        EngagementActivityFilter.matched => EngagementKind.match,
+      };
+
+  String get emptyMessage => switch (this) {
+        EngagementActivityFilter.sent => 'No proposals sent yet.',
+        EngagementActivityFilter.received => 'No proposals received yet.',
+        EngagementActivityFilter.matched => 'No matches yet.',
+      };
+}
 
 class EngagementActivityScreen extends StatefulWidget {
   final EngagementActivityFilter initialFilter;
 
   const EngagementActivityScreen({
     super.key,
-    this.initialFilter = EngagementActivityFilter.proposals,
+    this.initialFilter = EngagementActivityFilter.sent,
   });
 
   @override
@@ -33,9 +58,6 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final items = _filter == EngagementActivityFilter.proposals
-        ? _sampleProposals
-        : _sampleMatches;
 
     return Scaffold(
       backgroundColor: bg,
@@ -79,29 +101,58 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
               onChanged: (f) => setState(() => _filter = f),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              _filter == EngagementActivityFilter.proposals
-                  ? 'Your proposals — sample preview until API is connected.'
-                  : 'Your matches — sample preview until API is connected.',
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 11.5,
-                color: textSecondary,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-              itemCount: items.length,
-              separatorBuilder: (context, _) => const SizedBox(height: 10),
-              itemBuilder: (_, i) => _SampleActivityCard(
-                item: items[i],
-                isDark: isDark,
-              ),
+            child: BlocBuilder<EngagementCubit, EngagementState>(
+              builder: (context, state) {
+                if (state.loading && state.response == null) {
+                  return const SkeletonList(count: 5);
+                }
+
+                final items =
+                    state.response?.itemsOfKind(_filter.kind) ?? const [];
+
+                if (items.isEmpty) {
+                  return RefreshIndicator(
+                    color: AppColors.primary,
+                    onRefresh: () =>
+                        context.read<EngagementCubit>().load(force: true),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        const SizedBox(height: 120),
+                        Center(
+                          child: Text(
+                            _filter.emptyMessage,
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 13,
+                              color: textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  color: AppColors.primary,
+                  onRefresh: () =>
+                      context.read<EngagementCubit>().load(force: true),
+                  child: ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+                    itemCount: items.length,
+                    separatorBuilder: (context, _) => const SizedBox(height: 10),
+                    itemBuilder: (_, i) => _ActivityCard(
+                      item: items[i],
+                      isDark: isDark,
+                      onTap: () =>
+                          EngagementsListScreen.openDetail(context, items[i]),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -130,20 +181,14 @@ class _FilterBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
-        children: [
-          _FilterChip(
-            label: 'Proposals',
-            selected: selected == EngagementActivityFilter.proposals,
-            isDark: isDark,
-            onTap: () => onChanged(EngagementActivityFilter.proposals),
-          ),
-          _FilterChip(
-            label: 'Matched',
-            selected: selected == EngagementActivityFilter.matched,
-            isDark: isDark,
-            onTap: () => onChanged(EngagementActivityFilter.matched),
-          ),
-        ],
+        children: EngagementActivityFilter.values
+            .map((f) => _FilterChip(
+                  label: f.label,
+                  selected: selected == f,
+                  isDark: isDark,
+                  onTap: () => onChanged(f),
+                ))
+            .toList(),
       ),
     );
   }
@@ -194,68 +239,16 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _SampleActivityItem {
-  final String title;
-  final String route;
-  final String subtitle;
-  final String status;
-  final Color statusColor;
-
-  const _SampleActivityItem({
-    required this.title,
-    required this.route,
-    required this.subtitle,
-    required this.status,
-    required this.statusColor,
-  });
-}
-
-const _sampleProposals = [
-  _SampleActivityItem(
-    title: 'Electronics bundle',
-    route: 'JFK → LHR',
-    subtitle: 'Manhattan → London · \$120.00',
-    status: 'Pending',
-    statusColor: AppColors.info,
-  ),
-  _SampleActivityItem(
-    title: 'Documents',
-    route: 'CDG → JFK',
-    subtitle: 'Paris → Brooklyn · \$45.00',
-    status: 'Sent',
-    statusColor: Color(0xFF4299E1),
-  ),
-  _SampleActivityItem(
-    title: 'Clothing box',
-    route: 'LAX → NRT',
-    subtitle: 'LA → Tokyo · \$89.50',
-    status: 'Viewed',
-    statusColor: Color(0xFF9F7AEA),
-  ),
-];
-
-const _sampleMatches = [
-  _SampleActivityItem(
-    title: 'Laptop + charger',
-    route: 'SFO → SIN',
-    subtitle: 'Receiver: Alex M. · \$210.00',
-    status: 'Matched',
-    statusColor: AppColors.success,
-  ),
-  _SampleActivityItem(
-    title: 'Gift package',
-    route: 'ORD → MIA',
-    subtitle: 'Receiver: Sam K. · \$55.00',
-    status: 'In progress',
-    statusColor: AppColors.warning,
-  ),
-];
-
-class _SampleActivityCard extends StatelessWidget {
-  final _SampleActivityItem item;
+class _ActivityCard extends StatelessWidget {
+  final EngagementListItem item;
   final bool isDark;
+  final VoidCallback onTap;
 
-  const _SampleActivityCard({required this.item, required this.isDark});
+  const _ActivityCard({
+    required this.item,
+    required this.isDark,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -265,84 +258,98 @@ class _SampleActivityCard extends StatelessWidget {
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: surface,
+    final showRoute = item.fromCode != '—' || item.toCode != '—';
+
+    return Material(
+      color: surface,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.borderLight,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: item.statusColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              item.status == 'Matched' || item.status == 'In progress'
-                  ? Icons.handshake_outlined
-                  : Icons.mail_outline_rounded,
-              color: item.statusColor,
-              size: 20,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.borderLight,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: item.status.color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  item.kind == EngagementKind.match
+                      ? Icons.handshake_outlined
+                      : Icons.mail_outline_rounded,
+                  color: item.status.color,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        item.title,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: textPrimary,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: textPrimary,
+                            ),
+                          ),
                         ),
-                      ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: item.status.color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            item.status.label,
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: item.status.color,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: item.statusColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        item.status,
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: item.statusColor,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      [
+                        if (showRoute) '${item.fromCode} → ${item.toCode}',
+                        '${item.subtitle} · ${item.dateLabel}',
+                      ].join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 11,
+                        color: textSecondary,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${item.route} · ${item.subtitle}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 11,
-                    color: textSecondary,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

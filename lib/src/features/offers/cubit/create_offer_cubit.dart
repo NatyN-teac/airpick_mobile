@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/notifications/app_notifications.dart';
 import '../../airports/models/airport.dart';
 import '../../airports/repository/airport_repository.dart';
 import '../../flights/models/flight_models.dart';
@@ -230,6 +231,7 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
                 ))
             .toList(),
       ));
+      AppNotifications.offerPosted();
       emit(state.copyWith(
           creatingOffer: false, offerCreated: true, createdOffer: created));
     } catch (e) {

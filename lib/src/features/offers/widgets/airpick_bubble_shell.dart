@@ -3,201 +3,93 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 
-// Shared bottle-shaped bubble shell used by both offer creation and offer-request creation.
+// Shared shell + success screens for offer and offer-request creation, now
+// presented as a modal bottom sheet.
 
-const double kBubbleW = 340.0;
-const double kBubbleH = 680.0;
-const double kTipH = 54.0;
-const double kTotalH = kBubbleH + kTipH;
+// ── Bottom sheet entry point ──────────────────────────────────────────────────
 
-// ── Entry point ───────────────────────────────────────────────────────────────
-
-Future<void> showAirpickBubble(
+// Presents the same [contentBuilder] used by [showAirpickBubble] as a proper
+// modal bottom sheet: slides up from the bottom, drag handle, keyboard-aware,
+// rounded top corners. The content's `onDismiss` closes the sheet.
+Future<void> showAirpickSheet(
   BuildContext context, {
-  required GlobalKey plusKey,
   required Widget Function(VoidCallback onDismiss) contentBuilder,
-}) async {
-  final renderBox =
-      plusKey.currentContext?.findRenderObject() as RenderBox?;
-  if (renderBox == null) return;
-
-  final buttonSize = renderBox.size;
-  final buttonPos = renderBox.localToGlobal(Offset.zero);
-  final double buttonCenterX = buttonPos.dx + buttonSize.width / 2;
-  final double buttonTopY = buttonPos.dy;
+}) {
   final locale = resolveAppLocale(Localizations.localeOf(context));
-
-  await showGeneralDialog(
+  return showModalBottomSheet<void>(
     context: context,
-    barrierDismissible: false,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.35),
-    barrierLabel: '',
-    transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (dialogCtx, _, _) {
-      void dismiss() => Navigator.of(dialogCtx).pop();
+    builder: (sheetCtx) {
+      void dismiss() => Navigator.of(sheetCtx).pop();
       return Localizations(
         locale: locale,
         delegates: AppLocalizations.localizationsDelegates,
-        child: Material(
-          type: MaterialType.transparency,
-          child: AirpickBubbleLayout(
-            buttonCenterX: buttonCenterX,
-            buttonTopY: buttonTopY,
-            onDismiss: dismiss,
-            content: contentBuilder(dismiss),
-          ),
-        ),
+        child: AirpickSheetShell(content: contentBuilder(dismiss)),
       );
     },
-    transitionBuilder: (_, animation, _, child) => FadeTransition(
-      opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-      child: ScaleTransition(
-        scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
-        alignment: Alignment.bottomCenter,
-        child: child,
-      ),
-    ),
   );
 }
 
-// ── Layout ────────────────────────────────────────────────────────────────────
+// ── Bottom sheet shell ────────────────────────────────────────────────────────
 
-class AirpickBubbleLayout extends StatelessWidget {
-  final double buttonCenterX;
-  final double buttonTopY;
-  final VoidCallback onDismiss;
+class AirpickSheetShell extends StatelessWidget {
   final Widget content;
 
-  const AirpickBubbleLayout({
-    super.key,
-    required this.buttonCenterX,
-    required this.buttonTopY,
-    required this.onDismiss,
-    required this.content,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    final double left =
-        (buttonCenterX - kBubbleW / 2).clamp(8.0, screenW - kBubbleW - 8.0);
-    final double top =
-        (buttonTopY - kTotalH + 52).clamp(8.0, double.infinity);
-
-    return Stack(
-      children: [
-        Positioned(
-          left: left,
-          top: top,
-          width: kBubbleW,
-          height: kTotalH,
-          child: AirpickBubbleShell(onDismiss: onDismiss, content: content),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Shell ─────────────────────────────────────────────────────────────────────
-
-class AirpickBubbleShell extends StatelessWidget {
-  final VoidCallback onDismiss;
-  final Widget content;
-
-  const AirpickBubbleShell({
-    super.key,
-    required this.onDismiss,
-    required this.content,
-  });
-
-  static const double _btnSize = 44.0;
-  static const double _neckR = 26.0;
+  const AirpickSheetShell({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : Colors.white;
+    final media = MediaQuery.of(context);
+    // Cap the sheet so it never fully covers the screen, but let it grow with
+    // the keyboard via viewInsets padding below.
+    final maxHeight = media.size.height * 0.92;
 
-    return CustomPaint(
-      painter: AirpickBubblePainter(color: bg, isDark: isDark),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: kTipH),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: content,
-            ),
+    return Padding(
+      // Push content above the keyboard when a field is focused.
+      padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          Positioned(
-            left: kBubbleW / 2 - _btnSize / 2,
-            top: kTotalH - _neckR - _btnSize / 2,
-            child: GestureDetector(
-              onTap: onDismiss,
-              child: Container(
-                width: _btnSize,
-                height: _btnSize,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 4),
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.darkBorder
+                        : const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                child: const Icon(Icons.close_rounded,
-                    size: 20, color: Colors.white),
               ),
-            ),
+              Flexible(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                  child: content,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
-}
-
-// ── Painter ───────────────────────────────────────────────────────────────────
-
-class AirpickBubblePainter extends CustomPainter {
-  final Color color;
-  final bool isDark;
-  AirpickBubblePainter({required this.color, required this.isDark});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    const cornerR = 20.0;
-    const neckW = 52.0;
-    const neckR = neckW / 2;
-    final cx = size.width / 2;
-    final bodyH = size.height - kTipH;
-    final shoulderY = bodyH + kTipH * 0.46;
-
-    final path = Path();
-    path.moveTo(cornerR, 0);
-    path.lineTo(size.width - cornerR, 0);
-    path.arcToPoint(Offset(size.width, cornerR),
-        radius: const Radius.circular(cornerR));
-    path.lineTo(size.width, bodyH);
-    path.cubicTo(size.width, bodyH + kTipH * 0.18,
-        cx + neckR, shoulderY, cx + neckR, shoulderY);
-    path.lineTo(cx + neckR, size.height - neckR);
-    path.arcToPoint(Offset(cx - neckR, size.height - neckR),
-        radius: const Radius.circular(neckR), clockwise: false);
-    path.lineTo(cx - neckR, shoulderY);
-    path.cubicTo(cx - neckR, shoulderY, 0, bodyH + kTipH * 0.18, 0, bodyH);
-    path.lineTo(0, cornerR);
-    path.arcToPoint(const Offset(cornerR, 0),
-        radius: const Radius.circular(cornerR));
-    path.close();
-
-    canvas.drawShadow(
-        path,
-        Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
-        18,
-        true);
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(AirpickBubblePainter old) =>
-      old.color != color || old.isDark != isDark;
 }
 
 // ── Shared success screen (reused by both bubble types) ───────────────────────
