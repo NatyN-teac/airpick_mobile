@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../../../core/utils/time_format.dart';
 import '../../flights/models/flight_models.dart';
 import 'offer_models.dart';
 
@@ -232,18 +233,5 @@ class OfferResponse {
   bool get canDelete =>
       status != 'ACCEPTED' && status != 'CANCELLED' && status != 'COMPLETED';
 
-  String get createdAgo => _relative(createdAt);
-
-  static String _relative(String iso) {
-    if (iso.isEmpty) return '';
-    final dt = DateTime.tryParse(iso);
-    if (dt == null) return '';
-    final d = DateTime.now().difference(dt);
-    if (d.inMinutes < 1) return 'just now';
-    if (d.inMinutes < 60) return '${d.inMinutes}m ago';
-    if (d.inHours < 24) return '${d.inHours}h ago';
-    if (d.inDays < 7) return '${d.inDays}d ago';
-    if (d.inDays < 30) return '${(d.inDays / 7).floor()}w ago';
-    return '${(d.inDays / 30).floor()}mo ago';
-  }
+  String get createdAgo => TimeFormat.relative(createdAt);
 }

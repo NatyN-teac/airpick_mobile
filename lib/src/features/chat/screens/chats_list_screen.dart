@@ -164,8 +164,20 @@ class _ChatTile extends StatelessWidget {
     final partyName =
         summary.otherPartyName ??
         match?.otherParty(viewerIsCarrier: viewerIsCarrier)?.displayName;
-    final avatarName = partyName ?? summary.title;
+    // The conversation is with a person — lead with their name. Fall back to
+    // the item summary only when the other party is unknown.
+    final title = (partyName != null && partyName.trim().isNotEmpty)
+        ? partyName
+        : summary.title;
+    final avatarName = title;
     final hasUnread = showUnread && summary.unreadCount > 0;
+    // Secondary line: the item(s) this conversation is about (previously shown
+    // as the title). Fall back to the status/last message if unavailable.
+    final subtitle = summary.title.isNotEmpty && summary.title != title
+        ? summary.title
+        : (summary.lastMessage.isNotEmpty
+            ? summary.lastMessage
+            : 'No messages yet');
 
     return InkWell(
       onTap: () => openChatScreen(
@@ -201,7 +213,7 @@ class _ChatTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    summary.title,
+                    title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -213,9 +225,7 @@ class _ChatTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    summary.lastMessage.isNotEmpty
-                        ? summary.lastMessage
-                        : 'No messages yet',
+                    subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -232,19 +242,6 @@ class _ChatTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (partyName != null)
-                  Text(
-                    partyName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: textSecondary,
-                    ),
-                  ),
-                if (partyName != null) const SizedBox(height: 2),
                 if (summary.lastMessageAt != null)
                   Text(
                     DateFormat('HH:mm').format(summary.lastMessageAt!),

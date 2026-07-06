@@ -76,12 +76,37 @@ class FirebaseAuthService {
       ).credential(idToken: identityToken, rawNonce: rawNonce);
 
       final userCredential = await _auth.signInWithCredential(oauthCredential);
+
+      // Apple only returns the user's name on the very first authorization.
+      // When present, persist it to the Firebase profile so downstream
+      // registration has a display name instead of a blank.
+      final fullName = appleCredential.givenName != null ||
+              appleCredential.familyName != null
+          ? [appleCredential.givenName, appleCredential.familyName]
+              .where((p) => p != null && p.isNotEmpty)
+              .join(' ')
+          : null;
+      if (fullName != null &&
+          fullName.isNotEmpty &&
+          (userCredential.user?.displayName == null ||
+              userCredential.user!.displayName!.isEmpty)) {
+        await userCredential.user?.updateDisplayName(fullName);
+      }
+
       return await _getFirebaseToken(userCredential);
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code == AuthorizationErrorCode.canceled) {
         throw const AuthCancelledException('Apple');
       }
-      rethrow;
+      throw AuthConfigurationException(
+        'Apple sign-in failed: ${e.message}',
+      );
+    } on SignInWithAppleNotSupportedException catch (e) {
+      throw AuthConfigurationException(
+        'Apple sign-in is not available on this device: ${e.message}',
+      );
+    } on SignInWithAppleException catch (e) {
+      throw AuthConfigurationException('Apple sign-in failed: $e');
     }
   }
 
@@ -100,7 +125,7 @@ class FirebaseAuthService {
 
   String _generateNonce([int length = 32]) {
     const charset =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
     return List.generate(
       length,

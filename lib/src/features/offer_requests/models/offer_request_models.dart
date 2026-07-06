@@ -1,3 +1,4 @@
+import '../../../core/utils/time_format.dart';
 import '../../offers/models/offer_models.dart';
 
 // ── Request ───────────────────────────────────────────────────────────────────
@@ -252,35 +253,5 @@ class OfferRequestResponse {
   int get totalQuantity => items.fold(0, (sum, i) => sum + i.quantity);
 
   // Relative "x ago" representation of createdAt.
-  String get createdAgo => _relativeTime(createdAt);
-
-  static String _relativeTime(String iso) {
-    if (iso.isEmpty) return '';
-    final dt = DateTime.tryParse(iso);
-    if (dt == null) return '';
-    final diff = DateTime.now().difference(dt);
-    if (diff.inSeconds < 60) return 'just now';
-    if (diff.inMinutes < 60) {
-      final m = diff.inMinutes;
-      return '$m minute${m == 1 ? '' : 's'} ago';
-    }
-    if (diff.inHours < 24) {
-      final h = diff.inHours;
-      return '$h hour${h == 1 ? '' : 's'} ago';
-    }
-    if (diff.inDays < 7) {
-      final d = diff.inDays;
-      return '$d day${d == 1 ? '' : 's'} ago';
-    }
-    if (diff.inDays < 30) {
-      final w = (diff.inDays / 7).floor();
-      return '$w week${w == 1 ? '' : 's'} ago';
-    }
-    if (diff.inDays < 365) {
-      final mo = (diff.inDays / 30).floor();
-      return '$mo month${mo == 1 ? '' : 's'} ago';
-    }
-    final y = (diff.inDays / 365).floor();
-    return '$y year${y == 1 ? '' : 's'} ago';
-  }
+  String get createdAgo => TimeFormat.relativeLong(createdAt);
 }

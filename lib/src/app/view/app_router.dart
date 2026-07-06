@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/app_bloc.dart';
 import '../../core/notifications/app_notifications.dart';
+import '../../core/notifications/device_registration_service.dart';
 import '../../core/session/app_session.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/auth/bloc/auth_bloc.dart';
@@ -61,6 +62,10 @@ class _AppRouterState extends State<AppRouter> {
                     .syncFromServer(UserModeX.fromApi(activeMode));
               }
               context.read<AppBloc>().add(const AppAuthCompleted());
+
+              // Register this device's FCM token so the backend can send push
+              // notifications. Best-effort; runs after the JWT is stored.
+              context.read<DeviceRegistrationService>().registerAfterLogin();
 
               // Brand-new account (no mode chosen yet and not verified): greet
               // them with a welcome notification.

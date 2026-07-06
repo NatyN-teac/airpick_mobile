@@ -25,10 +25,15 @@ class AuthSuccess extends AuthState {
 
 class AuthFailure extends AuthState {
   final String message;
-  const AuthFailure(this.message);
+
+  /// The provider that was being used when the failure occurred, so the UI can
+  /// retry the correct one instead of guessing from the error message.
+  final String providerName;
+
+  const AuthFailure(this.message, {this.providerName = 'Google'});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, providerName];
 }
 
 class AuthCancelled extends AuthState {

@@ -100,7 +100,11 @@ class FlightFormStep extends StatelessWidget {
                       isTime: true,
                       timeValue: state.departureTime,
                       onTap: () async {
-                        final t = await _pickTime(context, state.departureTime);
+                        final t = await _pickDepartureTime(
+                          context,
+                          current: state.departureTime,
+                          departureDate: state.departureDate,
+                        );
                         if (t != null) cubit.setDepartureTime(t);
                       },
                     ),
@@ -392,11 +396,51 @@ class FlightFormStep extends StatelessWidget {
     return picked;
   }
 
-  Future<TimeOfDay?> _pickTime(BuildContext context, TimeOfDay? initial) =>
-      showTimePicker(
-        context: context,
-        initialTime: initial ?? TimeOfDay.now(),
+  // ── Departure time picker — rejects a time in the past on today's date ──────
+
+  Future<TimeOfDay?> _pickDepartureTime(
+    BuildContext context, {
+    required TimeOfDay? current,
+    required DateTime? departureDate,
+  }) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: current ?? TimeOfDay.now(),
+    );
+
+    if (picked == null) return null;
+
+    // When departing today, the time must be in the future. A "now" or past
+    // time would be rejected by the server with an unclear error, so catch it
+    // here with a clear message.
+    final now = DateTime.now();
+    if (departureDate != null && _isSameDay(departureDate, now)) {
+      final pickedDateTime = DateTime(
+        departureDate.year,
+        departureDate.month,
+        departureDate.day,
+        picked.hour,
+        picked.minute,
       );
+      if (!pickedDateTime.isAfter(now)) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Departure time must be in the future. Please pick a later time.',
+                style: TextStyle(fontFamily: 'Manrope'),
+              ),
+              backgroundColor: AppColors.warning,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return null;
+      }
+    }
+
+    return picked;
+  }
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;

@@ -587,12 +587,19 @@ class _InDeliveryPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardWidth = MediaQuery.of(context).size.width * 0.72;
+    // A single delivery should fill the row instead of leaving a horizontal
+    // gap on the right; multiple deliveries peek the next card at 72% width.
+    const horizontalPadding = 20.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = items.length == 1
+        ? screenWidth - horizontalPadding * 2
+        : screenWidth * 0.72;
     return SizedBox(
       height: 172,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(20, 2, 20, 16),
+        padding: const EdgeInsets.fromLTRB(
+            horizontalPadding, 2, horizontalPadding, 16),
         itemCount: items.length,
         separatorBuilder: (context, _) => const SizedBox(width: 10),
         itemBuilder: (_, i) => DeliveryTrackCard(
@@ -704,6 +711,9 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
     final isDark = widget.isDark;
     final latest = widget.items.first;
     final count = widget.items.length;
+    // `AppColors.secondary` is a dark charcoal that vanishes against the dark
+    // card, so the bolt icon needs a light-on-dark accent in dark mode.
+    final accent = isDark ? AppColors.darkTextPrimary : AppColors.secondary;
     final textPrimary = isDark
         ? AppColors.darkTextPrimary
         : AppColors.textPrimary;
@@ -768,15 +778,15 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(
+                        color: accent.withValues(
                           alpha: 0.10 + 0.08 * t,
                         ),
                         borderRadius: BorderRadius.circular(13),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.bolt_rounded,
                         size: 22,
-                        color: AppColors.secondary,
+                        color: accent,
                       ),
                     );
                   },

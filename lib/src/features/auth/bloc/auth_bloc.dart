@@ -19,16 +19,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthGoogleSignInRequested event,
     Emitter<AuthState> emit,
   ) =>
-      _signIn(() => _repository.signInWithGoogle(), emit);
+      _signIn(() => _repository.signInWithGoogle(), 'Google', emit);
 
   Future<void> _onAppleSignIn(
     AuthAppleSignInRequested event,
     Emitter<AuthState> emit,
   ) =>
-      _signIn(() => _repository.signInWithApple(), emit);
+      _signIn(() => _repository.signInWithApple(), 'Apple', emit);
 
   Future<void> _signIn(
     Future<UserModel> Function() call,
+    String providerName,
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
@@ -38,9 +39,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on AuthCancelledException catch (e) {
       emit(AuthCancelled(e.providerName));
     } on AuthConfigurationException catch (e) {
-      emit(AuthFailure(e.message));
+      emit(AuthFailure(e.message, providerName: providerName));
     } catch (e) {
-      emit(AuthFailure(e.toString().replaceFirst('Exception: ', '')));
+      emit(AuthFailure(
+        e.toString().replaceFirst('Exception: ', ''),
+        providerName: providerName,
+      ));
     }
   }
 }

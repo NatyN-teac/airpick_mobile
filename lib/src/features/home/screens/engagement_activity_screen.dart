@@ -220,17 +220,26 @@ class _FilterChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Manrope',
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-              color: selected
-                  ? Colors.white
-                  : (isDark
-                      ? AppColors.darkTextSecondary
-                      : AppColors.textSecondary),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.fade,
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: selected
+                      ? Colors.white
+                      : (isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary),
+                ),
+              ),
             ),
           ),
         ),

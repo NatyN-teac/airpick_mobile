@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/time_format.dart';
 import '../models/delivery_track_models.dart';
 
 class DeliveryTrackCard extends StatelessWidget {
@@ -27,7 +27,7 @@ class DeliveryTrackCard extends StatelessWidget {
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
     final surface = isDark ? AppColors.darkSurface : Colors.white;
     final daysLabel = item.daysLeftLabel;
-    final updated = DateTime.tryParse(item.match.updatedAt ?? '');
+    final updated = TimeFormat.parseServerTime(item.match.updatedAt);
 
     return GestureDetector(
       onTap: onTap,
@@ -144,11 +144,10 @@ class DeliveryTrackCard extends StatelessWidget {
   }
 
   String _relativeTime(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 60) return '${diff.inMinutes.clamp(1, 59)}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return DateFormat('MMM d').format(dt);
+    if (DateTime.now().difference(dt).inDays < 7) {
+      return TimeFormat.relativeFromDate(dt);
+    }
+    return TimeFormat.shortDate(dt.toIso8601String());
   }
 }
 

@@ -133,6 +133,15 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
             _RouteHint(offer: widget.offer, isDark: isDark),
             const SizedBox(height: 18),
 
+            // Items are not editable on update — show them read-only so the
+            // carrier can see what the offer carries.
+            if (widget.offer.items.isNotEmpty) ...[
+              FormLabel('Items', isDark: isDark),
+              const SizedBox(height: 8),
+              _ItemsHint(offer: widget.offer, isDark: isDark),
+              const SizedBox(height: 18),
+            ],
+
             FormLabel('Pickup area', isDark: isDark),
             const SizedBox(height: 6),
             FormTextField(
@@ -393,6 +402,75 @@ class _RouteHint extends StatelessWidget {
           Text('Flight not editable',
               style: TextStyle(
                   fontFamily: 'Manrope', fontSize: 10, color: textTertiary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemsHint extends StatelessWidget {
+  final OfferResponse offer;
+  final bool isDark;
+  const _ItemsHint({required this.offer, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = isDark ? AppColors.darkSurface : AppColors.surface;
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final symbol = offer.currencyEnum.symbol;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < offer.items.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                color: isDark ? AppColors.darkBorder : AppColors.border,
+              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                children: [
+                  const Icon(Icons.inventory_2_rounded,
+                      size: 16, color: AppColors.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(offer.items[i].name,
+                            style: TextStyle(
+                              fontFamily: 'Manrope',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: textPrimary,
+                            )),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${OfferResponse.formatQuantity(offer.items[i].quantity)} '
+                          '${offer.items[i].unitLabel} · '
+                          '$symbol${offer.items[i].pricePerItem.toStringAsFixed(2)}/${offer.items[i].unitLabel}',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 11,
+                            color: textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

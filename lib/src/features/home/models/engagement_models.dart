@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/time_format.dart';
 import '../../chat/models/chat.dart';
 import '../../flights/models/flight_models.dart';
 import '../../matches/models/match_models.dart';
@@ -339,7 +340,7 @@ class EngagementListItem {
       toCode: leg?.destAirport.iataCode ?? '—',
       subtitle: '${p.pickupArea} → ${p.deliveryArea}',
       dateLabel: _formatDate(p.updatedAt),
-      updatedAt: DateTime.tryParse(p.updatedAt) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt: TimeFormat.parseServerTime(p.updatedAt) ?? DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 
@@ -368,13 +369,12 @@ class EngagementListItem {
       toCode: '—',
       subtitle: subtitle,
       dateLabel: _formatDate(m.updatedAt),
-      updatedAt: DateTime.tryParse(m.updatedAt) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt: TimeFormat.parseServerTime(m.updatedAt) ?? DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 
   static String _formatDate(String iso) {
-    if (iso.isEmpty) return '';
-    final dt = DateTime.tryParse(iso);
+    final dt = TimeFormat.parseServerTime(iso);
     if (dt == null) return iso;
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

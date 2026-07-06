@@ -15,6 +15,7 @@ import 'src/core/network/api_client.dart';
 import 'src/core/media/upload_repository.dart';
 import 'src/core/navigation/app_navigator.dart';
 import 'src/core/notifications/notification_service.dart';
+import 'src/core/notifications/device_registration_service.dart';
 import 'src/features/chat/navigation/chat_deep_link.dart';
 import 'src/features/chat/repository/chat_repository.dart';
 import 'src/core/storage/token_storage.dart';
@@ -97,6 +98,11 @@ class AirpickApp extends StatelessWidget {
         ),
         RepositoryProvider<TokenStorage>(create: (_) => tokenStorage),
         RepositoryProvider<ApiClient>(create: (_) => apiClient),
+        RepositoryProvider<DeviceRegistrationService>(
+          lazy: false,
+          create: (_) => DeviceRegistrationService(apiClient, tokenStorage)
+            ..start(),
+        ),
         RepositoryProvider<IAuthRepository>(
           create: (_) => AuthRepository(
             firebaseService: FirebaseAuthService(),

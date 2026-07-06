@@ -40,7 +40,7 @@ class AuthScreen extends StatelessWidget {
               context,
               message: state.message,
               onRetry: () => context.read<AuthBloc>().add(
-                    state.message.toLowerCase().contains('apple')
+                    state.providerName == 'Apple'
                         ? const AuthAppleSignInRequested()
                         : const AuthGoogleSignInRequested(),
                   ),
