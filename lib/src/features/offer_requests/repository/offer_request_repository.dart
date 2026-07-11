@@ -1,5 +1,3 @@
-import 'package:logger/logger.dart';
-
 import '../../../core/network/api_client.dart';
 import '../../matches/models/match_models.dart';
 import '../models/offer_request_models.dart';
