@@ -156,16 +156,30 @@ class _AirportPickerState extends State<AirportPicker> {
   }
 
   void _onChanged(String query) {
-    final q = query.toLowerCase();
+    final q = query.trim().toLowerCase();
     setState(() {
       _open = q.isNotEmpty;
       _filtered = widget.airports
           .where((a) =>
               a.iataCode.toLowerCase().contains(q) ||
               a.city.toLowerCase().contains(q) ||
-              a.name.toLowerCase().contains(q))
-          .take(6)
-          .toList();
+              a.name.toLowerCase().contains(q) ||
+              a.country.toLowerCase().contains(q))
+          // Rank exact / prefix IATA-code matches first so typing a code like
+          // "JFK" surfaces that airport at the top of the list.
+          .toList()
+        ..sort((a, b) {
+          int rank(Airport x) {
+            final code = x.iataCode.toLowerCase();
+            if (code == q) return 0;
+            if (code.startsWith(q)) return 1;
+            if (code.contains(q)) return 2;
+            return 3;
+          }
+
+          return rank(a).compareTo(rank(b));
+        });
+      _filtered = _filtered.take(6).toList();
     });
   }
 

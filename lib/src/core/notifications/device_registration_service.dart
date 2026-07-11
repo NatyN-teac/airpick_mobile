@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '../network/api_client.dart';
 import '../storage/token_storage.dart';
+import 'notification_service.dart';
 
 /// Registers/unregisters this device's FCM token with the backend so the
 /// server can deliver push notifications.
@@ -26,6 +28,9 @@ class DeviceRegistrationService {
   static const _devicesPath = '/users/devices';
 
   StreamSubscription<String>? _tokenRefreshSub;
+  StreamSubscription<RemoteMessage>? _foregroundSub;
+  StreamSubscription<RemoteMessage>? _openedAppSub;
+  bool _messageHandlersWired = false;
 
   FirebaseMessaging get _messaging => FirebaseMessaging.instance;
 
@@ -33,6 +38,8 @@ class DeviceRegistrationService {
   /// user is already signed in (e.g. an app relaunch). Safe to call once.
   Future<void> start() async {
     if (!_isSupportedPlatform) return;
+    // Display incoming pushes and route notification taps.
+    _wireMessageHandlers();
     // FCM can rotate the token at any time; keep the backend in sync, but only
     // while there's an active session to authenticate the request.
     _tokenRefreshSub ??= _messaging.onTokenRefresh.listen((token) async {
@@ -43,6 +50,37 @@ class DeviceRegistrationService {
     if (await _hasSession()) {
       await registerAfterLogin();
     }
+  }
+
+  /// Android/iOS do not surface a foreground FCM message as a visible
+  /// notification on their own — the app must present it. This wires the
+  /// foreground stream to the local-notifications plugin, and routes taps
+  /// (both from a background-opened notification and the launch message)
+  /// through the shared deep-link handler.
+  void _wireMessageHandlers() {
+    if (_messageHandlersWired) return;
+    _messageHandlersWired = true;
+
+    _foregroundSub ??= FirebaseMessaging.onMessage.listen((message) {
+      final notification = message.notification;
+      if (notification == null) return;
+      NotificationService.show(
+        title: notification.title ?? 'Airpick',
+        body: notification.body ?? '',
+        payload: message.data.isNotEmpty ? jsonEncode(message.data) : null,
+      );
+    });
+
+    _openedAppSub ??= FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      if (message.data.isNotEmpty) NotificationService.handleData(message.data);
+    });
+
+    // A tap that cold-started the app from a terminated state.
+    _messaging.getInitialMessage().then((message) {
+      if (message != null && message.data.isNotEmpty) {
+        NotificationService.handleData(message.data);
+      }
+    });
   }
 
   /// Obtains the FCM token and registers it with the backend. Best-effort:

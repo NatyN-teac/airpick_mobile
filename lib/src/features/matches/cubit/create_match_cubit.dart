@@ -92,6 +92,28 @@ class CreateMatchCubit extends Cubit<CreateMatchState> {
             .toList(),
       );
 
+  // Explains exactly which requirement is unmet, instead of a vague catch-all.
+  String _incompleteReason() {
+    if (state.selectedItems.isEmpty) {
+      return 'Select at least one item and a quantity to match.';
+    }
+    if (!state.hasValidItems) {
+      return 'One of your quantities exceeds what the carrier has remaining.';
+    }
+    if (state.receiverNeeded) {
+      if (state.firstName.trim().isEmpty ||
+          state.lastName.trim().isEmpty ||
+          state.phone.trim().isEmpty) {
+        return 'Add the receiver\'s first name, last name, and phone number.';
+      }
+      if (!(state.photoIdUrl?.isNotEmpty == true ||
+          state.photoLocalPath?.isNotEmpty == true)) {
+        return 'Attach a photo of the receiver\'s ID.';
+      }
+    }
+    return 'Please complete all required fields.';
+  }
+
   void _logPayload(CreateMatchRequest request, {String? note}) {
     final json = const JsonEncoder.withIndent('  ').convert(request.toJson());
     debugPrint(
@@ -103,7 +125,7 @@ class CreateMatchCubit extends Cubit<CreateMatchState> {
     if (!state.canSubmit) {
       debugPrint('[CreateMatch] Send Match pressed — form incomplete, not sending.');
       emit(state.copyWith(
-        error: 'Please complete all required fields.',
+        error: _incompleteReason(),
         status: CreateMatchStatus.failure,
       ));
       return;

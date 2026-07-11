@@ -17,12 +17,17 @@ class OfferFormStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = l10n(context);
 
+    final keyboardH = MediaQuery.of(context).viewInsets.bottom;
+
     return BlocBuilder<CreateOfferCubit, CreateOfferState>(
       builder: (context, state) {
         final cubit = context.read<CreateOfferCubit>();
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+          // Drag anywhere on the form to dismiss the keyboard, and keep the
+          // last fields reachable above it while it's open.
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(18, 16, 18, 18 + keyboardH),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

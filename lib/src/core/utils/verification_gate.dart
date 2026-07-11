@@ -7,15 +7,19 @@ import '../../features/profile/screens/account_verification_screen.dart';
 /// Returns true if the user is verified and the action can proceed.
 /// If not verified, shows a bottom sheet explaining the requirement and
 /// offering a shortcut to the verification screen, then returns false.
-bool requireVerified(BuildContext context) {
+///
+/// [action] is folded into the explanation so the message reflects the exact
+/// scenario, e.g. `requireVerified(context, action: 'create an offer')`.
+bool requireVerified(BuildContext context, {String? action}) {
   final profile = context.read<CurrentUserCubit>().state;
   if (profile?.isVerified == true) return true;
 
-  _showVerificationRequired(context);
+  _showVerificationRequired(context, action: action);
   return false;
 }
 
-void _showVerificationRequired(BuildContext context) {
+void _showVerificationRequired(BuildContext context, {String? action}) {
+  final actionText = action ?? 'create offers, requests, or proposals';
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final bg = isDark ? AppColors.darkSurface : Colors.white;
   final textPrimary =
@@ -69,7 +73,7 @@ void _showVerificationRequired(BuildContext context) {
           ),
           const SizedBox(height: 8),
           Text(
-            'You need to verify your identity before you can create offers, requests, or proposals. Verification takes just a few minutes.',
+            'You need to verify your identity before you can $actionText. Verification takes just a few minutes.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Manrope',

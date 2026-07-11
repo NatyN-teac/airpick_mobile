@@ -21,6 +21,8 @@ class FlightFormStep extends StatelessWidget {
         final cubit = context.read<CreateOfferCubit>();
 
         return SingleChildScrollView(
+          // Drag anywhere on the form to dismiss the keyboard.
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           // Extra bottom padding when keyboard is open so all fields stay reachable
           padding: EdgeInsets.fromLTRB(18, 16, 18, 18 + keyboardH),
           child: Column(

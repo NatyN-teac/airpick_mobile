@@ -16,6 +16,7 @@ import '../../offer_requests/widgets/create_offer_request_bubble.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/app_nav_bar.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/verification_gate.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../chat/cubit/chats_list_cubit.dart';
 import '../../chat/cubit/chats_list_state.dart';
@@ -112,11 +113,10 @@ class _HomeViewState extends State<_HomeView> {
 
   // Opens the mode-appropriate create form as a bottom sheet.
   void _onCreateTap(BuildContext context) {
-    // TODO: restore this later
-    // if (!requireVerified(context)) return;
-
     final mode = context.read<UserModeCubit>().state;
     if (mode == UserMode.carrier) {
+      // Offers require a verified identity — show an offer-specific message.
+      if (!requireVerified(context, action: 'create an offer')) return;
       final offersCubit = context.read<OffersCubit>();
       showCreateOfferBubble(
         context,

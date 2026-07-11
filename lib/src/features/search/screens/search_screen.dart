@@ -128,8 +128,31 @@ class _SearchScreenState extends State<SearchScreen> {
       _SearchScope.destinationCountry => repo.searchShipperRequests(
         destinationCountry: query,
       ),
-      _SearchScope.anywhere => repo.searchShipperRequests(sourceCountry: query),
+      // "Anywhere" is a free-text search: the backend filters are AND-combined
+      // per field, so run each field query and merge the unique results. This
+      // makes a general search match on origin OR destination (previously it
+      // only matched the source country, so destinations never surfaced).
+      _SearchScope.anywhere => _searchAnywhere(repo, query),
     };
+  }
+
+  Future<List<OfferRequestResponse>> _searchAnywhere(
+    OfferRequestRepository repo,
+    String query,
+  ) async {
+    final batches = await Future.wait([
+      repo.searchShipperRequests(sourceCountry: query),
+      repo.searchShipperRequests(sourceCity: query),
+      repo.searchShipperRequests(destinationCountry: query),
+    ]);
+    final seen = <String>{};
+    final merged = <OfferRequestResponse>[];
+    for (final batch in batches) {
+      for (final request in batch) {
+        if (seen.add(request.id)) merged.add(request);
+      }
+    }
+    return merged;
   }
 
   void _onQueryChanged(String value) {

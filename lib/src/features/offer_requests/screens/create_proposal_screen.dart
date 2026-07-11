@@ -82,8 +82,14 @@ class CreateProposalScreen extends StatelessWidget {
                 )),
           ),
           body: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(
-                18, 8, 18, MediaQuery.of(context).padding.bottom + 48),
+                18,
+                8,
+                18,
+                MediaQuery.of(context).padding.bottom +
+                    MediaQuery.of(context).viewInsets.bottom +
+                    48),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

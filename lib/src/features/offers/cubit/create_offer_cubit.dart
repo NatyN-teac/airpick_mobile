@@ -162,9 +162,14 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
   void setSpecialNote(String v) => emit(state.copyWith(specialNote: v));
 
   void addMeetupPlace(String place) {
-    if (place.trim().isEmpty) return;
+    final trimmed = place.trim();
+    if (trimmed.isEmpty) return;
+    // Ignore duplicates (case-insensitive) so the same place can't be added twice.
+    final exists = state.meetupPlaces
+        .any((p) => p.toLowerCase() == trimmed.toLowerCase());
+    if (exists) return;
     emit(state.copyWith(
-        meetupPlaces: [...state.meetupPlaces, place.trim()]));
+        meetupPlaces: [...state.meetupPlaces, trimmed]));
   }
 
   void removeMeetupPlace(int index) {

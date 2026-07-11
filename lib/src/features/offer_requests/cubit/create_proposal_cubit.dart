@@ -63,8 +63,13 @@ class CreateProposalCubit extends Cubit<CreateProposalState> {
   }
 
   void addMeetupPlace(String place) {
-    if (place.trim().isEmpty) return;
-    emit(state.copyWith(meetupPlaces: [...state.meetupPlaces, place.trim()]));
+    final trimmed = place.trim();
+    if (trimmed.isEmpty) return;
+    // Ignore duplicates (case-insensitive) so the same place can't be added twice.
+    final exists = state.meetupPlaces
+        .any((p) => p.toLowerCase() == trimmed.toLowerCase());
+    if (exists) return;
+    emit(state.copyWith(meetupPlaces: [...state.meetupPlaces, trimmed]));
   }
 
   void removeMeetupPlace(int i) {

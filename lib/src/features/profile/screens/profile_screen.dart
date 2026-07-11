@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/session/session_logout.dart';
+import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
+import '../cubit/current_user_cubit.dart';
+import '../repository/user_repository.dart';
 import '../../settings/screens/language_screen.dart';
 import '../screens/about_screen.dart';
 import '../screens/account_verification_screen.dart';
@@ -78,9 +82,15 @@ class ProfileScreen extends StatelessWidget {
 
     return ColoredBox(
       color: bg,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
+      child: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () => context.read<CurrentUserCubit>().refreshFromServer(
+              context.read<UserRepository>(),
+              context.read<TokenStorage>(),
+            ),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
           children: [
             const ProfileHeaderCard(),
             const SizedBox(height: 40),
@@ -226,6 +236,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
           ],
+        ),
         ),
       ),
     );

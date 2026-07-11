@@ -174,7 +174,9 @@ class _OfferRequestForm extends StatelessWidget {
         final cubit = context.read<CreateOfferRequestCubit>();
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(
+              18, 14, 18, 18 + MediaQuery.of(context).viewInsets.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

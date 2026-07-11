@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/media/upload_repository.dart';
+import '../../../core/navigation/app_navigator.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../chat/navigation/match_chat_flow.dart';
+import '../../chat/screens/chat_screen.dart';
 import '../../offers/models/offer_models.dart';
 import '../../offers/models/offer_response.dart';
 import '../../offers/widgets/airpick_bubble_shell.dart';
@@ -90,7 +93,23 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
 
   void _onSuccessDismiss(BuildContext context, MatchResponse result) {
     widget.onMatched(result);
+    // Return to the home stack, then open the match chat so the sender and
+    // carrier can coordinate pickup and delivery — they can arrange the pickup
+    // later from that conversation rather than losing the thread here.
     Navigator.of(context).popUntil((route) => route.isFirst);
+    final matchId = result.id;
+    if (matchId.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = appNavigatorKey.currentContext;
+      if (ctx != null) {
+        openChatScreen(
+          ctx,
+          matchId,
+          welcomeMessage: buildMatchWelcomeMessage(result),
+          initialMatch: result,
+        );
+      }
+    });
   }
 
   @override
@@ -153,9 +172,9 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
                     isDark: isDark,
                     onDismiss: () =>
                         _onSuccessDismiss(context, state.result!),
-                    title: 'Match Sent!',
+                    title: 'Match Created!',
                     subtitle:
-                        'The carrier will review your request. You\'ll be notified when they respond.',
+                        'Opening your chat with the carrier so you can arrange pickup and delivery.',
                   )
                 : Stack(
                     key: const ValueKey('form'),
