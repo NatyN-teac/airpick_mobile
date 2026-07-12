@@ -57,32 +57,6 @@ class OfferRequestRepository {
         .toList();
   }
 
-  // GET /api/v1/matches/track/shipper/search?sourceCountry=...
-  Future<List<OfferRequestResponse>> searchShipperRequests({
-    String? sourceCountry,
-    String? sourceCity,
-    String? destinationCountry,
-  }) async {
-    final params = <String, String>{
-      if (sourceCountry != null && sourceCountry.isNotEmpty)
-        'sourceCountry': sourceCountry.trim(),
-      if (sourceCity != null && sourceCity.isNotEmpty)
-        'sourceCity': sourceCity.trim(),
-      if (destinationCountry != null && destinationCountry.isNotEmpty)
-        'destinationCountry': destinationCountry.trim(),
-    };
-
-    final query = params.isEmpty
-        ? ''
-        : '?${params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&')}';
-    final response = await _client.get('/matches/track/shipper/search$query');
-    final list =
-        (response['content'] ?? response['data'] ?? []) as List<dynamic>;
-    return list
-        .map((e) => OfferRequestResponse.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
-
   Future<void> deleteOfferRequest(String id) async {
     await _client.delete('/offer-requests/$id');
   }

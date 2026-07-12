@@ -203,6 +203,7 @@ class OfferFormStep extends StatelessWidget {
                     itemBuilder: (_, i) => Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: _ItemRow(
+                          key: ValueKey(state.items[i].id),
                           item: state.items[i],
                           isDark: isDark,
                           cubit: cubit),
@@ -728,6 +729,7 @@ class _ItemRow extends StatelessWidget {
   final CreateOfferCubit cubit;
 
   const _ItemRow({
+    super.key,
     required this.item,
     required this.isDark,
     required this.cubit,
@@ -793,6 +795,7 @@ class _ItemRow extends StatelessWidget {
                 child: _MiniField(
                   isDark: isDark,
                   hint: 'Qty',
+                  initialValue: item.quantity.toString(),
                   keyboardType: TextInputType.number,
                   onChanged: (v) =>
                       cubit.updateItem(item.id, quantity: int.tryParse(v) ?? 1),
@@ -822,6 +825,7 @@ class _ItemRow extends StatelessWidget {
 class _MiniField extends StatelessWidget {
   final bool isDark;
   final String hint;
+  final String? initialValue;
   final TextInputType? keyboardType;
   final ValueChanged<String> onChanged;
 
@@ -829,6 +833,7 @@ class _MiniField extends StatelessWidget {
     required this.isDark,
     required this.hint,
     required this.onChanged,
+    this.initialValue,
     this.keyboardType,
   });
 
@@ -839,7 +844,8 @@ class _MiniField extends StatelessWidget {
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
 
-    return TextField(
+    return TextFormField(
+      initialValue: initialValue,
       onChanged: onChanged,
       keyboardType: keyboardType,
       style: TextStyle(

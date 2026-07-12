@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_message.dart';
+import '../../chat/screens/chat_screen.dart';
 import '../../home/cubit/user_mode_cubit.dart';
-import '../../offer_requests/models/offer_request_models.dart';
-import '../../offer_requests/repository/offer_request_repository.dart';
-import '../../offer_requests/screens/create_proposal_screen.dart';
-import '../../offer_requests/widgets/browse_request_card.dart';
+import '../../matches/models/match_models.dart';
+import '../../matches/repository/match_repository.dart';
+import '../../matches/screens/create_match_screen.dart';
 import '../../offers/models/offer_response.dart';
+import '../../offers/repository/offer_repository.dart';
+import '../../offers/widgets/browse_offer_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -29,7 +31,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _loading = false;
   bool _hasSearched = false;
   String? _error;
-  List<OfferRequestResponse> _requestResults = const [];
+  List<MatchResponse> _matchResults = const [];
   List<OfferResponse> _offerResults = const [];
 
   static const _initialRecentSearches = [
@@ -76,7 +78,7 @@ class _SearchScreenState extends State<SearchScreen> {
         _loading = false;
         _hasSearched = false;
         _error = null;
-        _requestResults = const [];
+        _matchResults = const [];
         _offerResults = const [];
       });
       return;
@@ -96,36 +98,42 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     try {
-      final results = await _searchRequests(query, _scope);
+      final mode = _mode ?? context.read<UserModeCubit>().state;
+      final matchResults = mode == UserMode.carrier
+          ? await _searchShipperMatches(query, _scope)
+          : const <MatchResponse>[];
+      final offerResults = mode == UserMode.sender
+          ? await _searchOffers(query, _scope)
+          : const <OfferResponse>[];
 
       if (!mounted || version != _searchVersion) return;
       setState(() {
-        _requestResults = results;
-        _offerResults = const [];
+        _matchResults = matchResults;
+        _offerResults = offerResults;
         _loading = false;
       });
     } catch (e) {
       if (!mounted || version != _searchVersion) return;
       setState(() {
         _loading = false;
-        _requestResults = const [];
+        _matchResults = const [];
         _offerResults = const [];
         _error = e.toString().replaceFirst('Exception: ', '');
       });
     }
   }
 
-  Future<List<OfferRequestResponse>> _searchRequests(
+  Future<List<MatchResponse>> _searchShipperMatches(
     String query,
     _SearchScope scope,
   ) async {
-    final repo = context.read<OfferRequestRepository>();
+    final repo = context.read<MatchRepository>();
     return switch (scope) {
-      _SearchScope.sourceCountry => repo.searchShipperRequests(
+      _SearchScope.sourceCountry => repo.searchShipperTrack(
         sourceCountry: query,
       ),
-      _SearchScope.sourceCity => repo.searchShipperRequests(sourceCity: query),
-      _SearchScope.destinationCountry => repo.searchShipperRequests(
+      _SearchScope.sourceCity => repo.searchShipperTrack(sourceCity: query),
+      _SearchScope.destinationCountry => repo.searchShipperTrack(
         destinationCountry: query,
       ),
       // "Anywhere" is a free-text search: the backend filters are AND-combined
@@ -136,20 +144,56 @@ class _SearchScreenState extends State<SearchScreen> {
     };
   }
 
-  Future<List<OfferRequestResponse>> _searchAnywhere(
-    OfferRequestRepository repo,
+  Future<List<OfferResponse>> _searchOffers(
+    String query,
+    _SearchScope scope,
+  ) async {
+    final repo = context.read<OfferRepository>();
+    return switch (scope) {
+      _SearchScope.sourceCountry => repo.searchCarrierOffers(
+        sourceCountry: query,
+      ),
+      _SearchScope.sourceCity => repo.searchCarrierOffers(sourceCity: query),
+      _SearchScope.destinationCountry => repo.searchCarrierOffers(
+        destinationCountry: query,
+      ),
+      _SearchScope.anywhere => _searchCarrierAnywhere(repo, query),
+    };
+  }
+
+  Future<List<MatchResponse>> _searchAnywhere(
+    MatchRepository repo,
     String query,
   ) async {
     final batches = await Future.wait([
-      repo.searchShipperRequests(sourceCountry: query),
-      repo.searchShipperRequests(sourceCity: query),
-      repo.searchShipperRequests(destinationCountry: query),
+      repo.searchShipperTrack(sourceCountry: query),
+      repo.searchShipperTrack(sourceCity: query),
+      repo.searchShipperTrack(destinationCountry: query),
     ]);
     final seen = <String>{};
-    final merged = <OfferRequestResponse>[];
+    final merged = <MatchResponse>[];
     for (final batch in batches) {
-      for (final request in batch) {
-        if (seen.add(request.id)) merged.add(request);
+      for (final match in batch) {
+        if (seen.add(match.id)) merged.add(match);
+      }
+    }
+    return merged;
+  }
+
+  Future<List<OfferResponse>> _searchCarrierAnywhere(
+    OfferRepository repo,
+    String query,
+  ) async {
+    final batches = await Future.wait([
+      repo.searchCarrierOffers(sourceCountry: query),
+      repo.searchCarrierOffers(sourceCity: query),
+      repo.searchCarrierOffers(destinationCountry: query),
+    ]);
+    final seen = <String>{};
+    final merged = <OfferResponse>[];
+    for (final batch in batches) {
+      for (final offer in batch) {
+        if (seen.add(offer.id)) merged.add(offer);
       }
     }
     return merged;
@@ -163,7 +207,7 @@ class _SearchScreenState extends State<SearchScreen> {
         _loading = false;
         _hasSearched = false;
         _error = null;
-        _requestResults = const [];
+        _matchResults = const [];
         _offerResults = const [];
       });
       return;
@@ -210,7 +254,7 @@ class _SearchScreenState extends State<SearchScreen> {
       _loading = false;
       _hasSearched = false;
       _error = null;
-      _requestResults = const [];
+      _matchResults = const [];
       _offerResults = const [];
 
       _scope = _SearchScope.anywhere;
@@ -424,16 +468,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: _ModeBanner(
-                  isDark: isDark,
-                  mode: mode,
-                  resultCount: mode == UserMode.carrier
-                      ? _requestResults.length
-                      : _offerResults.length,
-                ),
-              ),
+
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                 child: _FilterSelector(
@@ -461,25 +496,29 @@ class _SearchScreenState extends State<SearchScreen> {
                       )
                     : _SearchResultsView(
                         isDark: isDark,
+                        mode: mode,
                         query: _query.trim(),
                         loading: _loading,
                         error: _error,
                         hasSearched: _hasSearched,
-                        requestResults: _requestResults,
+                        matchResults: _matchResults,
+                        offerResults: _offerResults,
                         onRefresh: () => _performSearch(rawQuery: _query),
-                        onSendProposal: (request) {
+                        onOpenMatch: (match) {
                           _rememberSearch(_query);
-                          openCreateProposal(
+                          openChatScreen(
                             context,
-                            request,
-                            onSent: () {
-                              if (!mounted) return;
-                              setState(() {
-                                _requestResults = _requestResults
-                                    .where((it) => it.id != request.id)
-                                    .toList();
-                              });
-                            },
+                            match.id,
+                            initialMatch: match,
+                          );
+                        },
+                        onMatchOffer: (offer) {
+                          _rememberSearch(_query);
+                          openCreateMatch(
+                            context,
+                            offer,
+                            onMatched: (response) =>
+                                _afterOfferMatched(offer, response),
                           );
                         },
                       ),
@@ -502,6 +541,28 @@ class _SearchScreenState extends State<SearchScreen> {
     );
     if (selected != null) {
       _onScopeSelected(selected);
+    }
+  }
+
+  void _afterOfferMatched(OfferResponse offer, MatchResponse response) {
+    if (!mounted) return;
+    var fullyDepleted = offer.items.isNotEmpty;
+    for (final item in offer.items) {
+      final matched = response.matchedItems
+          .where((match) => match.offerItemId == item.id)
+          .fold(0.0, (sum, match) => sum + match.quantity);
+      if (item.remainingQuantity - matched > 0.0001) {
+        fullyDepleted = false;
+        break;
+      }
+    }
+
+    if (fullyDepleted) {
+      setState(() {
+        _offerResults = _offerResults.where((it) => it.id != offer.id).toList();
+      });
+    } else {
+      _performSearch(rawQuery: _query);
     }
   }
 }
@@ -703,113 +764,6 @@ class _QuickSearchChip extends StatelessWidget {
             color: textPrimary,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ModeBanner extends StatelessWidget {
-  final bool isDark;
-  final UserMode mode;
-  final int resultCount;
-
-  const _ModeBanner({
-    required this.isDark,
-    required this.mode,
-    required this.resultCount,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary = isDark
-        ? AppColors.darkTextPrimary
-        : AppColors.textPrimary;
-    final textSecondary = isDark
-        ? AppColors.darkTextSecondary
-        : AppColors.textSecondary;
-
-    final title = mode == UserMode.carrier
-        ? 'Search shipper requests'
-        : 'Search available carriers';
-    final subtitle = mode == UserMode.carrier
-        ? 'Searches open shipper requests via the shipper search endpoint.'
-        : 'Filters available carriers by route, area, carrier name, and item.';
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.border,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              mode == UserMode.carrier
-                  ? Icons.inventory_2_rounded
-                  : Icons.flight_takeoff_rounded,
-              size: 18,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: textPrimary,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 12,
-                    color: textSecondary,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (resultCount > 0)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                '$resultCount',
-                style: const TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }
@@ -1139,23 +1093,29 @@ class _ScopeOptionTile extends StatelessWidget {
 
 class _SearchResultsView extends StatelessWidget {
   final bool isDark;
+  final UserMode mode;
   final String query;
   final bool loading;
   final String? error;
   final bool hasSearched;
-  final List<OfferRequestResponse> requestResults;
+  final List<MatchResponse> matchResults;
+  final List<OfferResponse> offerResults;
   final Future<void> Function() onRefresh;
-  final ValueChanged<OfferRequestResponse> onSendProposal;
+  final ValueChanged<MatchResponse> onOpenMatch;
+  final ValueChanged<OfferResponse> onMatchOffer;
 
   const _SearchResultsView({
     required this.isDark,
+    required this.mode,
     required this.query,
     required this.loading,
     required this.error,
     required this.hasSearched,
-    required this.requestResults,
+    required this.matchResults,
+    required this.offerResults,
     required this.onRefresh,
-    required this.onSendProposal,
+    required this.onOpenMatch,
+    required this.onMatchOffer,
   });
 
   @override
@@ -1164,7 +1124,10 @@ class _SearchResultsView extends StatelessWidget {
         ? AppColors.darkTextSecondary
         : AppColors.textSecondary;
 
-    final resultCount = requestResults.length;
+    final isCarrierMode = mode == UserMode.carrier;
+    final resultCount = isCarrierMode
+        ? matchResults.length
+        : offerResults.length;
 
     if (loading && resultCount == 0) {
       return const Center(
@@ -1196,7 +1159,9 @@ class _SearchResultsView extends StatelessWidget {
             SizedBox(height: MediaQuery.of(context).size.height * 0.18),
             AppEmptyState(
               icon: Icons.search_off_rounded,
-              title: 'No shipper requests matched "$query".',
+              title: isCarrierMode
+                  ? 'No deliveries matched "$query".'
+                  : 'No carriers matched "$query".',
               message: 'Try a different country, city, or destination.',
             ),
           ],
@@ -1243,21 +1208,218 @@ class _SearchResultsView extends StatelessWidget {
           }
 
           final resultIndex = index - 1;
-          final request = requestResults[resultIndex];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: BrowseRequestCard(
-              request: request,
-              isDark: isDark,
-              onTap: () => showBrowseRequestDetail(
-                context,
-                request,
-                onSendProposal: () => onSendProposal(request),
+          if (isCarrierMode) {
+            final match = matchResults[resultIndex];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: _MatchSearchCard(
+                match: match,
+                isDark: isDark,
+                onTap: match.id.isEmpty ? null : () => onOpenMatch(match),
               ),
-              onSendProposal: () => onSendProposal(request),
-            ),
-          );
+            );
+          }
+
+          if (!isCarrierMode) {
+            final offer = offerResults[resultIndex];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: BrowseOfferCard(
+                offer: offer,
+                isDark: isDark,
+                onMatch: () => onMatchOffer(offer),
+              ),
+            );
+          }
+
+          return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+}
+
+class _MatchSearchCard extends StatelessWidget {
+  final MatchResponse match;
+  final bool isDark;
+  final VoidCallback? onTap;
+
+  const _MatchSearchCard({
+    required this.match,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
+    final surface = isDark ? AppColors.darkSurface : Colors.white;
+    final itemTitle = _itemTitle(match);
+    final route = _routeLabel(match);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.border,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _MatchStatusChip(status: match.status),
+                const Spacer(),
+                Text(
+                  '\$${match.totalPrice.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              itemTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
+                letterSpacing: -0.2,
+              ),
+            ),
+            if (route != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                route,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 11,
+                  color: textSecondary,
+                ),
+              ),
+            ],
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(
+                  match.chatId?.trim().isNotEmpty == true
+                      ? Icons.chat_bubble_outline_rounded
+                      : Icons.receipt_long_rounded,
+                  size: 16,
+                  color: textSecondary,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    match.chatId?.trim().isNotEmpty == true
+                        ? 'Open conversation'
+                        : 'Match ${match.id}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _itemTitle(MatchResponse match) {
+    final items = match.matchedItems;
+    if (items.isEmpty) return 'Delivery';
+    if (items.length == 1) return items.first.itemName;
+    return '${items.first.itemName} +${items.length - 1}';
+  }
+
+  String? _routeLabel(MatchResponse match) {
+    final from = match.pickupArea?.trim();
+    final to = match.deliveryArea?.trim();
+    if (from != null && from.isNotEmpty && to != null && to.isNotEmpty) {
+      return '$from → $to';
+    }
+    final leg = match.flight?.legs.isNotEmpty == true
+        ? match.flight!.legs.last
+        : null;
+    if (leg == null) return null;
+    final src = leg.srcAirport.iataCode.isNotEmpty
+        ? leg.srcAirport.iataCode
+        : leg.srcAirport.name;
+    final dest = leg.destAirport.iataCode.isNotEmpty
+        ? leg.destAirport.iataCode
+        : leg.destAirport.name;
+    return '$src → $dest';
+  }
+}
+
+class _MatchStatusChip extends StatelessWidget {
+  final String status;
+
+  const _MatchStatusChip({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = status.toUpperCase();
+    final color = switch (normalized) {
+      'COMPLETED' || 'DELIVERED' => AppColors.success,
+      'IN_PROGRESS' || 'IN_DELIVERY' => AppColors.info,
+      'ACCEPTED' => AppColors.primary,
+      'CANCELLED' || 'REJECTED' => AppColors.error,
+      _ => AppColors.warning,
+    };
+    final label = normalized
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map((part) => '${part[0]}${part.substring(1).toLowerCase()}')
+        .join(' ');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label.isEmpty ? 'Match' : label,
+        style: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
       ),
     );
   }
