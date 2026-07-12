@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/offer_request_models.dart';
 
@@ -12,6 +14,7 @@ class OfferRequestDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
+    final l = l10n(context);
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSecondary =
@@ -28,7 +31,7 @@ class OfferRequestDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Request Details',
+          l.requestDetailTitle,
           style: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 16,
@@ -54,7 +57,7 @@ class OfferRequestDetailScreen extends StatelessWidget {
                     size: 14, color: textSecondary),
                 const SizedBox(width: 5),
                 Text(
-                  'Created ${request.createdAgo}',
+                  l.offerCreatedAgo(request.createdAgo),
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 12,
@@ -80,29 +83,29 @@ class OfferRequestDetailScreen extends StatelessWidget {
             // ── Detail rows ────────────────────────────────────────
             _DetailTile(
               icon: Icons.calendar_today_rounded,
-              label: 'Preferred date',
+              label: l.preferredDate,
               value: _prettyDate(request.preferredDate),
               isDark: isDark,
             ),
             _DetailTile(
               icon: Icons.bolt_rounded,
-              label: 'Urgency',
+              label: l.urgencyLevel,
               value: request.urgencyLabel,
               isDark: isDark,
             ),
             _DetailTile(
               icon: Icons.call_split_rounded,
-              label: 'Partial proposals',
+              label: l.reqPartialProposals,
               value: request.partialProposalAccepted
-                  ? 'Accepted'
-                  : 'Not accepted',
+                  ? l.statusAccepted
+                  : l.statusNotAccepted,
               isDark: isDark,
             ),
             if (request.specialNote != null &&
                 request.specialNote!.isNotEmpty)
               _DetailTile(
                 icon: Icons.sticky_note_2_outlined,
-                label: 'Special note',
+                label: l.specialNote,
                 value: request.specialNote!,
                 isDark: isDark,
               ),
@@ -112,7 +115,7 @@ class OfferRequestDetailScreen extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'Items',
+                  l.offerItems,
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 15,
@@ -136,7 +139,7 @@ class OfferRequestDetailScreen extends StatelessWidget {
             ...request.items.map((it) => _ItemTile(item: it, isDark: isDark)),
             if (request.items.isEmpty)
               Text(
-                'No items',
+                l.reqNoItems,
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 13,
@@ -162,8 +165,16 @@ class OfferRequestDetailScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         request.proposalCount > 0
-                            ? 'This request has proposals and can no longer be edited or deleted.'
-                            : 'This request is ${request.statusLabel.toLowerCase()} and can no longer be edited or deleted.',
+                            ? l.reqHasProposalsLocked
+                            : l.reqStatusLocked(switch (request.status) {
+                                'OPEN' => l.statusOpen,
+                                'PENDING_ITEM_APPROVAL' =>
+                                  l.statusPendingApproval,
+                                'CLOSED' => l.statusClosed,
+                                'ACCEPTED' => l.statusAccepted,
+                                'CANCELLED' => l.statusCancelled,
+                                _ => request.statusLabel,
+                              }.toLowerCase()),
                         style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 11,
@@ -296,12 +307,12 @@ class _StatusChip extends StatelessWidget {
         _ => AppColors.info,
       };
 
-  String get _label => switch (status) {
-        'OPEN' => 'Open',
-        'PENDING_ITEM_APPROVAL' => 'Pending',
-        'ACCEPTED' => 'Accepted',
-        'CANCELLED' => 'Cancelled',
-        'CLOSED' => 'Closed',
+  String _labelOf(AppLocalizations l) => switch (status) {
+        'OPEN' => l.statusOpen,
+        'PENDING_ITEM_APPROVAL' => l.statusPending,
+        'ACCEPTED' => l.statusAccepted,
+        'CANCELLED' => l.statusCancelled,
+        'CLOSED' => l.statusClosed,
         _ => status,
       };
 
@@ -313,7 +324,7 @@ class _StatusChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
-          _label,
+          _labelOf(l10n(context)),
           style: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 11,

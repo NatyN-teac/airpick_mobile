@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_message.dart';
@@ -137,6 +138,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   }
 
   Future<void> _load() async {
+    final l = l10n(context);
     // Show the form immediately from the local snapshot — don't block on GET.
     final hasLocal = _snapshot != null || _email != null;
     setState(() {
@@ -151,7 +153,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
       final userRepository = context.read<UserRepository>();
       final userId = await tokenStorage.getUserId();
       if (userId == null || userId.isEmpty) {
-        throw Exception('User ID not found.');
+        throw Exception(l.userIdNotFound);
       }
       final detail = await userRepository.getUserProfile(userId);
       if (!mounted) return;
@@ -176,7 +178,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
         _showForm = _snapshot != null || _email != null;
         // Soft warning — user can still edit and save.
         _error = hasLocal
-            ? 'Could not refresh from server. Showing saved info — you can still edit and save.'
+            ? l.udErrorRefresh
             : e.toString().replaceFirst('Exception: ', '');
       });
       if (_showForm && !hasLocal) _enterCtrl.forward(from: 0);
@@ -273,20 +275,21 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   }
 
   String? _validateRequiredFields() {
+    final l = l10n(context);
     if (_firstName.text.trim().isEmpty) {
-      return 'First name is required.';
+      return l.firstNameRequired;
     }
     if (_lastName.text.trim().isEmpty) {
-      return 'Last name is required.';
+      return l.lastNameRequired;
     }
     if (_city.text.trim().isEmpty) {
-      return 'City is required.';
+      return l.cityRequired;
     }
     if (_country.text.trim().isEmpty) {
-      return 'Country is required.';
+      return l.countryRequired;
     }
     if (_dob == null) {
-      return 'Date of birth is required.';
+      return l.dobRequired;
     }
     return null;
   }
@@ -295,17 +298,18 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
+    final l = l10n(context);
 
     return Scaffold(
       backgroundColor: bg,
-      appBar: const ProfileSubScreenAppBar(title: 'User details'),
+      appBar: ProfileSubScreenAppBar(title: l.profileUserDetails),
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             )
           : _error != null && _email == null
           ? AppErrorState(
-              title: 'Could not load profile',
+              title: l.udCouldNotLoad,
               message: _error!,
               onRetry: _load,
             )
@@ -328,8 +332,8 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                       key: const ValueKey('success'),
                       isDark: isDark,
                       onDismiss: () => Navigator.pop(context),
-                      title: 'Profile Updated!',
-                      subtitle: 'Your details have been saved.',
+                      title: l.udUpdatedTitle,
+                      subtitle: l.udUpdatedSub,
                     )
                   : Column(
                       key: const ValueKey('form'),
@@ -388,7 +392,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                   animation: _enterCtrl,
                                   interval: const Interval(0.15, 0.45),
                                   child: _SectionHeader(
-                                    title: 'Personal',
+                                    title: l.sectionPersonal,
                                     icon: Icons.person_outline_rounded,
                                     isDark: isDark,
                                   ),
@@ -397,23 +401,23 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                 _field(
                                   0.2,
                                   isDark,
-                                  'First name *',
+                                  '${l.firstName} *',
                                   _firstName,
-                                  hint: 'First name',
+                                  hint: l.firstName,
                                 ),
                                 _field(
                                   0.25,
                                   isDark,
-                                  'Middle name',
+                                  l.middleName,
                                   _middleName,
-                                  hint: 'Optional',
+                                  hint: l.optional,
                                 ),
                                 _field(
                                   0.3,
                                   isDark,
-                                  'Last name *',
+                                  '${l.lastName} *',
                                   _lastName,
-                                  hint: 'Last name',
+                                  hint: l.lastName,
                                 ),
                                 _AnimatedBlock(
                                   animation: _enterCtrl,
@@ -424,13 +428,13 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                     children: [
                                       const SizedBox(height: 16),
                                       FormLabel(
-                                        'Date of birth *',
+                                        '${l.dateOfBirth} *',
                                         isDark: isDark,
                                       ),
                                       const SizedBox(height: 6),
                                       DateTimeTile(
                                         isDark: isDark,
-                                        label: 'Date of birth',
+                                        label: l.dateOfBirth,
                                         value: _dob,
                                         onTap: _pickDob,
                                       ),
@@ -457,7 +461,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                   animation: _enterCtrl,
                                   interval: const Interval(0.38, 0.62),
                                   child: _SectionHeader(
-                                    title: 'Location',
+                                    title: l.sectionLocation,
                                     icon: Icons.location_on_outlined,
                                     isDark: isDark,
                                   ),
@@ -466,30 +470,30 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                 _field(
                                   0.42,
                                   isDark,
-                                  'City *',
+                                  '${l.city} *',
                                   _city,
-                                  hint: 'City',
+                                  hint: l.city,
                                 ),
                                 _field(
                                   0.47,
                                   isDark,
-                                  'State / Region',
+                                  l.stateRegion,
                                   _state,
-                                  hint: 'Optional',
+                                  hint: l.optional,
                                 ),
                                 _field(
                                   0.52,
                                   isDark,
-                                  'Country *',
+                                  '${l.country} *',
                                   _country,
-                                  hint: 'Country',
+                                  hint: l.country,
                                 ),
                                 const SizedBox(height: 28),
                                 _AnimatedBlock(
                                   animation: _enterCtrl,
                                   interval: const Interval(0.55, 0.78),
                                   child: _SectionHeader(
-                                    title: 'About',
+                                    title: l.profileAbout,
                                     icon: Icons.notes_rounded,
                                     isDark: isDark,
                                   ),
@@ -502,12 +506,11 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      FormLabel('Bio', isDark: isDark),
+                                      FormLabel(l.bio, isDark: isDark),
                                       const SizedBox(height: 6),
                                       FormTextField(
                                         isDark: isDark,
-                                        hint:
-                                            'Tell others a little about yourself',
+                                        hint: l.bioHint,
                                         controller: _bio,
                                         maxLines: 4,
                                         onChanged: (_) {},
@@ -654,6 +657,7 @@ class _SaveBar extends StatelessWidget {
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
     final enabled = hasChanges && !saving;
+    final l = l10n(context);
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -704,7 +708,7 @@ class _SaveBar extends StatelessWidget {
                         ),
                       )
                     : Text(
-                        'Save changes',
+                        l.saveChanges,
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 15,

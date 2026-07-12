@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../cubit/engagement_cubit.dart';
@@ -9,10 +11,10 @@ import 'engagements_list_screen.dart';
 enum EngagementActivityFilter { sent, received, matched }
 
 extension _FilterX on EngagementActivityFilter {
-  String get label => switch (this) {
-        EngagementActivityFilter.sent => 'Sent',
-        EngagementActivityFilter.received => 'Received',
-        EngagementActivityFilter.matched => 'Matched',
+  String label(AppLocalizations l) => switch (this) {
+        EngagementActivityFilter.sent => l.tabSent,
+        EngagementActivityFilter.received => l.tabReceived,
+        EngagementActivityFilter.matched => l.tabMatched,
       };
 
   EngagementKind get kind => switch (this) {
@@ -21,10 +23,10 @@ extension _FilterX on EngagementActivityFilter {
         EngagementActivityFilter.matched => EngagementKind.match,
       };
 
-  String get emptyMessage => switch (this) {
-        EngagementActivityFilter.sent => 'No proposals sent yet.',
-        EngagementActivityFilter.received => 'No proposals received yet.',
-        EngagementActivityFilter.matched => 'No matches yet.',
+  String emptyMessage(AppLocalizations l) => switch (this) {
+        EngagementActivityFilter.sent => l.emptyProposalsSent,
+        EngagementActivityFilter.received => l.emptyProposalsReceived,
+        EngagementActivityFilter.matched => l.emptyMatches,
       };
 }
 
@@ -68,7 +70,7 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
         leading: TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Cancel',
+            l10n(context).cancel,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 14,
@@ -79,7 +81,7 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
         ),
         leadingWidth: 72,
         title: Text(
-          'View all',
+          l10n(context).viewAll,
           style: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 16,
@@ -122,7 +124,7 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
                         const SizedBox(height: 120),
                         Center(
                           child: Text(
-                            _filter.emptyMessage,
+                            _filter.emptyMessage(l10n(context)),
                             style: TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 13,
@@ -183,7 +185,7 @@ class _FilterBar extends StatelessWidget {
       child: Row(
         children: EngagementActivityFilter.values
             .map((f) => _FilterChip(
-                  label: f.label,
+                  label: f.label(l10n(context)),
                   selected: selected == f,
                   isDark: isDark,
                   onTap: () => onChanged(f),

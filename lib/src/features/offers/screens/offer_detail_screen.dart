@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../cubit/offers_cubit.dart';
 import '../models/offer_response.dart';
 
 class OfferDetailScreen extends StatelessWidget {
@@ -18,6 +20,7 @@ class OfferDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
+    final l = l10n(context);
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSecondary =
@@ -33,7 +36,7 @@ class OfferDetailScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back_rounded, color: textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Offer Details',
+        title: Text(l.stepOfferDetails,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 16,
@@ -56,7 +59,7 @@ class OfferDetailScreen extends StatelessWidget {
               children: [
                 Icon(Icons.schedule_rounded, size: 14, color: textSecondary),
                 const SizedBox(width: 5),
-                Text('Created ${offer.createdAgo}',
+                Text(l.offerCreatedAgo(offer.createdAgo),
                     style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 12,
@@ -67,30 +70,30 @@ class OfferDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            _Tile(Icons.flight_takeoff_rounded, 'Pickup area', offer.pickupArea,
+            _Tile(Icons.flight_takeoff_rounded, l.pickupArea, offer.pickupArea,
                 isDark),
-            _Tile(Icons.flight_land_rounded, 'Delivery area', offer.deliveryArea,
+            _Tile(Icons.flight_land_rounded, l.deliveryArea, offer.deliveryArea,
                 isDark),
-            _Tile(Icons.bolt_rounded, 'Urgency', offer.urgencyLabel, isDark),
-            _Tile(Icons.payments_rounded, 'Currency', offer.currency, isDark),
+            _Tile(Icons.bolt_rounded, l.urgencyLevel, offer.urgencyLabel, isDark),
+            _Tile(Icons.payments_rounded, l.offerCurrency, offer.currency, isDark),
             if (offer.discount != null && offer.discount! > 0)
-              _Tile(Icons.local_offer_rounded, 'Discount',
+              _Tile(Icons.local_offer_rounded, l.offerDiscountLabel,
                   '${offer.currency} ${offer.discount!.toStringAsFixed(2)}', isDark),
             if (offer.paymentMethods.isNotEmpty)
-              _Tile(Icons.account_balance_wallet_rounded, 'Payment',
+              _Tile(Icons.account_balance_wallet_rounded, l.offerPayment,
                   offer.paymentMethods.join(', '), isDark),
             if (offer.meetupPlaces.isNotEmpty)
-              _Tile(Icons.place_rounded, 'Meetup',
+              _Tile(Icons.place_rounded, l.offerMeetup,
                   offer.meetupPlaces.join(', '), isDark),
             if (offer.specialNote?.isNotEmpty == true)
-              _Tile(Icons.sticky_note_2_outlined, 'Note', offer.specialNote!,
+              _Tile(Icons.sticky_note_2_outlined, l.offerNote, offer.specialNote!,
                   isDark),
             const SizedBox(height: 20),
 
             // ── Items ─────────────────────────────────────────────
             Row(
               children: [
-                Text('Items',
+                Text(l.offerItems,
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 15,
@@ -117,7 +120,7 @@ class OfferDetailScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Text('Total value',
+                  Text(l.offerTotalValue,
                       style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 12,
@@ -167,9 +170,9 @@ class OfferDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Match this offer',
-                  style: TextStyle(
+                child: Text(
+                  l.offerMatchThis,
+                  style: const TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -212,7 +215,7 @@ class _FlightCard extends StatelessWidget {
         ],
       ),
       child: leg == null
-          ? Text('No flight attached',
+          ? Text(l10n(context).offerNoFlight,
               style: TextStyle(
                   fontFamily: 'Manrope', fontSize: 13, color: textTertiary))
           : Row(
@@ -321,8 +324,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = status.replaceAll('_', ' ').toLowerCase();
-    final label = s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+    final label = offerStatusLabel(status, l10n(context));
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(

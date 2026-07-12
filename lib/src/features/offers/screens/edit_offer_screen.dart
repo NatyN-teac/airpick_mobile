@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../offers/widgets/form_widgets.dart';
 import '../cubit/offers_cubit.dart';
@@ -63,6 +64,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
     if (!_valid || _saving) return;
     setState(() => _saving = true);
     final messenger = ScaffoldMessenger.of(context);
+    final l = l10n(context);
     final cubit = context.read<OffersCubit>();
     try {
       final updated = await context.read<OfferRepository>().updateOffer(
@@ -81,9 +83,9 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
       cubit.update(updated);
       if (!mounted) return;
       Navigator.of(context).pop();
-      messenger.showSnackBar(const SnackBar(
+      messenger.showSnackBar(SnackBar(
         content:
-            Text('Offer updated', style: TextStyle(fontFamily: 'Manrope')),
+            Text(l.offerUpdated, style: const TextStyle(fontFamily: 'Manrope')),
         backgroundColor: AppColors.success,
       ));
     } catch (e) {
@@ -101,6 +103,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
+    final l = l10n(context);
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
 
@@ -114,7 +117,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
           icon: Icon(Icons.arrow_back_rounded, color: textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Edit Offer',
+        title: Text(l.editOfferTitle,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 16,
@@ -136,30 +139,30 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
             // Items are not editable on update — show them read-only so the
             // carrier can see what the offer carries.
             if (widget.offer.items.isNotEmpty) ...[
-              FormLabel('Items', isDark: isDark),
+              FormLabel(l.offerItems, isDark: isDark),
               const SizedBox(height: 8),
               _ItemsHint(offer: widget.offer, isDark: isDark),
               const SizedBox(height: 18),
             ],
 
-            FormLabel('Pickup area', isDark: isDark),
+            FormLabel(l.pickupArea, isDark: isDark),
             const SizedBox(height: 6),
             FormTextField(
                 isDark: isDark,
-                hint: 'e.g. Lagos, Nigeria',
+                hint: l.offerDeliveryHint,
                 controller: _pickup,
                 onChanged: (_) => setState(() {})),
             const SizedBox(height: 12),
-            FormLabel('Delivery area', isDark: isDark),
+            FormLabel(l.deliveryArea, isDark: isDark),
             const SizedBox(height: 6),
             FormTextField(
                 isDark: isDark,
-                hint: 'e.g. Los Angeles, CA',
+                hint: l.offerPickupHint,
                 controller: _delivery,
                 onChanged: (_) => setState(() {})),
             const SizedBox(height: 16),
 
-            FormLabel('Currency', isDark: isDark),
+            FormLabel(l.offerCurrency, isDark: isDark),
             const SizedBox(height: 6),
             _Dropdown<Currency>(
               isDark: isDark,
@@ -169,7 +172,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
               onChanged: (c) => setState(() => _currency = c),
             ),
             const SizedBox(height: 12),
-            FormLabel('Urgency', isDark: isDark),
+            FormLabel(l.urgencyLevel, isDark: isDark),
             const SizedBox(height: 6),
             _Dropdown<UrgencyLevel>(
               isDark: isDark,
@@ -180,7 +183,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
             ),
             const SizedBox(height: 16),
 
-            FormLabel('Payment methods', isDark: isDark),
+            FormLabel(l.paymentMethods, isDark: isDark),
             const SizedBox(height: 8),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -230,7 +233,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
             ),
             const SizedBox(height: 16),
 
-            FormLabel('Meetup places', isDark: isDark),
+            FormLabel(l.meetupPlaces, isDark: isDark),
             const SizedBox(height: 8),
             if (_meetups.isNotEmpty)
               Wrap(
@@ -274,7 +277,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
                 Expanded(
                   child: FormTextField(
                     isDark: isDark,
-                    hint: 'Add a meetup place',
+                    hint: l.addMeetupPlace,
                     controller: _meetupInput,
                     onChanged: (_) {},
                   ),
@@ -304,7 +307,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
             ),
             const SizedBox(height: 16),
 
-            FormLabel('Discount (optional)', isDark: isDark),
+            FormLabel(l.offerDiscountOptional, isDark: isDark),
             const SizedBox(height: 6),
             FormTextField(
               isDark: isDark,
@@ -314,11 +317,11 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
               onChanged: (_) {},
             ),
             const SizedBox(height: 12),
-            FormLabel('Note (optional)', isDark: isDark),
+            FormLabel(l.offerNoteOptional, isDark: isDark),
             const SizedBox(height: 6),
             FormTextField(
               isDark: isDark,
-              hint: 'e.g. Fragile items handled with care',
+              hint: l.offerNoteHint,
               controller: _note,
               maxLines: 2,
               onChanged: (_) {},
@@ -349,7 +352,7 @@ class _EditOfferScreenState extends State<EditOfferScreen> {
                                 strokeWidth: 2, color: Colors.white),
                           ),
                         )
-                      : Text('Save Changes',
+                      : Text(l.saveChanges,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'Manrope',
@@ -399,7 +402,7 @@ class _RouteHint extends StatelessWidget {
                 color: textPrimary,
               )),
           const Spacer(),
-          Text('Flight not editable',
+          Text(l10n(context).offerFlightNotEditable,
               style: TextStyle(
                   fontFamily: 'Manrope', fontSize: 10, color: textTertiary)),
         ],

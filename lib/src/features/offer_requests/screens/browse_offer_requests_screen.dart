@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
@@ -47,7 +48,7 @@ class _BrowseOfferRequestsPreviewState
         }
         if (state.error != null && state.requests.isEmpty) {
           return AppErrorState(
-            title: 'Could not load requests',
+            title: l10n(context).requestsLoadError,
             message: state.error!,
             onRetry: () =>
                 context.read<BrowseOfferRequestsCubit>().load(force: true),
@@ -55,12 +56,11 @@ class _BrowseOfferRequestsPreviewState
           );
         }
         if (state.requests.isEmpty) {
-          return const AppEmptyState(
+          return AppEmptyState(
             icon: Icons.inventory_2_outlined,
-            title: 'No requests available',
-            message:
-                'Open shipper requests will show here when senders post them.',
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            title: l10n(context).requestsBrowseEmptyTitle,
+            message: l10n(context).requestsBrowseEmptyBody,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           );
         }
         final preview = state.requests.take(3).toList();
@@ -123,7 +123,7 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Browse Requests',
+          l10n(context).browseRequestsTitle,
           style: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 16,
@@ -164,7 +164,7 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
           if (state.error != null && state.requests.isEmpty) {
             return Center(
               child: AppErrorState(
-                title: 'Could not load requests',
+                title: l10n(context).requestsLoadError,
                 message: state.error!,
                 onRetry: () =>
                     context.read<BrowseOfferRequestsCubit>().load(force: true),
@@ -178,11 +178,11 @@ class BrowseOfferRequestsScreen extends StatelessWidget {
                     ? Icons.filter_list_off_rounded
                     : Icons.inventory_2_outlined,
                 title: state.hasFilters
-                    ? 'No matching requests'
-                    : 'No requests available',
+                    ? l10n(context).noMatchingRequests
+                    : l10n(context).requestsBrowseEmptyTitle,
                 message: state.hasFilters
-                    ? 'Try clearing the filters or searching another route.'
-                    : 'Open shipper requests will show here when senders post them.',
+                    ? l10n(context).tryClearingFilters
+                    : l10n(context).requestsBrowseEmptyBody,
               ),
             );
           }
@@ -344,7 +344,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Filter requests',
+                    l10n(context).filterRequests,
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 16,
@@ -354,29 +354,29 @@ class _FilterSheetState extends State<_FilterSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _FilterLabel('Source country', isDark: isDark),
+                  _FilterLabel(l10n(context).sourceCountry, isDark: isDark),
                   const SizedBox(height: 6),
                   CountryPickerField(
                     isDark: isDark,
                     countries: _countries,
                     selected: _src,
                     loading: _loading,
-                    hint: 'Any country',
+                    hint: l10n(context).anyCountry,
                     onSelected: (c) => setState(() => _src = c),
                   ),
                   const SizedBox(height: 12),
-                  _FilterLabel('Destination country', isDark: isDark),
+                  _FilterLabel(l10n(context).destinationCountry, isDark: isDark),
                   const SizedBox(height: 6),
                   CountryPickerField(
                     isDark: isDark,
                     countries: _countries,
                     selected: _dst,
                     loading: _loading,
-                    hint: 'Any country',
+                    hint: l10n(context).anyCountry,
                     onSelected: (c) => setState(() => _dst = c),
                   ),
                   const SizedBox(height: 12),
-                  _FilterLabel('Source city', isDark: isDark),
+                  _FilterLabel(l10n(context).sourceCity, isDark: isDark),
                   const SizedBox(height: 6),
                   _CityField(controller: _city, isDark: isDark),
                   const SizedBox(height: 20),
@@ -397,7 +397,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              'Clear',
+                              l10n(context).clear,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontFamily: 'Manrope',
@@ -428,8 +428,8 @@ class _FilterSheetState extends State<_FilterSheet> {
                               gradient: AppColors.primaryGradient,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
-                              'Apply',
+                            child: Text(
+                              l10n(context).apply,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontFamily: 'Manrope',
@@ -488,7 +488,7 @@ class _CityField extends StatelessWidget {
       controller: controller,
       style: TextStyle(fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
       decoration: InputDecoration(
-        hintText: 'Any',
+        hintText: l10n(context).anyOption,
         hintStyle: TextStyle(
           fontFamily: 'Manrope',
           fontSize: 13,

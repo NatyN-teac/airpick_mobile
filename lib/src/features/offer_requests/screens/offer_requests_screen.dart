@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
@@ -43,7 +45,7 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
         return Scaffold(
           backgroundColor: Colors.transparent,
           floatingActionButton: CreateFab(
-            label: 'Request',
+            label: l10n(context).requestsTitle,
             onTap: widget.onCreate,
           ),
           body: Column(
@@ -65,6 +67,7 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
   }
 
   Widget _body(BuildContext context, OfferRequestsState state, bool isDark) {
+    final l = l10n(context);
     // Pull-to-refresh always forces a fresh fetch, on every state.
     Future<void> refresh() =>
         context.read<OfferRequestsCubit>().load(force: true);
@@ -75,25 +78,25 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
     } else if (state.error != null && state.requests.isEmpty) {
       content = _centeredFiller(
         AppErrorState(
-          title: 'Could not load requests',
+          title: l.requestsLoadError,
           message: state.error!,
           onRetry: refresh,
         ),
       );
     } else if (state.requests.isEmpty) {
       content = _centeredFiller(
-        const AppEmptyState(
+        AppEmptyState(
           icon: Icons.inventory_2_outlined,
-          title: 'No requests yet',
-          message: 'Tap + to create a request for items you need delivered.',
+          title: l.requestsEmptyTitle,
+          message: l.requestsEmptyBody,
         ),
       );
     } else if (state.visible.isEmpty) {
       content = _centeredFiller(
-        const AppEmptyState(
+        AppEmptyState(
           icon: Icons.filter_list_off_rounded,
-          title: 'No requests with this status',
-          message: 'Choose another status filter to see your other requests.',
+          title: l.requestsEmptyStatusTitle,
+          message: l.requestsEmptyStatusBody,
         ),
       );
     } else {
@@ -153,8 +156,8 @@ class _StatusFilterBar extends StatelessWidget {
           final status = options[i];
           final active = status == selected;
           final label = status == null
-              ? 'All'
-              : offerRequestStatusLabel(status);
+              ? l10n(context).statusAll
+              : offerRequestStatusLabel(status, l10n(context));
           return GestureDetector(
             onTap: () => onSelect(status),
             child: AnimatedContainer(
@@ -263,10 +266,10 @@ class _RequestsList extends StatelessWidget {
                         onDismissed: (_) {
                           context.read<OfferRequestsCubit>().remove(req.id);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                'Request deleted',
-                                style: TextStyle(fontFamily: 'Manrope'),
+                                l10n(context).requestDeleted,
+                                style: const TextStyle(fontFamily: 'Manrope'),
                               ),
                               backgroundColor: AppColors.success,
                             ),
@@ -331,14 +334,14 @@ class _DeleteSwipeBackground extends StatelessWidget {
         color: AppColors.error,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.delete_outline_rounded, color: Colors.white, size: 24),
-          SizedBox(height: 2),
+          const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 24),
+          const SizedBox(height: 2),
           Text(
-            'Delete',
-            style: TextStyle(
+            l10n(context).delete,
+            style: const TextStyle(
               fontFamily: 'Manrope',
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -390,7 +393,7 @@ class _DeleteConfirmDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Delete this request?',
+              l10n(context).requestDeleteConfirmTitle,
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 16,
@@ -401,7 +404,7 @@ class _DeleteConfirmDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'This permanently removes your offer request. This action cannot be undone.',
+              l10n(context).requestDeleteConfirmBody,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Manrope',
@@ -425,7 +428,7 @@ class _DeleteConfirmDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Cancel',
+                        l10n(context).cancel,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Manrope',
@@ -447,10 +450,10 @@ class _DeleteConfirmDialog extends StatelessWidget {
                         color: AppColors.error,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        'Delete',
+                      child: Text(
+                        l10n(context).delete,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -711,7 +714,7 @@ class _OfferRequestCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${request.items.length} item${request.items.length == 1 ? '' : 's'}',
+                        l10n(context).itemsCount(request.items.length),
                         style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 11,
@@ -734,9 +737,9 @@ class _OfferRequestCard extends StatelessWidget {
                       color: AppColors.info.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      'Partial ✓',
-                      style: TextStyle(
+                    child: Text(
+                      l10n(context).reqPartial,
+                      style: const TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -755,7 +758,7 @@ class _OfferRequestCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${request.proposalCount} proposal${request.proposalCount == 1 ? '' : 's'}',
+                      l10n(context).proposalsCount(request.proposalCount),
                       style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 11,
@@ -808,10 +811,10 @@ class _StatusChip extends StatelessWidget {
     _ => AppColors.info,
   };
 
-  String get _label => switch (status) {
-    'OPEN' => 'Open',
-    'PENDING_ITEM_APPROVAL' => 'Pending',
-    'CLOSED' => 'Closed',
+  String _labelOf(AppLocalizations l) => switch (status) {
+    'OPEN' => l.statusOpen,
+    'PENDING_ITEM_APPROVAL' => l.statusPending,
+    'CLOSED' => l.statusClosed,
     _ => status,
   };
 
@@ -823,7 +826,7 @@ class _StatusChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
     ),
     child: Text(
-      _label,
+      _labelOf(l10n(context)),
       style: TextStyle(
         fontFamily: 'Manrope',
         fontSize: 10,
@@ -844,6 +847,13 @@ class _UrgencyBadge extends StatelessWidget {
     _ => AppColors.textSecondary,
   };
 
+  String _localized(AppLocalizations l) => switch (label) {
+    'Urgent' => l.urgencyUrgent,
+    'Flexible' => l.urgencyFlexible,
+    'Normal' => l.urgencyNormal,
+    _ => label,
+  };
+
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -852,7 +862,7 @@ class _UrgencyBadge extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
     ),
     child: Text(
-      label,
+      _localized(l10n(context)),
       style: TextStyle(
         fontFamily: 'Manrope',
         fontSize: 10,

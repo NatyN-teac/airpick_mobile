@@ -23,4 +23,13 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   void setItems(List<AppNotification> items) {
     emit(state.copyWith(items: items));
   }
+
+  /// Pull-to-refresh handler. Re-fetches notifications.
+  /// TODO: wire to GET /notifications; for now it just clears any error and
+  /// completes so the refresh gesture resolves.
+  Future<void> refresh() async {
+    emit(state.copyWith(loading: true, error: null));
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    emit(state.copyWith(loading: false));
+  }
 }

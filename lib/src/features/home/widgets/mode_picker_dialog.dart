@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../cubit/user_mode_cubit.dart';
 
@@ -69,7 +70,7 @@ class ModePickerDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Switch mode',
+                        l10n(context).modePickerTitle,
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 15,
@@ -79,7 +80,7 @@ class ModePickerDialog extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'How are you using Airpick today?',
+                        l10n(context).modePickerQuestion,
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 11,
@@ -207,7 +208,9 @@ class ModeCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              mode.label,
+              mode == UserMode.sender
+                  ? l10n(context).modeSender
+                  : l10n(context).modeCarrier,
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 13,
@@ -217,7 +220,9 @@ class ModeCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              mode.description,
+              mode == UserMode.sender
+                  ? l10n(context).modeSenderDesc
+                  : l10n(context).modeCarrierDesc,
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 10,
@@ -229,14 +234,14 @@ class ModeCard extends StatelessWidget {
             AnimatedOpacity(
               opacity: isActive ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 200),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.check_circle_rounded,
+                  const Icon(Icons.check_circle_rounded,
                       size: 13, color: AppColors.primary),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
-                    'Active',
-                    style: TextStyle(
+                    l10n(context).active,
+                    style: const TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 10,
                       fontWeight: FontWeight.w600,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/cubit/user_mode_cubit.dart';
 import '../cubit/current_user_cubit.dart';
@@ -45,7 +46,7 @@ class ProfileHeaderCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          profile?.displayName ?? 'Guest',
+                          profile?.displayName ?? l10n(context).guest,
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 20,
@@ -58,7 +59,9 @@ class ProfileHeaderCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          mode.displayLabel,
+                          mode == UserMode.sender
+                              ? l10n(context).modeSender
+                              : l10n(context).modeCarrier,
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 13,
@@ -69,8 +72,8 @@ class ProfileHeaderCard extends StatelessWidget {
                         ),
                         Text(
                           (profile?.isVerified ?? false)
-                              ? 'Verified'
-                              : 'Unverified',
+                              ? l10n(context).verified
+                              : l10n(context).unverified,
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 13,

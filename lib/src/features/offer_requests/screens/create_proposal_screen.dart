@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../airports/models/airport.dart';
 import '../../airports/repository/airport_repository.dart';
@@ -44,6 +45,7 @@ class CreateProposalScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
+    final l = l10n(context);
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
 
@@ -53,9 +55,9 @@ class CreateProposalScreen extends StatelessWidget {
         onSent?.call();
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Proposal sent',
-                style: TextStyle(fontFamily: 'Manrope')),
+          SnackBar(
+            content: Text(l.createProposalSent,
+                style: const TextStyle(fontFamily: 'Manrope')),
             backgroundColor: AppColors.success,
           ),
         );
@@ -72,7 +74,7 @@ class CreateProposalScreen extends StatelessWidget {
               icon: Icon(Icons.arrow_back_rounded, color: textPrimary),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            title: Text('Send Proposal',
+            title: Text(l.sendProposal,
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 16,
@@ -94,7 +96,7 @@ class CreateProposalScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Your flight ─────────────────────────────────────
-                _SectionTitle('Your flight', isDark: isDark),
+                _SectionTitle(l.yourFlight, isDark: isDark),
                 const SizedBox(height: 8),
                 if (state.airportsLoading)
                   const Padding(
@@ -114,7 +116,7 @@ class CreateProposalScreen extends StatelessWidget {
                     airports: _airportsIn(
                         state.airports, cubit.request.sourceCountry),
                     selected: state.fromAirport,
-                    hint: 'Airport in ${cubit.request.sourceCountry}',
+                    hint: l.airportInCountry(cubit.request.sourceCountry),
                     onSelected: cubit.setFromAirport,
                   ),
                   const SizedBox(height: 10),
@@ -126,7 +128,7 @@ class CreateProposalScreen extends StatelessWidget {
                     airports: _airportsIn(
                         state.airports, cubit.request.destinationCountry),
                     selected: state.toAirport,
-                    hint: 'Airport in ${cubit.request.destinationCountry}',
+                    hint: l.airportInCountry(cubit.request.destinationCountry),
                     onSelected: cubit.setToAirport,
                   ),
                 ],
@@ -135,7 +137,7 @@ class CreateProposalScreen extends StatelessWidget {
                   Expanded(
                     child: DateTimeTile(
                       isDark: isDark,
-                      label: 'Departure date',
+                      label: l.departureDate,
                       value: state.departureDate,
                       onTap: () async {
                         final d = await _pickDate(context, state.departureDate);
@@ -147,7 +149,7 @@ class CreateProposalScreen extends StatelessWidget {
                   Expanded(
                     child: DateTimeTile(
                       isDark: isDark,
-                      label: 'Departure time',
+                      label: l.departureTime,
                       isTime: true,
                       timeValue: state.departureTime,
                       onTap: () async {
@@ -165,7 +167,7 @@ class CreateProposalScreen extends StatelessWidget {
                   Expanded(
                     child: DateTimeTile(
                       isDark: isDark,
-                      label: 'Arrival date',
+                      label: l.arrivalDate,
                       value: state.arrivalDate,
                       onTap: () async {
                         final d = await _pickDate(context, state.arrivalDate,
@@ -178,7 +180,7 @@ class CreateProposalScreen extends StatelessWidget {
                   Expanded(
                     child: DateTimeTile(
                       isDark: isDark,
-                      label: 'Arrival time',
+                      label: l.arrivalTime,
                       isTime: true,
                       timeValue: state.arrivalTime,
                       onTap: () async {
@@ -193,38 +195,35 @@ class CreateProposalScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // ── Pickup / delivery ───────────────────────────────
-                _SectionTitle('Pickup & delivery', isDark: isDark),
+                _SectionTitle(l.pickupDelivery, isDark: isDark),
                 const SizedBox(height: 8),
-                FormLabel('Pickup area', isDark: isDark),
+                FormLabel(l.pickupArea, isDark: isDark),
                 const SizedBox(height: 4),
                 _FieldHint(
-                  'The general area where you\'ll collect the items before your '
-                  'flight (e.g. a city or neighbourhood).',
+                  l.pickupAreaHelp,
                   isDark: isDark,
                 ),
                 const SizedBox(height: 6),
                 FormTextField(
                   isDark: isDark,
-                  hint: 'e.g. Lagos, Nigeria',
+                  hint: l.offerDeliveryHint,
                   onChanged: cubit.setPickupArea,
                 ),
                 const SizedBox(height: 10),
-                FormLabel('Delivery area', isDark: isDark),
+                FormLabel(l.deliveryArea, isDark: isDark),
                 const SizedBox(height: 6),
                 FormTextField(
                   isDark: isDark,
-                  hint: 'e.g. Los Angeles, CA',
+                  hint: l.offerPickupHint,
                   onChanged: cubit.setDeliveryArea,
                 ),
                 const SizedBox(height: 20),
 
                 // ── Meetup places ─────────────────────────────────────
-                _SectionTitle('Meetup places', isDark: isDark),
+                _SectionTitle(l.meetupPlaces, isDark: isDark),
                 const SizedBox(height: 4),
                 _FieldHint(
-                  'Specific spots where you can meet the sender in person to '
-                  'hand over or drop off the items (e.g. a mall, cafe or '
-                  'landmark).',
+                  l.meetupHelp,
                   isDark: isDark,
                 ),
                 const SizedBox(height: 8),
@@ -237,7 +236,7 @@ class CreateProposalScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // ── Payment methods ─────────────────────────────────
-                _SectionTitle('Payment methods', isDark: isDark),
+                _SectionTitle(l.paymentMethods, isDark: isDark),
                 const SizedBox(height: 8),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -288,9 +287,9 @@ class CreateProposalScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // ── Currency ────────────────────────────────────────
-                _SectionTitle('Currency', isDark: isDark),
+                _SectionTitle(l.offerCurrency, isDark: isDark),
                 const SizedBox(height: 8),
-                FormLabel('Proposal currency', isDark: isDark),
+                FormLabel(l.proposalCurrency, isDark: isDark),
                 const SizedBox(height: 6),
                 FormDropdown<Currency>(
                   isDark: isDark,
@@ -304,11 +303,11 @@ class CreateProposalScreen extends StatelessWidget {
                 // ── Items + prices ──────────────────────────────────
                 Row(
                   children: [
-                    _SectionTitle('Price the items', isDark: isDark),
+                    _SectionTitle(l.priceTheItems, isDark: isDark),
                     const Spacer(),
                     if (state.partialAllowed)
-                      const Text('Partial allowed',
-                          style: TextStyle(
+                      Text(l.partialAllowed,
+                          style: const TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 11,
                               color: AppColors.info)),
@@ -347,11 +346,11 @@ class CreateProposalScreen extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // ── Note ────────────────────────────────────────────
-                FormLabel('Note (optional)', isDark: isDark),
+                FormLabel(l.offerNoteOptional, isDark: isDark),
                 const SizedBox(height: 6),
                 FormTextField(
                   isDark: isDark,
-                  hint: 'e.g. I can deliver within 2 days of arrival',
+                  hint: l.proposalNoteHint,
                   maxLines: 2,
                   onChanged: cubit.setNote,
                 ),
@@ -371,7 +370,7 @@ class CreateProposalScreen extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                        'Total  ${state.currency.symbol}${state.total.toStringAsFixed(2)} ${state.currency.apiValue}',
+                        '${l.totalLabel}  ${state.currency.symbol}${state.total.toStringAsFixed(2)} ${state.currency.apiValue}',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 15,
@@ -412,7 +411,7 @@ class CreateProposalScreen extends StatelessWidget {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : Text('Submit',
+                            : Text(l.submit,
                                 style: TextStyle(
                                   fontFamily: 'Manrope',
                                   fontSize: 14,
@@ -579,7 +578,7 @@ class _ItemPriceRow extends StatelessWidget {
                 prefixText: '$currencySymbol ',
                 prefixStyle: TextStyle(
                     fontFamily: 'Manrope', fontSize: 13, color: textPrimary),
-                hintText: 'Price',
+                hintText: l10n(context).priceLabel,
                 hintStyle: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 12,

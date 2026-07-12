@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
+import '../../chat/screens/chat_screen.dart';
 import '../cubit/engagement_cubit.dart';
 import '../models/engagement_models.dart';
 import '../widgets/match_engagement_dialog.dart';
@@ -26,10 +28,17 @@ class EngagementsListScreen extends StatelessWidget {
         }
         return;
       case EngagementKind.match:
+        final match = cubit.matchById(item.id);
+        // A matched engagement takes the user straight to the chat once one
+        // is available; otherwise fall back to the match detail dialog.
+        if (match != null && match.hasAvailableChat) {
+          openChatScreen(context, match.id);
+          return;
+        }
         MatchEngagementDialog.show(
           context,
           item: item,
-          match: cubit.matchById(item.id),
+          match: match,
         );
     }
   }
@@ -52,6 +61,7 @@ class EngagementsListScreen extends StatelessWidget {
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final l = l10n(context);
 
     return Scaffold(
       backgroundColor: bg,
@@ -64,7 +74,7 @@ class EngagementsListScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Engagements',
+          l.sectionEngagements,
           style: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 16,
@@ -80,11 +90,11 @@ class EngagementsListScreen extends StatelessWidget {
               if (value == 'view_all') openViewAll(context);
             },
             itemBuilder: (_) => [
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'view_all',
                 child: Text(
-                  'View all',
-                  style: TextStyle(
+                  l.viewAll,
+                  style: const TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -103,7 +113,7 @@ class EngagementsListScreen extends StatelessWidget {
           if (state.items.isEmpty) {
             return Center(
               child: Text(
-                'No active engagements.',
+                l.engEmptyActive,
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 13,

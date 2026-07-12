@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
@@ -40,7 +41,7 @@ class _OffersScreenState extends State<OffersScreen> {
         return Scaffold(
           backgroundColor: Colors.transparent,
           floatingActionButton: CreateFab(
-            label: 'Offer',
+            label: l10n(context).offersTitle,
             onTap: widget.onCreate,
           ),
           body: Column(
@@ -61,6 +62,7 @@ class _OffersScreenState extends State<OffersScreen> {
 
   Widget _body(BuildContext context, OffersState state, bool isDark) {
     Future<void> refresh() => context.read<OffersCubit>().load(force: true);
+    final l = l10n(context);
 
     Widget content;
     if (state.loading && state.offers.isEmpty) {
@@ -68,25 +70,25 @@ class _OffersScreenState extends State<OffersScreen> {
     } else if (state.error != null && state.offers.isEmpty) {
       content = _filler(
         AppErrorState(
-          title: 'Could not load offers',
+          title: l.offersLoadError,
           message: state.error!,
           onRetry: refresh,
         ),
       );
     } else if (state.offers.isEmpty) {
       content = _filler(
-        const AppEmptyState(
+        AppEmptyState(
           icon: Icons.local_offer_outlined,
-          title: 'No offers yet',
-          message: 'Tap + to post an offer with your flight.',
+          title: l.offersEmptyTitle,
+          message: l.offersEmptyBody,
         ),
       );
     } else if (state.visible.isEmpty) {
       content = _filler(
-        const AppEmptyState(
+        AppEmptyState(
           icon: Icons.filter_list_off_rounded,
-          title: 'No offers with this status',
-          message: 'Choose another status filter to see your other offers.',
+          title: l.offersEmptyStatusTitle,
+          message: l.offersEmptyStatusBody,
         ),
       );
     } else {
@@ -121,10 +123,10 @@ class _OffersScreenState extends State<OffersScreen> {
                     onDismissed: (_) {
                       context.read<OffersCubit>().remove(offer.id);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'Offer deleted',
-                            style: TextStyle(fontFamily: 'Manrope'),
+                            l10n(context).offerDeleted,
+                            style: const TextStyle(fontFamily: 'Manrope'),
                           ),
                           backgroundColor: AppColors.success,
                         ),
@@ -206,7 +208,8 @@ class _StatusFilterBar extends StatelessWidget {
         itemBuilder: (_, i) {
           final s = options[i];
           final active = s == selected;
-          final label = s == null ? 'All' : offerStatusLabel(s);
+          final label =
+              s == null ? l10n(context).statusAll : offerStatusLabel(s, l10n(context));
           return GestureDetector(
             onTap: () => onSelect(s),
             child: AnimatedContainer(
@@ -450,7 +453,7 @@ class _MyOfferCardState extends State<_MyOfferCard>
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${o.items.length} item${o.items.length == 1 ? '' : 's'}',
+                            l10n(context).itemsCount(o.items.length),
                             style: const TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 11,
@@ -507,8 +510,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = status.replaceAll('_', ' ').toLowerCase();
-    final label = s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+    final label = offerStatusLabel(status, l10n(context));
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -538,14 +540,14 @@ class _DeleteBg extends StatelessWidget {
       color: AppColors.error,
       borderRadius: BorderRadius.circular(20),
     ),
-    child: const Column(
+    child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.delete_outline_rounded, color: Colors.white, size: 24),
-        SizedBox(height: 2),
+        const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 24),
+        const SizedBox(height: 2),
         Text(
-          'Delete',
-          style: TextStyle(
+          l10n(context).delete,
+          style: const TextStyle(
             fontFamily: 'Manrope',
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -569,6 +571,7 @@ class _DeleteDialog extends StatelessWidget {
     final textSecondary = isDark
         ? AppColors.darkTextSecondary
         : AppColors.textSecondary;
+    final l = l10n(context);
     return Dialog(
       backgroundColor: bg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -592,7 +595,7 @@ class _DeleteDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Delete this offer?',
+              l.offerDeleteConfirmTitle,
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 16,
@@ -603,7 +606,7 @@ class _DeleteDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'This removes your offer permanently.',
+              l.offerDeleteConfirmBody,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Manrope',
@@ -627,7 +630,7 @@ class _DeleteDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Cancel',
+                        l.cancel,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Manrope',
@@ -649,10 +652,10 @@ class _DeleteDialog extends StatelessWidget {
                         color: AppColors.error,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        'Delete',
+                      child: Text(
+                        l.delete,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 13,
                           fontWeight: FontWeight.w700,

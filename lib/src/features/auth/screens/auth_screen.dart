@@ -7,6 +7,7 @@ import '../bloc/auth_bloc.dart';
 import '../widgets/social_sign_in_button.dart';
 import '../widgets/cancelled_sheet.dart' show CancelledDialog;
 import '../widgets/error_sheet.dart' show ErrorDialog;
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AuthScreen extends StatelessWidget {
@@ -69,9 +70,9 @@ class AuthScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      const Text(
-                        'Peer-to-peer delivery',
-                        style: TextStyle(
+                      Text(
+                        l10n(context).peerToPeerDelivery,
+                        style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -90,14 +91,15 @@ class AuthScreen extends StatelessWidget {
                 child: BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
                     final isLoading = state is AuthLoading;
+                    final l = l10n(context);
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Sign in or\ncreate account',
-                          style: TextStyle(
+                        Text(
+                          l.authTitle,
+                          style: const TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 30,
                             fontWeight: FontWeight.w800,
@@ -107,9 +109,9 @@ class AuthScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Continue with a social account to get started.',
-                          style: TextStyle(
+                        Text(
+                          l.authSubtitle,
+                          style: const TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
@@ -121,7 +123,7 @@ class AuthScreen extends StatelessWidget {
 
                         // Google button
                         SocialSignInButton(
-                          label: 'Continue with Google',
+                          label: l.continueWithGoogle,
                           icon: _GoogleIcon(),
                           onPressed: isLoading
                               ? null
@@ -133,7 +135,7 @@ class AuthScreen extends StatelessWidget {
                         if (_showAppleButton) ...[
                           const SizedBox(height: 12),
                           SocialSignInButton(
-                            label: 'Continue with Apple',
+                            label: l.continueWithApple,
                             icon: const Icon(
                               Icons.apple,
                               color: Colors.white,
@@ -241,28 +243,29 @@ class _TermsText extends StatelessWidget {
       height: 1.6,
     );
 
+    final l = l10n(context);
     return Text.rich(
       TextSpan(
         style: style,
         children: [
-          const TextSpan(text: 'By continuing you agree to our '),
+          TextSpan(text: l.termsPrefix),
           WidgetSpan(
             child: GestureDetector(
               onTap: () => _launch(
                 'https://docs.google.com/document/d/1AF9gD_FQsQw1BUQCysla-drK_lYR32oqDb5k2ekbGGo/edit',
                 context,
               ),
-              child: const Text('Terms of Service', style: linkStyle),
+              child: Text(l.termsOfService, style: linkStyle),
             ),
           ),
-          const TextSpan(text: ' and '),
+          TextSpan(text: l.and),
           WidgetSpan(
             child: GestureDetector(
               onTap: () => _launch(
                 'https://docs.google.com/document/d/1AF9gD_FQsQw1BUQCysla-drK_lYR32oqDb5k2ekbGGo/edit',
                 context,
               ),
-              child: const Text('Privacy Policy', style: linkStyle),
+              child: Text(l.privacyPolicy, style: linkStyle),
             ),
           ),
           const TextSpan(text: '.'),

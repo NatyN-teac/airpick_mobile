@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AppNavBar extends StatelessWidget {
@@ -26,6 +27,7 @@ class AppNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l = l10n(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -50,7 +52,7 @@ class AppNavBar extends StatelessWidget {
                 _NavItem(
                   icon: CupertinoIcons.house,
                   iconFilled: CupertinoIcons.house_fill,
-                  label: 'Home',
+                  label: l.navHome,
                   index: 0,
                   currentIndex: currentIndex,
                   badgeCount: badgeCounts[0] ?? 0,
@@ -60,7 +62,7 @@ class AppNavBar extends StatelessWidget {
                 _NavItem(
                   icon: CupertinoIcons.chat_bubble,
                   iconFilled: CupertinoIcons.chat_bubble_fill,
-                  label: 'Chat',
+                  label: l.navChat,
                   index: 1,
                   currentIndex: currentIndex,
                   badgeCount: badgeCounts[1] ?? 0,
@@ -80,7 +82,7 @@ class AppNavBar extends StatelessWidget {
                 _NavItem(
                   icon: CupertinoIcons.bell,
                   iconFilled: CupertinoIcons.bell_fill,
-                  label: 'Alerts',
+                  label: l.navAlerts,
                   index: 3,
                   currentIndex: currentIndex,
                   badgeCount: badgeCounts[3] ?? 0,
@@ -90,7 +92,7 @@ class AppNavBar extends StatelessWidget {
                 _NavItem(
                   icon: CupertinoIcons.person,
                   iconFilled: CupertinoIcons.person_fill,
-                  label: 'Profile',
+                  label: l.navProfile,
                   index: 4,
                   currentIndex: currentIndex,
                   badgeCount: badgeCounts[4] ?? 0,

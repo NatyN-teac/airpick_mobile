@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../widgets/profile_sub_screen_app_bar.dart';
 
@@ -37,10 +38,11 @@ class _AboutScreenState extends State<AboutScreen> {
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final l = l10n(context);
 
     return Scaffold(
       backgroundColor: bg,
-      appBar: const ProfileSubScreenAppBar(title: 'About'),
+      appBar: ProfileSubScreenAppBar(title: l.profileAbout),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -74,7 +76,7 @@ class _AboutScreenState extends State<AboutScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Version $_version',
+              l.aboutVersion(_version),
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 14,
@@ -96,7 +98,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'About Airpick',
+                    l.aboutSectionTitle,
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 18,
@@ -106,7 +108,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Airpick connects travelers and senders for secure, peer-to-peer package delivery between airports. Whether you are traveling and can carry items, or need something delivered, Airpick helps you find trusted matches.',
+                    l.aboutBody,
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 14,
@@ -116,7 +118,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Key features',
+                    l.aboutKeyFeatures,
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 15,
@@ -127,22 +129,22 @@ class _AboutScreenState extends State<AboutScreen> {
                   const SizedBox(height: 12),
                   _FeatureRow(
                     icon: Icons.verified_user_outlined,
-                    text: 'Verified accounts for trusted delivery',
+                    text: l.aboutFeature1,
                     textSecondary: textSecondary,
                   ),
                   _FeatureRow(
                     icon: Icons.flight_rounded,
-                    text: 'Airport-based matching for travelers',
+                    text: l.aboutFeature2,
                     textSecondary: textSecondary,
                   ),
                   _FeatureRow(
                     icon: Icons.inventory_2_outlined,
-                    text: 'Send and receive items with ease',
+                    text: l.aboutFeature3,
                     textSecondary: textSecondary,
                   ),
                   _FeatureRow(
                     icon: Icons.chat_bubble_outline_rounded,
-                    text: 'In-app messaging (coming soon)',
+                    text: l.aboutFeature4,
                     textSecondary: textSecondary,
                   ),
                 ],

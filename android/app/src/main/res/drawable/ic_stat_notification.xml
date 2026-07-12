@@ -1,0 +1,12 @@
+<!-- Monochrome (white on transparent) notification small-icon. Android cannot
+     render the adaptive @mipmap/ic_launcher as a status-bar small icon, which
+     caused local + FCM notifications to silently fail to post; use this instead. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M2.5,19h19v2h-19zM22.07,9.64c-0.21,-0.8 -1.04,-1.28 -1.84,-1.06L14.92,10 8,3.57 6.09,4.08l4.15,7.19 -4.82,1.29 -1.91,-1.5 -1.45,0.39 2.51,4.35c0,0 7.75,-2.07 14.42,-3.86c0.8,-0.22 1.28,-1.05 1.06,-1.85z" />
+</vector>

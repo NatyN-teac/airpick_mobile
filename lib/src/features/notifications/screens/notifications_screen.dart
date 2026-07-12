@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_message.dart';
 import '../cubit/notifications_cubit.dart';
@@ -22,6 +23,7 @@ class NotificationsScreen extends StatelessWidget {
             ? AppColors.darkTextSecondary
             : AppColors.textSecondary;
 
+        final l = l10n(context);
         final unread = state.items.where((n) => !n.read).toList();
         final earlier = state.items.where((n) => n.read).toList();
 
@@ -31,7 +33,7 @@ class NotificationsScreen extends StatelessWidget {
             _AnimatedEntry(index: animIndex++, child: child);
 
         if (unread.isNotEmpty) {
-          rows.add(_SectionLabel('New', isDark: isDark, accent: true));
+          rows.add(_SectionLabel(l.notifNew, isDark: isDark, accent: true));
           rows.addAll(
             unread.map(
               (n) => animate(
@@ -45,7 +47,7 @@ class NotificationsScreen extends StatelessWidget {
           );
         }
         if (earlier.isNotEmpty) {
-          rows.add(_SectionLabel('Earlier', isDark: isDark));
+          rows.add(_SectionLabel(l.notifEarlier, isDark: isDark));
           rows.addAll(
             earlier.map(
               (n) => animate(
@@ -71,7 +73,7 @@ class NotificationsScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Notifications',
+                          l.notifTitle,
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 22,
@@ -83,8 +85,8 @@ class NotificationsScreen extends StatelessWidget {
                         const SizedBox(height: 1),
                         Text(
                           state.unreadCount == 0
-                              ? "You're all caught up"
-                              : '${state.unreadCount} new update${state.unreadCount == 1 ? '' : 's'}',
+                              ? l.notifCaughtUp
+                              : l.notifUnread(state.unreadCount),
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 12,
@@ -108,18 +110,18 @@ class NotificationsScreen extends StatelessWidget {
                           color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.done_all_rounded,
                               size: 14,
                               color: AppColors.primary,
                             ),
-                            SizedBox(width: 5),
+                            const SizedBox(width: 5),
                             Text(
-                              'Mark all read',
-                              style: TextStyle(
+                              l.markAllRead,
+                              style: const TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -135,17 +137,33 @@ class NotificationsScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: state.items.isEmpty
-                  ? const AppEmptyState(
-                      icon: Icons.notifications_none_rounded,
-                      title: 'No notifications',
-                      message:
-                          'Updates about matches and deliveries land here.',
-                    )
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(14, 2, 14, 28),
-                      children: rows,
-                    ),
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: cubit.refresh,
+                child: state.items.isEmpty
+                    ? LayoutBuilder(
+                        builder: (_, constraints) => SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Center(
+                              child: AppEmptyState(
+                                icon: Icons.notifications_none_rounded,
+                                title: l.notifEmptyTitle,
+                                message: l.notifEmptyBody,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(14, 2, 14, 28),
+                        children: rows,
+                      ),
+              ),
             ),
           ],
         );

@@ -10,6 +10,31 @@ import '../network/api_client.dart';
 import '../storage/token_storage.dart';
 import 'notification_service.dart';
 
+/// Handles FCM messages delivered while the app is backgrounded or terminated.
+///
+/// Runs in a dedicated background isolate, so it must be a top-level (or static)
+/// function annotated with `@pragma('vm:entry-point')` and cannot rely on the
+/// main isolate's state. Notification-payload messages are shown by the OS
+/// automatically; this presents data-only messages so they aren't dropped.
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // The system already displays messages that carry a notification payload.
+  if (message.notification != null) return;
+
+  final data = message.data;
+  final title = data['title'];
+  final body = data['body'];
+  if (title == null && body == null) return;
+
+  // The plugin isn't initialized in this isolate; set it up before showing.
+  await NotificationService.initialize();
+  await NotificationService.show(
+    title: title ?? 'Airpick',
+    body: body ?? '',
+    payload: data.isNotEmpty ? jsonEncode(data) : null,
+  );
+}
+
 /// Registers/unregisters this device's FCM token with the backend so the
 /// server can deliver push notifications.
 ///

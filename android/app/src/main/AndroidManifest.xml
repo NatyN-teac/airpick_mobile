@@ -35,6 +35,12 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="airpick_main" />
+        <!-- Monochrome small icon for system-tray pushes shown while the app is
+             backgrounded/killed. Without this FCM falls back to the adaptive
+             launcher icon, which renders as a blank/broken status-bar icon. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_notification" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../profile/widgets/profile_sub_screen_app_bar.dart';
 import '../../settings/cubit/locale_cubit.dart';
@@ -24,16 +25,17 @@ class LanguageScreen extends StatelessWidget {
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
+    final l = l10n(context);
     return Scaffold(
       backgroundColor: bg,
-      appBar: const ProfileSubScreenAppBar(title: 'Language'),
+      appBar: ProfileSubScreenAppBar(title: l.profileLanguage),
       body: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, locale) {
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
               Text(
-                'Select language',
+                l.languageSelectTitle,
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 22,
@@ -44,7 +46,7 @@ class LanguageScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Choose your preferred language for the app.',
+                l.languageSelectSubtitle,
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 14,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/account_verification.dart';
 
@@ -45,35 +46,36 @@ class _VerificationHeroState extends State<VerificationHero>
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final l = l10n(context);
 
     final (icon, accent, title, subtitle) = switch (true) {
       _ when v?.isApproved == true || v?.isVerified == true => (
           Icons.verified_rounded,
           AppColors.success,
-          'You\'re verified',
-          'Your identity has been confirmed. Thanks for helping keep Airpick safe.',
+          l.avStatusVerifiedTitle,
+          l.avStatusVerifiedBody,
         ),
       _ when v?.isUnderReview == true => (
           Icons.hourglass_top_rounded,
           AppColors.warning,
-          'Review in progress',
-          'Veriff is processing your submission. This usually takes a few minutes.',
+          l.avStatusReviewTitle,
+          l.avStatusReviewBody,
         ),
       _ when v?.isRejected == true => (
           Icons.refresh_rounded,
           AppColors.error,
           v!.verificationStatus.toLowerCase() == 'resubmission_requested'
-              ? 'Resubmission needed'
-              : 'Verification declined',
+              ? l.avStatusResubmitTitle
+              : l.avStatusDeclinedTitle,
           v.message?.isNotEmpty == true
               ? v.message!
-              : 'Please try again with a valid, well-lit ID and a clear selfie.',
+              : l.avStatusRejectedBody,
         ),
       _ => (
           Icons.shield_outlined,
           AppColors.primary,
-          'Verify your identity',
-          'A quick ID scan and selfie powered by Veriff keeps our community trusted.',
+          l.avStatusDefaultTitle,
+          l.avStatusDefaultBody,
         ),
     };
 
@@ -171,11 +173,12 @@ class VerificationStepTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = l10n(context);
     final steps = [
-      ('Prepare', Icons.fact_check_outlined),
-      ('ID scan', Icons.badge_outlined),
-      ('Selfie', Icons.face_retouching_natural_outlined),
-      ('Review', Icons.auto_awesome_outlined),
+      (l.avStepPrepare, Icons.fact_check_outlined),
+      (l.avStepIdScan, Icons.badge_outlined),
+      (l.avStepSelfie, Icons.face_retouching_natural_outlined),
+      (l.avStepReview, Icons.auto_awesome_outlined),
     ];
     final activeIndex = activeStep.index;
 
@@ -288,12 +291,13 @@ class VerificationChecklistCard extends StatelessWidget {
     final border = isDark ? AppColors.darkBorder : AppColors.border;
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final l = l10n(context);
 
-    const items = [
-      (Icons.wb_sunny_outlined, 'Use good lighting — avoid glare on your ID'),
-      (Icons.credit_card_outlined, 'Have a passport or government ID ready'),
-      (Icons.face_outlined, 'You\'ll take a quick selfie for liveness check'),
-      (Icons.timer_outlined, 'Takes about 2 minutes'),
+    final items = [
+      (Icons.wb_sunny_outlined, l.avTipLighting),
+      (Icons.credit_card_outlined, l.avTipId),
+      (Icons.face_outlined, l.avTipSelfie),
+      (Icons.timer_outlined, l.avTipTime),
     ];
 
     return Container(
@@ -307,7 +311,7 @@ class VerificationChecklistCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Before you start',
+            l.avBeforeStart,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 15,
@@ -369,6 +373,7 @@ class VerificationTrustRow extends StatelessWidget {
     final border = isDark ? AppColors.darkBorder : AppColors.border;
     final text =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final l = l10n(context);
 
     Widget chip(IconData icon, String label) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -400,9 +405,9 @@ class VerificationTrustRow extends StatelessWidget {
       runSpacing: 8,
       alignment: WrapAlignment.center,
       children: [
-        chip(Icons.lock_outline_rounded, 'Encrypted'),
+        chip(Icons.lock_outline_rounded, l.avChipEncrypted),
         chip(Icons.verified_user_outlined, 'Veriff'),
-        chip(Icons.public_outlined, '230+ countries'),
+        chip(Icons.public_outlined, l.avChip230),
       ],
     );
   }
@@ -431,9 +436,9 @@ class VerificationRejectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'What went wrong',
-            style: TextStyle(
+          Text(
+            l10n(context).avWhatWentWrong,
+            style: const TextStyle(
               fontFamily: 'Manrope',
               fontSize: 14,
               fontWeight: FontWeight.w800,
@@ -469,11 +474,6 @@ VerificationStep verificationStepFor(AccountVerification? v) {
 bool canStartVeriff(AccountVerification? v) {
   if (v == null) return true;
   return v.canStartSession;
-}
-
-String veriffPrimaryActionLabel(AccountVerification? v) {
-  if (v?.isRejected == true) return 'Try again with Veriff';
-  return 'Start verification';
 }
 
 String? verificationRejectionMessage(AccountVerification v) {

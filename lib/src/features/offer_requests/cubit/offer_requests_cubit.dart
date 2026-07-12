@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../models/offer_request_models.dart';
 import '../repository/offer_request_repository.dart';
 
@@ -12,12 +13,13 @@ const kOfferRequestStatuses = [
   'EXPIRED',
 ];
 
-String offerRequestStatusLabel(String status) => switch (status) {
-      'OPEN' => 'Open',
-      'PENDING_ITEM_APPROVAL' => 'Pending',
-      'PROPOSAL_RECEIVED' => 'Proposals',
-      'ACCEPTED' => 'Accepted',
-      'EXPIRED' => 'Expired',
+String offerRequestStatusLabel(String status, AppLocalizations l) =>
+    switch (status) {
+      'OPEN' => l.statusOpen,
+      'PENDING_ITEM_APPROVAL' => l.statusPending,
+      'PROPOSAL_RECEIVED' => l.statusProposals,
+      'ACCEPTED' => l.statusAccepted,
+      'EXPIRED' => l.statusExpired,
       _ => status,
     };
 

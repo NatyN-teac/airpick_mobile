@@ -14,8 +14,13 @@ class NotificationService {
   static const _channelName = 'Airpick Notifications';
   static const _channelDesc = 'General Airpick notifications';
 
+  // Android status-bar small icon. Must be a monochrome drawable — the adaptive
+  // @mipmap/ic_launcher cannot be used as a small icon and makes notifications
+  // silently fail to post on Android.
+  static const _androidIcon = '@drawable/ic_stat_notification';
+
   static Future<void> initialize() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(_androidIcon);
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -70,7 +75,7 @@ class NotificationService {
           channelDescription: _channelDesc,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: _androidIcon,
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,

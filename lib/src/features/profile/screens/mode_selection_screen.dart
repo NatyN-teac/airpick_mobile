@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../home/cubit/user_mode_cubit.dart';
 import '../../home/widgets/mode_picker_dialog.dart';
@@ -17,9 +18,10 @@ class ModeSelectionScreen extends StatelessWidget {
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
+    final l = l10n(context);
     return Scaffold(
       backgroundColor: bg,
-      appBar: const ProfileSubScreenAppBar(title: 'Mode'),
+      appBar: ProfileSubScreenAppBar(title: l.profileMode),
       body: BlocBuilder<UserModeCubit, UserMode>(
         builder: (context, currentMode) {
           return Padding(
@@ -28,7 +30,7 @@ class ModeSelectionScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Choose your mode',
+                  l.modeChooseTitle,
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 22,
@@ -39,7 +41,7 @@ class ModeSelectionScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Select how you want to use Airpick. Your profile and home screen update instantly.',
+                  l.modeChooseSubtitle,
                   style: TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 14,

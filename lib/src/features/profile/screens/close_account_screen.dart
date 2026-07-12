@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/session/session_logout.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
@@ -29,13 +30,12 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
       _confirmController.text.trim().toUpperCase() == 'DELETE';
 
   Future<void> _closeAccount() async {
+    final l = l10n(context);
     final profile = context.read<CurrentUserCubit>().state;
     if (profile != null && !profile.isVerified) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'You must verify your account before closing it.',
-          ),
+        SnackBar(
+          content: Text(l.closeVerifyRequiredSnack),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -44,7 +44,7 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
 
     if (!_canSubmit) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Type DELETE to confirm.')),
+        SnackBar(content: Text(l.closeTypeDeleteSnack)),
       );
       return;
     }
@@ -55,16 +55,16 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
       final userRepository = context.read<UserRepository>();
       final userId = await tokenStorage.getUserId();
       if (userId == null || userId.isEmpty) {
-        throw Exception('User ID not found.');
+        throw Exception(l.closeUserIdNotFound);
       }
       final result = await userRepository.closeAccount(userId);
       if (!result.isRemoved) {
-        throw Exception(result.message ?? 'Account closure was not confirmed.');
+        throw Exception(result.message ?? l.closeNotConfirmed);
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result.message ?? 'Account closed successfully.'),
+            content: Text(result.message ?? l.closeSuccessDefault),
             backgroundColor: AppColors.success,
           ),
         );
@@ -95,10 +95,11 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final textSecondary =
         isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final l = l10n(context);
 
     return Scaffold(
       backgroundColor: bg,
-      appBar: const ProfileSubScreenAppBar(title: 'Close account'),
+      appBar: ProfileSubScreenAppBar(title: l.profileCloseAccount),
       body: BlocBuilder<CurrentUserCubit, ProfileSnapshot?>(
         builder: (context, profile) {
           final verified = profile?.isVerified ?? false;
@@ -126,9 +127,9 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'This action is permanent',
-                              style: TextStyle(
+                            Text(
+                              l.closePermanentTitle,
+                              style: const TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
@@ -137,7 +138,7 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Closing your account will permanently delete your profile, offers, and requests. This cannot be undone.',
+                              l.closePermanentBody,
                               style: TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 13,
@@ -163,9 +164,9 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
                         color: AppColors.warning.withValues(alpha: 0.3),
                       ),
                     ),
-                    child: const Text(
-                      'Account verification is required before you can close your account.',
-                      style: TextStyle(
+                    child: Text(
+                      l.closeVerifyRequiredBanner,
+                      style: const TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 13,
                         color: AppColors.warning,
@@ -186,7 +187,7 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Confirm deletion',
+                        l.closeConfirmTitle,
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 16,
@@ -196,7 +197,7 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Type DELETE below to confirm you want to permanently close your account.',
+                        l.closeConfirmBody,
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 13,
@@ -275,9 +276,9 @@ class _CloseAccountScreenState extends State<CloseAccountScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text(
-                            'Close my account',
-                            style: TextStyle(
+                        : Text(
+                            l.closeButton,
+                            style: const TextStyle(
                               fontFamily: 'Manrope',
                               fontWeight: FontWeight.w700,
                             ),

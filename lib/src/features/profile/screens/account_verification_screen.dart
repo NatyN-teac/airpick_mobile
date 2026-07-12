@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_message.dart';
 import '../../offers/widgets/airpick_bubble_shell.dart';
@@ -59,6 +60,7 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
   Future<void> _startVeriff(BuildContext context) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final locale = Localizations.localeOf(context).languageCode;
+    final l = l10n(context);
     final cubit = context.read<AccountVerificationCubit>();
 
     try {
@@ -72,16 +74,14 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
           return;
         case VeriffFlowOutcome.submitted:
           setState(() {
-            _successTitle = 'Verification submitted!';
-            _successSubtitle =
-                'We\'re reviewing your ID. Pull down to refresh for the latest status.';
+            _successTitle = l.avSubmittedTitle;
+            _successSubtitle = l.avSubmittedSub;
             _showSuccess = true;
           });
         case VeriffFlowOutcome.verified:
           setState(() {
-            _successTitle = 'You\'re verified!';
-            _successSubtitle =
-                'Your identity is confirmed. You\'re all set on Airpick.';
+            _successTitle = l.avVerifiedTitle;
+            _successSubtitle = l.avVerifiedSub;
             _showSuccess = true;
           });
       }
@@ -101,9 +101,10 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
 
+    final l = l10n(context);
     return Scaffold(
       backgroundColor: bg,
-      appBar: const ProfileSubScreenAppBar(title: 'Account verification'),
+      appBar: ProfileSubScreenAppBar(title: l.profileVerification),
       body: BlocConsumer<AccountVerificationCubit, AccountVerificationState>(
         listenWhen: (prev, curr) =>
             curr.error != null &&
@@ -123,8 +124,8 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
           if (state.status == AccountVerificationStatus.failure) {
             return Center(
               child: AppErrorState(
-                title: 'Could not load verification',
-                message: state.error ?? 'Failed to load verification status.',
+                title: l.avCouldNotLoad,
+                message: state.error ?? l.avLoadFailed,
                 onRetry: () => context.read<AccountVerificationCubit>().load(),
               ),
             );
@@ -238,7 +239,9 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                         _VeriffStartBar(
                           isDark: isDark,
                           loading: starting,
-                          label: veriffPrimaryActionLabel(verification),
+                          label: verification.isRejected == true
+                              ? l.avTryAgainVeriff
+                              : l.avStartVerification,
                           onStart: starting
                               ? null
                               : () => _startVeriff(context),
@@ -270,8 +273,8 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                                   const SizedBox(height: 14),
                                   Text(
                                     starting
-                                        ? 'Preparing secure session…'
-                                        : 'Checking verification status…',
+                                        ? l.avPreparing
+                                        : l.avChecking,
                                     style: TextStyle(
                                       fontFamily: 'Manrope',
                                       fontSize: 14,
@@ -313,6 +316,7 @@ class _VeriffStartBar extends StatelessWidget {
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
     final enabled = onStart != null && !loading;
+    final l = l10n(context);
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -382,7 +386,7 @@ class _VeriffStartBar extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Powered by Veriff · Secure identity verification',
+              l.avPoweredBy,
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 10,

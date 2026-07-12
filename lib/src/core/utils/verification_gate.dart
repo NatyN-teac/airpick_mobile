@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../../features/profile/cubit/current_user_cubit.dart';
 import '../../features/profile/screens/account_verification_screen.dart';
@@ -19,7 +20,8 @@ bool requireVerified(BuildContext context, {String? action}) {
 }
 
 void _showVerificationRequired(BuildContext context, {String? action}) {
-  final actionText = action ?? 'create offers, requests, or proposals';
+  final l = l10n(context);
+  final actionText = action ?? l.verifyActionDefault;
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final bg = isDark ? AppColors.darkSurface : Colors.white;
   final textPrimary =
@@ -62,7 +64,7 @@ void _showVerificationRequired(BuildContext context, {String? action}) {
           ),
           const SizedBox(height: 16),
           Text(
-            'Verification required',
+            l.verifyRequiredTitle,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 18,
@@ -73,7 +75,7 @@ void _showVerificationRequired(BuildContext context, {String? action}) {
           ),
           const SizedBox(height: 8),
           Text(
-            'You need to verify your identity before you can $actionText. Verification takes just a few minutes.',
+            l.verifyRequiredBody(actionText),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Manrope',
@@ -107,10 +109,10 @@ void _showVerificationRequired(BuildContext context, {String? action}) {
                     ),
                   ],
                 ),
-                child: const Text(
-                  'Verify my identity',
+                child: Text(
+                  l.verifyMyIdentity,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'Manrope',
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -126,7 +128,7 @@ void _showVerificationRequired(BuildContext context, {String? action}) {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Maybe later',
+                l.maybeLater,
                 style: TextStyle(
                   fontFamily: 'Manrope',
                   fontSize: 13,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
@@ -44,18 +45,18 @@ class _BrowseOffersPreviewState extends State<BrowseOffersPreview> {
         }
         if (state.error != null && state.offers.isEmpty) {
           return AppErrorState(
-            title: 'Could not load carriers',
+            title: l10n(context).carriersLoadError,
             message: state.error!,
             onRetry: () => context.read<BrowseOffersCubit>().load(force: true),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           );
         }
         if (state.offers.isEmpty) {
-          return const AppEmptyState(
+          return AppEmptyState(
             icon: Icons.flight_takeoff_rounded,
-            title: 'No carriers available',
-            message: 'Available carriers will show here when they post trips.',
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            title: l10n(context).carriersEmptyTitle,
+            message: l10n(context).carriersEmptyBody,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           );
         }
         final preview = state.offers.take(3).toList();
@@ -113,7 +114,7 @@ class BrowseOffersScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Available Carriers',
+          l10n(context).sectionAvailableCarriers,
           style: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 16,
@@ -131,7 +132,7 @@ class BrowseOffersScreen extends StatelessWidget {
           if (state.error != null && state.offers.isEmpty) {
             return Center(
               child: AppErrorState(
-                title: 'Could not load carriers',
+                title: l10n(context).carriersLoadError,
                 message: state.error!,
                 onRetry: () =>
                     context.read<BrowseOffersCubit>().load(force: true),
@@ -139,12 +140,11 @@ class BrowseOffersScreen extends StatelessWidget {
             );
           }
           if (state.offers.isEmpty) {
-            return const Center(
+            return Center(
               child: AppEmptyState(
                 icon: Icons.flight_takeoff_rounded,
-                title: 'No carriers available',
-                message:
-                    'Available carriers will show here when they post trips.',
+                title: l10n(context).carriersEmptyTitle,
+                message: l10n(context).carriersEmptyBody,
               ),
             );
           }

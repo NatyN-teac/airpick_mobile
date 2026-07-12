@@ -15,6 +15,7 @@ import '../../offer_requests/screens/offer_requests_screen.dart';
 import '../../offer_requests/widgets/create_offer_request_bubble.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/app_nav_bar.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/verification_gate.dart';
 import '../../../core/widgets/skeleton_list.dart';
@@ -116,7 +117,9 @@ class _HomeViewState extends State<_HomeView> {
     final mode = context.read<UserModeCubit>().state;
     if (mode == UserMode.carrier) {
       // Offers require a verified identity — show an offer-specific message.
-      if (!requireVerified(context, action: 'create an offer')) return;
+      if (!requireVerified(context, action: l10n(context).verifyActionCreateOffer)) {
+        return;
+      }
       final offersCubit = context.read<OffersCubit>();
       showCreateOfferBubble(
         context,
@@ -198,8 +201,8 @@ class _HomeViewState extends State<_HomeView> {
                     badgeCounts: badgeCounts,
                     centerLabel:
                         context.watch<UserModeCubit>().state == UserMode.sender
-                        ? 'Requests'
-                        : 'Offers',
+                        ? l10n(context).centerRequests
+                        : l10n(context).centerOffers,
                   ),
                 );
               },
@@ -291,7 +294,7 @@ class _HomeTabState extends State<_HomeTab> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Good to have you back 👋',
+                          l10n(context).homeGreeting,
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 12,
@@ -301,7 +304,7 @@ class _HomeTabState extends State<_HomeTab> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          "What's happening today?",
+                          l10n(context).homeQuestion,
                           style: TextStyle(
                             fontFamily: 'Manrope',
                             fontSize: 20,
@@ -339,7 +342,7 @@ class _HomeTabState extends State<_HomeTab> {
                         children: [
                           const SizedBox(height: 20),
                           _SectionHeader(
-                            title: 'In delivery',
+                            title: l10n(context).sectionInDelivery,
                             isDark: isDark,
                             onSeeAll: () => openDeliveryTrackList(context),
                           ),
@@ -373,7 +376,7 @@ class _HomeTabState extends State<_HomeTab> {
                       return Column(
                         children: [
                           _SectionHeader(
-                            title: 'Engagements',
+                            title: l10n(context).sectionEngagements,
                             isDark: isDark,
                             onSeeAll: () => _openEngagements(context),
                           ),
@@ -399,8 +402,8 @@ class _HomeTabState extends State<_HomeTab> {
                           .state
                           .hasDeliveries;
                       final sectionTitle = mode == UserMode.sender
-                          ? 'Available carriers'
-                          : 'Offer requests';
+                          ? l10n(context).sectionAvailableCarriers
+                          : l10n(context).sectionOfferRequests;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -490,7 +493,9 @@ class _ModePill extends StatelessWidget {
             ),
             const SizedBox(width: 5),
             Text(
-              mode.pillLabel,
+              mode == UserMode.sender
+                  ? l10n(context).modeSenderPill
+                  : l10n(context).modeCarrierPill,
               style: const TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 11,
@@ -548,9 +553,9 @@ class _SectionHeader extends StatelessWidget {
               onTap: onSeeAll,
               child: Row(
                 children: [
-                  const Text(
-                    'See all',
-                    style: TextStyle(
+                  Text(
+                    l10n(context).seeAll,
+                    style: const TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -801,7 +806,7 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                           _LiveDot(controller: _c),
                           const SizedBox(width: 6),
                           Text(
-                            '$count active engagement${count == 1 ? '' : 's'}',
+                            l10n(context).activeEngagements(count),
                             style: TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 13.5,
@@ -814,7 +819,7 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Latest: ${latest.title} · ${latest.fromCode}→${latest.toCode} · ${latest.status.label}',
+                        '${l10n(context).latestLabel}: ${latest.title} · ${latest.fromCode}→${latest.toCode} · ${latest.status.label}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -841,20 +846,20 @@ class _EngagementTeaserState extends State<_EngagementTeaser>
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'See all',
-                        style: TextStyle(
+                        l10n(context).seeAll,
+                        style: const TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(width: 2),
-                      Icon(
+                      const SizedBox(width: 2),
+                      const Icon(
                         Icons.arrow_forward_rounded,
                         size: 13,
                         color: Colors.white,

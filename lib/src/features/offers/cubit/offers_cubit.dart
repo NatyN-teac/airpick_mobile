@@ -1,17 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../models/offer_response.dart';
 import '../repository/offer_repository.dart';
 
 const kOfferStatuses = ['OPEN', 'MATCHED', 'IN_DELIVERY', 'COMPLETED', 'EXPIRED'];
 
-String offerStatusLabel(String s) => switch (s) {
-      'OPEN' => 'Open',
-      'MATCHED' => 'Matched',
-      'IN_DELIVERY' => 'In delivery',
-      'COMPLETED' => 'Completed',
-      'EXPIRED' => 'Expired',
-      'CANCELLED' => 'Cancelled',
+String offerStatusLabel(String s, AppLocalizations l) => switch (s) {
+      'OPEN' => l.statusOpen,
+      'MATCHED' => l.statusMatched,
+      'IN_DELIVERY' => l.sectionInDelivery,
+      'COMPLETED' => l.statusCompleted,
+      'EXPIRED' => l.statusExpired,
+      'CANCELLED' => l.statusCancelled,
       _ => s,
     };
 

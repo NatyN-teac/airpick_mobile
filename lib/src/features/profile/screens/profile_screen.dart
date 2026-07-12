@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/l10n/l10n.dart';
 import '../../../core/session/session_logout.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
@@ -25,12 +26,13 @@ class ProfileScreen extends StatelessWidget {
         final bg = isDark ? AppColors.darkSurface : Colors.white;
         final textPrimary =
             isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+        final l = l10n(ctx);
         return AlertDialog(
           backgroundColor: bg,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            'Log out',
+            l.logOut,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontWeight: FontWeight.w800,
@@ -38,7 +40,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           content: Text(
-            'Are you sure you want to log out of your account?',
+            l.logOutConfirmBody,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 14,
@@ -50,16 +52,16 @@ class ProfileScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(fontFamily: 'Manrope'),
+              child: Text(
+                l.cancel,
+                style: const TextStyle(fontFamily: 'Manrope'),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text(
-                'Log out',
-                style: TextStyle(
+              child: Text(
+                l.logOut,
+                style: const TextStyle(
                   fontFamily: 'Manrope',
                   fontWeight: FontWeight.w700,
                   color: AppColors.error,
@@ -79,6 +81,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
+    final l = l10n(context);
 
     return ColoredBox(
       color: bg,
@@ -100,8 +103,8 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   ProfileMenuTile(
                     icon: Icons.person_outline_rounded,
-                    title: 'User details',
-                    subtitle: 'Update your name and profile info',
+                    title: l.profileUserDetails,
+                    subtitle: l.profileUserDetailsSub,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -112,8 +115,8 @@ class ProfileScreen extends StatelessWidget {
                   const ProfileMenuDivider(),
                   ProfileMenuTile(
                     icon: Icons.verified_user_outlined,
-                    title: 'Account verification',
-                    subtitle: 'Verify your identity with a passport',
+                    title: l.profileVerification,
+                    subtitle: l.profileVerificationSub,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -124,8 +127,8 @@ class ProfileScreen extends StatelessWidget {
                   const ProfileMenuDivider(),
                   ProfileMenuTile(
                     icon: Icons.language_outlined,
-                    title: 'Language',
-                    subtitle: 'Choose your preferred language',
+                    title: l.profileLanguage,
+                    subtitle: l.profileLanguageSub,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -136,8 +139,8 @@ class ProfileScreen extends StatelessWidget {
                   const ProfileMenuDivider(),
                   ProfileMenuTile(
                     icon: Icons.swap_horiz_outlined,
-                    title: 'Mode',
-                    subtitle: 'Switch between Sender and Carrier',
+                    title: l.profileMode,
+                    subtitle: l.profileModeSub,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -148,8 +151,8 @@ class ProfileScreen extends StatelessWidget {
                   const ProfileMenuDivider(),
                   ProfileMenuTile(
                     icon: Icons.info_outline_rounded,
-                    title: 'About',
-                    subtitle: 'Learn more about Airpick',
+                    title: l.profileAbout,
+                    subtitle: l.profileAboutSub,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -160,8 +163,8 @@ class ProfileScreen extends StatelessWidget {
                   const ProfileMenuDivider(),
                   ProfileMenuTile(
                     icon: Icons.account_circle_outlined,
-                    title: 'Close account',
-                    subtitle: 'Permanently delete your account',
+                    title: l.profileCloseAccount,
+                    subtitle: l.profileCloseAccountSub,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -201,23 +204,23 @@ class ProfileScreen extends StatelessWidget {
                             color: AppColors.error, size: 20),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Log out',
-                              style: TextStyle(
+                              l.logOut,
+                              style: const TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.error,
                               ),
                             ),
-                            SizedBox(height: 1),
+                            const SizedBox(height: 1),
                             Text(
-                              'Sign out of your account',
-                              style: TextStyle(
+                              l.logOutSub,
+                              style: const TextStyle(
                                 fontFamily: 'Manrope',
                                 fontSize: 12,
                                 color: AppColors.error,

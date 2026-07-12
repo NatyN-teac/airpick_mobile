@@ -497,6 +497,1716 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Offer created successfully!'**
   String get offerCreatedSuccess;
+
+  /// No description provided for @logOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get logOut;
+
+  /// No description provided for @logOutConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out of your account?'**
+  String get logOutConfirmBody;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @logOutSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of your account'**
+  String get logOutSub;
+
+  /// No description provided for @profileUserDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'User details'**
+  String get profileUserDetails;
+
+  /// No description provided for @profileUserDetailsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your name and profile info'**
+  String get profileUserDetailsSub;
+
+  /// No description provided for @profileVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Account verification'**
+  String get profileVerification;
+
+  /// No description provided for @profileVerificationSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity with a passport'**
+  String get profileVerificationSub;
+
+  /// No description provided for @profileLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get profileLanguage;
+
+  /// No description provided for @profileLanguageSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred language'**
+  String get profileLanguageSub;
+
+  /// No description provided for @profileMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get profileMode;
+
+  /// No description provided for @profileModeSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between Sender and Carrier'**
+  String get profileModeSub;
+
+  /// No description provided for @profileAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get profileAbout;
+
+  /// No description provided for @profileAboutSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn more about Airpick'**
+  String get profileAboutSub;
+
+  /// No description provided for @profileCloseAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Close account'**
+  String get profileCloseAccount;
+
+  /// No description provided for @profileCloseAccountSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete your account'**
+  String get profileCloseAccountSub;
+
+  /// No description provided for @guest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get guest;
+
+  /// No description provided for @verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verified;
+
+  /// No description provided for @unverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Unverified'**
+  String get unverified;
+
+  /// No description provided for @modeChooseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your mode'**
+  String get modeChooseTitle;
+
+  /// No description provided for @modeChooseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select how you want to use Airpick. Your profile and home screen update instantly.'**
+  String get modeChooseSubtitle;
+
+  /// App version label
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String aboutVersion(Object version);
+
+  /// No description provided for @aboutSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About Airpick'**
+  String get aboutSectionTitle;
+
+  /// No description provided for @aboutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Airpick connects travelers and senders for secure, peer-to-peer package delivery between airports. Whether you are traveling and can carry items, or need something delivered, Airpick helps you find trusted matches.'**
+  String get aboutBody;
+
+  /// No description provided for @aboutKeyFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Key features'**
+  String get aboutKeyFeatures;
+
+  /// No description provided for @aboutFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified accounts for trusted delivery'**
+  String get aboutFeature1;
+
+  /// No description provided for @aboutFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Airport-based matching for travelers'**
+  String get aboutFeature2;
+
+  /// No description provided for @aboutFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Send and receive items with ease'**
+  String get aboutFeature3;
+
+  /// No description provided for @aboutFeature4.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app messaging (coming soon)'**
+  String get aboutFeature4;
+
+  /// No description provided for @closeVerifyRequiredSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'You must verify your account before closing it.'**
+  String get closeVerifyRequiredSnack;
+
+  /// No description provided for @closeTypeDeleteSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE to confirm.'**
+  String get closeTypeDeleteSnack;
+
+  /// No description provided for @closeUserIdNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'User ID not found.'**
+  String get closeUserIdNotFound;
+
+  /// No description provided for @closeNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Account closure was not confirmed.'**
+  String get closeNotConfirmed;
+
+  /// No description provided for @closeSuccessDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Account closed successfully.'**
+  String get closeSuccessDefault;
+
+  /// No description provided for @closePermanentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is permanent'**
+  String get closePermanentTitle;
+
+  /// No description provided for @closePermanentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing your account will permanently delete your profile, offers, and requests. This cannot be undone.'**
+  String get closePermanentBody;
+
+  /// No description provided for @closeVerifyRequiredBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Account verification is required before you can close your account.'**
+  String get closeVerifyRequiredBanner;
+
+  /// No description provided for @closeConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm deletion'**
+  String get closeConfirmTitle;
+
+  /// No description provided for @closeConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE below to confirm you want to permanently close your account.'**
+  String get closeConfirmBody;
+
+  /// No description provided for @closeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Close my account'**
+  String get closeButton;
+
+  /// No description provided for @languageSelectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select language'**
+  String get languageSelectTitle;
+
+  /// No description provided for @languageSelectSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred language for the app.'**
+  String get languageSelectSubtitle;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get navChat;
+
+  /// No description provided for @navAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get navAlerts;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get navProfile;
+
+  /// No description provided for @homeGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Good to have you back 👋'**
+  String get homeGreeting;
+
+  /// No description provided for @homeQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s happening today?'**
+  String get homeQuestion;
+
+  /// No description provided for @sectionInDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'In delivery'**
+  String get sectionInDelivery;
+
+  /// No description provided for @sectionEngagements.
+  ///
+  /// In en, this message translates to:
+  /// **'Engagements'**
+  String get sectionEngagements;
+
+  /// No description provided for @sectionAvailableCarriers.
+  ///
+  /// In en, this message translates to:
+  /// **'Available carriers'**
+  String get sectionAvailableCarriers;
+
+  /// No description provided for @sectionOfferRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer requests'**
+  String get sectionOfferRequests;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @centerRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get centerRequests;
+
+  /// No description provided for @centerOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers'**
+  String get centerOffers;
+
+  /// Count of active engagements
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 active engagement} other{{count} active engagements}}'**
+  String activeEngagements(num count);
+
+  /// No description provided for @latestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest'**
+  String get latestLabel;
+
+  /// No description provided for @modeSender.
+  ///
+  /// In en, this message translates to:
+  /// **'Sender'**
+  String get modeSender;
+
+  /// No description provided for @modeCarrier.
+  ///
+  /// In en, this message translates to:
+  /// **'Carrier'**
+  String get modeCarrier;
+
+  /// No description provided for @modeSenderPill.
+  ///
+  /// In en, this message translates to:
+  /// **'Sender mode'**
+  String get modeSenderPill;
+
+  /// No description provided for @modeCarrierPill.
+  ///
+  /// In en, this message translates to:
+  /// **'Carrier mode'**
+  String get modeCarrierPill;
+
+  /// No description provided for @modeSenderDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'I need items delivered'**
+  String get modeSenderDesc;
+
+  /// No description provided for @modeCarrierDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m traveling & can carry items'**
+  String get modeCarrierDesc;
+
+  /// No description provided for @modePickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch mode'**
+  String get modePickerTitle;
+
+  /// No description provided for @modePickerQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How are you using Airpick today?'**
+  String get modePickerQuestion;
+
+  /// No description provided for @active.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get active;
+
+  /// No description provided for @verifyRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification required'**
+  String get verifyRequiredTitle;
+
+  /// Verification gate body; {action} is a verb phrase
+  ///
+  /// In en, this message translates to:
+  /// **'You need to verify your identity before you can {action}. Verification takes just a few minutes.'**
+  String verifyRequiredBody(Object action);
+
+  /// No description provided for @verifyMyIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify my identity'**
+  String get verifyMyIdentity;
+
+  /// No description provided for @verifyActionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'create offers, requests, or proposals'**
+  String get verifyActionDefault;
+
+  /// No description provided for @verifyActionCreateOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'create an offer'**
+  String get verifyActionCreateOffer;
+
+  /// No description provided for @udErrorRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh from server. Showing saved info — you can still edit and save.'**
+  String get udErrorRefresh;
+
+  /// No description provided for @udCouldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profile'**
+  String get udCouldNotLoad;
+
+  /// No description provided for @userIdNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'User ID not found.'**
+  String get userIdNotFound;
+
+  /// No description provided for @udUpdatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Updated!'**
+  String get udUpdatedTitle;
+
+  /// No description provided for @udUpdatedSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Your details have been saved.'**
+  String get udUpdatedSub;
+
+  /// No description provided for @sectionPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get sectionPersonal;
+
+  /// No description provided for @sectionLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get sectionLocation;
+
+  /// No description provided for @firstName.
+  ///
+  /// In en, this message translates to:
+  /// **'First name'**
+  String get firstName;
+
+  /// No description provided for @middleName.
+  ///
+  /// In en, this message translates to:
+  /// **'Middle name'**
+  String get middleName;
+
+  /// No description provided for @lastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Last name'**
+  String get lastName;
+
+  /// No description provided for @dateOfBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth'**
+  String get dateOfBirth;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @stateRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'State / Region'**
+  String get stateRegion;
+
+  /// No description provided for @country.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get country;
+
+  /// No description provided for @bio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get bio;
+
+  /// No description provided for @bioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell others a little about yourself'**
+  String get bioHint;
+
+  /// No description provided for @firstNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'First name is required.'**
+  String get firstNameRequired;
+
+  /// No description provided for @lastNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Last name is required.'**
+  String get lastNameRequired;
+
+  /// No description provided for @cityRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'City is required.'**
+  String get cityRequired;
+
+  /// No description provided for @countryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Country is required.'**
+  String get countryRequired;
+
+  /// No description provided for @dobRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth is required.'**
+  String get dobRequired;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get saveChanges;
+
+  /// No description provided for @avSubmittedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification submitted!'**
+  String get avSubmittedTitle;
+
+  /// No description provided for @avSubmittedSub.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re reviewing your ID. Pull down to refresh for the latest status.'**
+  String get avSubmittedSub;
+
+  /// No description provided for @avVerifiedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re verified!'**
+  String get avVerifiedTitle;
+
+  /// No description provided for @avVerifiedSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity is confirmed. You\'re all set on Airpick.'**
+  String get avVerifiedSub;
+
+  /// No description provided for @avCouldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load verification'**
+  String get avCouldNotLoad;
+
+  /// No description provided for @avLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load verification status.'**
+  String get avLoadFailed;
+
+  /// No description provided for @avPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing secure session…'**
+  String get avPreparing;
+
+  /// No description provided for @avChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking verification status…'**
+  String get avChecking;
+
+  /// No description provided for @avPoweredBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by Veriff · Secure identity verification'**
+  String get avPoweredBy;
+
+  /// No description provided for @avStatusVerifiedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re verified'**
+  String get avStatusVerifiedTitle;
+
+  /// No description provided for @avStatusVerifiedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity has been confirmed. Thanks for helping keep Airpick safe.'**
+  String get avStatusVerifiedBody;
+
+  /// No description provided for @avStatusReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review in progress'**
+  String get avStatusReviewTitle;
+
+  /// No description provided for @avStatusReviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Veriff is processing your submission. This usually takes a few minutes.'**
+  String get avStatusReviewBody;
+
+  /// No description provided for @avStatusResubmitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Resubmission needed'**
+  String get avStatusResubmitTitle;
+
+  /// No description provided for @avStatusDeclinedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification declined'**
+  String get avStatusDeclinedTitle;
+
+  /// No description provided for @avStatusRejectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Please try again with a valid, well-lit ID and a clear selfie.'**
+  String get avStatusRejectedBody;
+
+  /// No description provided for @avStatusDefaultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity'**
+  String get avStatusDefaultTitle;
+
+  /// No description provided for @avStatusDefaultBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick ID scan and selfie powered by Veriff keeps our community trusted.'**
+  String get avStatusDefaultBody;
+
+  /// No description provided for @avStepPrepare.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare'**
+  String get avStepPrepare;
+
+  /// No description provided for @avStepIdScan.
+  ///
+  /// In en, this message translates to:
+  /// **'ID scan'**
+  String get avStepIdScan;
+
+  /// No description provided for @avStepSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie'**
+  String get avStepSelfie;
+
+  /// No description provided for @avStepReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get avStepReview;
+
+  /// No description provided for @avBeforeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you start'**
+  String get avBeforeStart;
+
+  /// No description provided for @avTipLighting.
+  ///
+  /// In en, this message translates to:
+  /// **'Use good lighting — avoid glare on your ID'**
+  String get avTipLighting;
+
+  /// No description provided for @avTipId.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a passport or government ID ready'**
+  String get avTipId;
+
+  /// No description provided for @avTipSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll take a quick selfie for liveness check'**
+  String get avTipSelfie;
+
+  /// No description provided for @avTipTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes about 2 minutes'**
+  String get avTipTime;
+
+  /// No description provided for @avChipEncrypted.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted'**
+  String get avChipEncrypted;
+
+  /// No description provided for @avChip230.
+  ///
+  /// In en, this message translates to:
+  /// **'230+ countries'**
+  String get avChip230;
+
+  /// No description provided for @avWhatWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'What went wrong'**
+  String get avWhatWentWrong;
+
+  /// No description provided for @avStartVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Start verification'**
+  String get avStartVerification;
+
+  /// No description provided for @avTryAgainVeriff.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again with Veriff'**
+  String get avTryAgainVeriff;
+
+  /// No description provided for @notifTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifTitle;
+
+  /// No description provided for @notifNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get notifNew;
+
+  /// No description provided for @notifEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier'**
+  String get notifEarlier;
+
+  /// No description provided for @notifCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all caught up'**
+  String get notifCaughtUp;
+
+  /// Unread notifications count
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new update} other{{count} new updates}}'**
+  String notifUnread(num count);
+
+  /// No description provided for @markAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get markAllRead;
+
+  /// No description provided for @notifEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get notifEmptyTitle;
+
+  /// No description provided for @notifEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates about matches and deliveries land here.'**
+  String get notifEmptyBody;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
+
+  /// No description provided for @engEmptyActive.
+  ///
+  /// In en, this message translates to:
+  /// **'No active engagements.'**
+  String get engEmptyActive;
+
+  /// No description provided for @tabSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get tabSent;
+
+  /// No description provided for @tabReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get tabReceived;
+
+  /// No description provided for @tabMatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched'**
+  String get tabMatched;
+
+  /// No description provided for @emptyProposalsSent.
+  ///
+  /// In en, this message translates to:
+  /// **'No proposals sent yet.'**
+  String get emptyProposalsSent;
+
+  /// No description provided for @emptyProposalsReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'No proposals received yet.'**
+  String get emptyProposalsReceived;
+
+  /// No description provided for @emptyMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches yet.'**
+  String get emptyMatches;
+
+  /// No description provided for @offersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer'**
+  String get offersTitle;
+
+  /// No description provided for @offersLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load offers'**
+  String get offersLoadError;
+
+  /// No description provided for @offersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No offers yet'**
+  String get offersEmptyTitle;
+
+  /// No description provided for @offersEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to post an offer with your flight.'**
+  String get offersEmptyBody;
+
+  /// No description provided for @offersEmptyStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No offers with this status'**
+  String get offersEmptyStatusTitle;
+
+  /// No description provided for @offersEmptyStatusBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another status filter to see your other offers.'**
+  String get offersEmptyStatusBody;
+
+  /// No description provided for @offerDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer deleted'**
+  String get offerDeleted;
+
+  /// No description provided for @offerDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this offer?'**
+  String get offerDeleteConfirmTitle;
+
+  /// No description provided for @offerDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes your offer permanently.'**
+  String get offerDeleteConfirmBody;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// Number of items
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String itemsCount(num count);
+
+  /// No description provided for @statusAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get statusAll;
+
+  /// No description provided for @statusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get statusOpen;
+
+  /// No description provided for @statusMatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched'**
+  String get statusMatched;
+
+  /// No description provided for @statusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get statusCompleted;
+
+  /// No description provided for @statusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get statusExpired;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get statusCancelled;
+
+  /// No description provided for @offerCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get offerCurrency;
+
+  /// No description provided for @offerDiscountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get offerDiscountLabel;
+
+  /// No description provided for @offerPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get offerPayment;
+
+  /// No description provided for @offerMeetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Meetup'**
+  String get offerMeetup;
+
+  /// No description provided for @offerNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get offerNote;
+
+  /// No description provided for @offerTotalValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total value'**
+  String get offerTotalValue;
+
+  /// No description provided for @offerMatchThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Match this offer'**
+  String get offerMatchThis;
+
+  /// No description provided for @offerNoFlight.
+  ///
+  /// In en, this message translates to:
+  /// **'No flight attached'**
+  String get offerNoFlight;
+
+  /// Relative creation time, e.g. Created 2h ago
+  ///
+  /// In en, this message translates to:
+  /// **'Created {ago}'**
+  String offerCreatedAgo(Object ago);
+
+  /// No description provided for @carriersLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load carriers'**
+  String get carriersLoadError;
+
+  /// No description provided for @carriersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No carriers available'**
+  String get carriersEmptyTitle;
+
+  /// No description provided for @carriersEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Available carriers will show here when they post trips.'**
+  String get carriersEmptyBody;
+
+  /// No description provided for @editOfferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Offer'**
+  String get editOfferTitle;
+
+  /// No description provided for @offerDiscountOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount (optional)'**
+  String get offerDiscountOptional;
+
+  /// No description provided for @offerNoteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get offerNoteOptional;
+
+  /// No description provided for @offerUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer updated'**
+  String get offerUpdated;
+
+  /// No description provided for @offerFlightNotEditable.
+  ///
+  /// In en, this message translates to:
+  /// **'Flight not editable'**
+  String get offerFlightNotEditable;
+
+  /// No description provided for @offerNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Fragile items handled with care'**
+  String get offerNoteHint;
+
+  /// No description provided for @offerDeliveryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Lagos, Nigeria'**
+  String get offerDeliveryHint;
+
+  /// No description provided for @offerPickupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Los Angeles, CA'**
+  String get offerPickupHint;
+
+  /// No description provided for @requestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get requestsTitle;
+
+  /// No description provided for @requestsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load requests'**
+  String get requestsLoadError;
+
+  /// No description provided for @requestsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet'**
+  String get requestsEmptyTitle;
+
+  /// No description provided for @requestsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to create a request for items you need delivered.'**
+  String get requestsEmptyBody;
+
+  /// No description provided for @requestsEmptyStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests with this status'**
+  String get requestsEmptyStatusTitle;
+
+  /// No description provided for @requestsEmptyStatusBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another status filter to see your other requests.'**
+  String get requestsEmptyStatusBody;
+
+  /// No description provided for @requestDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Request deleted'**
+  String get requestDeleted;
+
+  /// No description provided for @requestDeleteConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this request?'**
+  String get requestDeleteConfirmTitle;
+
+  /// No description provided for @requestDeleteConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently removes your offer request. This action cannot be undone.'**
+  String get requestDeleteConfirmBody;
+
+  /// Number of proposals
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 proposal} other{{count} proposals}}'**
+  String proposalsCount(num count);
+
+  /// No description provided for @statusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get statusPending;
+
+  /// No description provided for @statusProposals.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposals'**
+  String get statusProposals;
+
+  /// No description provided for @statusAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get statusAccepted;
+
+  /// No description provided for @statusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get statusClosed;
+
+  /// No description provided for @statusPendingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending approval'**
+  String get statusPendingApproval;
+
+  /// No description provided for @statusNotAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not accepted'**
+  String get statusNotAccepted;
+
+  /// No description provided for @reqPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Partial ✓'**
+  String get reqPartial;
+
+  /// No description provided for @urgencyUrgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get urgencyUrgent;
+
+  /// No description provided for @urgencyFlexible.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible'**
+  String get urgencyFlexible;
+
+  /// No description provided for @browseRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Requests'**
+  String get browseRequestsTitle;
+
+  /// No description provided for @filterRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter requests'**
+  String get filterRequests;
+
+  /// No description provided for @sourceCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Source country'**
+  String get sourceCountry;
+
+  /// No description provided for @sourceCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Source city'**
+  String get sourceCity;
+
+  /// No description provided for @destinationCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Destination country'**
+  String get destinationCountry;
+
+  /// No description provided for @anyCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Any country'**
+  String get anyCountry;
+
+  /// No description provided for @anyOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get anyOption;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @noMatchingRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching requests'**
+  String get noMatchingRequests;
+
+  /// No description provided for @tryClearingFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Try clearing the filters or searching another route.'**
+  String get tryClearingFilters;
+
+  /// No description provided for @requestsBrowseEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests available'**
+  String get requestsBrowseEmptyTitle;
+
+  /// No description provided for @requestsBrowseEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open shipper requests will show here when senders post them.'**
+  String get requestsBrowseEmptyBody;
+
+  /// No description provided for @requestDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Details'**
+  String get requestDetailTitle;
+
+  /// No description provided for @reqPartialProposals.
+  ///
+  /// In en, this message translates to:
+  /// **'Partial proposals'**
+  String get reqPartialProposals;
+
+  /// No description provided for @preferredDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred date'**
+  String get preferredDate;
+
+  /// No description provided for @reqNoItems.
+  ///
+  /// In en, this message translates to:
+  /// **'No items'**
+  String get reqNoItems;
+
+  /// No description provided for @reqHasProposalsLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This request has proposals and can no longer be edited or deleted.'**
+  String get reqHasProposalsLocked;
+
+  /// {status} is a lowercase status word
+  ///
+  /// In en, this message translates to:
+  /// **'This request is {status} and can no longer be edited or deleted.'**
+  String reqStatusLocked(Object status);
+
+  /// No description provided for @createProposalSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposal sent'**
+  String get createProposalSent;
+
+  /// No description provided for @sendProposal.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Proposal'**
+  String get sendProposal;
+
+  /// No description provided for @yourFlight.
+  ///
+  /// In en, this message translates to:
+  /// **'Your flight'**
+  String get yourFlight;
+
+  /// Airport search hint with country name
+  ///
+  /// In en, this message translates to:
+  /// **'Airport in {country}'**
+  String airportInCountry(Object country);
+
+  /// No description provided for @pickupDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup & delivery'**
+  String get pickupDelivery;
+
+  /// No description provided for @priceTheItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Price the items'**
+  String get priceTheItems;
+
+  /// No description provided for @partialAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Partial allowed'**
+  String get partialAllowed;
+
+  /// No description provided for @proposalCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposal currency'**
+  String get proposalCurrency;
+
+  /// No description provided for @submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submit;
+
+  /// No description provided for @priceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get priceLabel;
+
+  /// No description provided for @totalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get totalLabel;
+
+  /// No description provided for @pickupAreaHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The general area where you\'ll collect the items before your flight (e.g. a city or neighbourhood).'**
+  String get pickupAreaHelp;
+
+  /// No description provided for @meetupHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Specific spots where you can meet the sender in person to hand over or drop off the items (e.g. a mall, cafe or landmark).'**
+  String get meetupHelp;
+
+  /// No description provided for @proposalNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. I can deliver within 2 days of arrival'**
+  String get proposalNoteHint;
+
+  /// No description provided for @chatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get chatsTitle;
+
+  /// No description provided for @chatsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get chatsEmptyTitle;
+
+  /// No description provided for @chatsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched deliveries will appear here.'**
+  String get chatsEmptyBody;
+
+  /// No description provided for @chatNoMessagesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get chatNoMessagesYet;
+
+  /// No description provided for @chatStartConvo.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the conversation when you are ready.'**
+  String get chatStartConvo;
+
+  /// No description provided for @chatLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load chat'**
+  String get chatLoadError;
+
+  /// No description provided for @chatMatchDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Match details'**
+  String get chatMatchDetails;
+
+  /// No description provided for @chatMessageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message…'**
+  String get chatMessageHint;
+
+  /// Items header with count
+  ///
+  /// In en, this message translates to:
+  /// **'Items ({count})'**
+  String chatItemsCount(Object count);
+
+  /// No description provided for @chatRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get chatRoute;
+
+  /// No description provided for @chatConfirmPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm pickup'**
+  String get chatConfirmPickup;
+
+  /// No description provided for @chatReadyForPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready for pickup'**
+  String get chatReadyForPickup;
+
+  /// No description provided for @chatPickUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up'**
+  String get chatPickUp;
+
+  /// No description provided for @chatStartDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Start delivery'**
+  String get chatStartDelivery;
+
+  /// No description provided for @chatTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of the items to start delivery.'**
+  String get chatTakePhoto;
+
+  /// No description provided for @chatTapAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add photo'**
+  String get chatTapAddPhoto;
+
+  /// No description provided for @chatPhotographItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Photograph the items you received from the sender. This starts tracked delivery.'**
+  String get chatPhotographItems;
+
+  /// No description provided for @chatDeliveryInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery in progress — head to the destination.'**
+  String get chatDeliveryInProgress;
+
+  /// No description provided for @chatItemLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Item details could not be loaded.'**
+  String get chatItemLoadError;
+
+  /// No description provided for @chatToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get chatToday;
+
+  /// No description provided for @deliveriesLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load deliveries'**
+  String get deliveriesLoadError;
+
+  /// No description provided for @deliveriesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No active deliveries'**
+  String get deliveriesEmptyTitle;
+
+  /// No description provided for @deliveriesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliveries appear here after pickup and while en route.'**
+  String get deliveriesEmptyBody;
+
+  /// No description provided for @searchChooseFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose search filter'**
+  String get searchChooseFilter;
+
+  /// No description provided for @searchFilterCarriersBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter carriers by'**
+  String get searchFilterCarriersBy;
+
+  /// No description provided for @searchFilterRequestsBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter shipper requests by'**
+  String get searchFilterRequestsBy;
+
+  /// No description provided for @searchOriginCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Origin country'**
+  String get searchOriginCountry;
+
+  /// No description provided for @searchOriginCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Origin city'**
+  String get searchOriginCity;
+
+  /// No description provided for @searchDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Destination'**
+  String get searchDestination;
+
+  /// No description provided for @searchAnywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Anywhere'**
+  String get searchAnywhere;
+
+  /// No description provided for @searchQuickSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick searches'**
+  String get searchQuickSearches;
+
+  /// No search results for query
+  ///
+  /// In en, this message translates to:
+  /// **'No shipper requests matched \"{query}\".'**
+  String searchNoResults(Object query);
+
+  /// Search results count
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 result} other{{count} results}}'**
+  String searchResultsCount(num count);
+
+  /// No description provided for @matchOfferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Offer'**
+  String get matchOfferTitle;
+
+  /// No description provided for @matchCreatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Created!'**
+  String get matchCreatedTitle;
+
+  /// No description provided for @matchCreatedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening your chat with the carrier so you can arrange pickup and delivery.'**
+  String get matchCreatedBody;
+
+  /// No description provided for @matchWhatNeed.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you need?'**
+  String get matchWhatNeed;
+
+  /// No description provided for @matchSelectItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Select items and quantities to match.'**
+  String get matchSelectItems;
+
+  /// No description provided for @matchWhoReceives.
+  ///
+  /// In en, this message translates to:
+  /// **'Who receives?'**
+  String get matchWhoReceives;
+
+  /// No description provided for @matchItemsToMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Items come to me'**
+  String get matchItemsToMe;
+
+  /// No description provided for @matchSomeoneElse.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone else'**
+  String get matchSomeoneElse;
+
+  /// No description provided for @matchThirdParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Third-party receiver'**
+  String get matchThirdParty;
+
+  /// No description provided for @matchReceiverDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiver details'**
+  String get matchReceiverDetails;
+
+  /// No description provided for @matchPhoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone (e.g. +12025551234)'**
+  String get matchPhoneHint;
+
+  /// No description provided for @matchPhotoId.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo ID'**
+  String get matchPhotoId;
+
+  /// No description provided for @matchUploadId.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload government-issued ID'**
+  String get matchUploadId;
+
+  /// No description provided for @matchChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get matchChange;
+
+  /// No description provided for @cameraOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get cameraOption;
+
+  /// No description provided for @photoLibraryOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo library'**
+  String get photoLibraryOption;
+
+  /// No description provided for @matchSendMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Match'**
+  String get matchSendMatch;
+
+  /// No description provided for @matchSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending match…'**
+  String get matchSending;
+
+  /// No description provided for @matchUploadingId.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading ID…'**
+  String get matchUploadingId;
+
+  /// No description provided for @matchEstimatedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated total'**
+  String get matchEstimatedTotal;
+
+  /// No description provided for @matchPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup'**
+  String get matchPickup;
+
+  /// No description provided for @matchDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery'**
+  String get matchDelivery;
 }
 
 class _AppLocalizationsDelegate
