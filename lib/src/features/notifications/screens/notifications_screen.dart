@@ -6,6 +6,7 @@ import '../../../core/widgets/state_message.dart';
 import '../cubit/notifications_cubit.dart';
 import '../cubit/notifications_state.dart';
 import '../models/app_notification.dart';
+import '../navigation/notification_router.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -15,6 +16,19 @@ class NotificationsScreen extends StatelessWidget {
     return BlocBuilder<NotificationsCubit, NotificationsState>(
       builder: (context, state) {
         final cubit = context.read<NotificationsCubit>();
+
+        // Tapping a notification marks it read (if unread) and deep-links to
+        // its target screen (match/chat, delivery, offer request, or offer).
+        void openNotification(AppNotification n) {
+          if (!n.read) cubit.markRead(n.id);
+          routeNotification(
+            context,
+            type: n.rawType,
+            refType: n.refType,
+            refId: n.refId,
+          );
+        }
+
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final textPrimary = isDark
             ? AppColors.darkTextPrimary
@@ -40,7 +54,7 @@ class NotificationsScreen extends StatelessWidget {
                 _NotificationTile(
                   notification: n,
                   isDark: isDark,
-                  onTap: () => cubit.markRead(n.id),
+                  onTap: () => openNotification(n),
                 ),
               ),
             ),
@@ -54,7 +68,7 @@ class NotificationsScreen extends StatelessWidget {
                 _NotificationTile(
                   notification: n,
                   isDark: isDark,
-                  onTap: () {},
+                  onTap: () => openNotification(n),
                 ),
               ),
             ),

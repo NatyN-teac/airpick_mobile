@@ -4,65 +4,26 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
-import '../../home/cubit/user_mode_cubit.dart';
-import '../../home/cubit/engagement_cubit.dart';
-import '../../home/models/engagement_models.dart';
-import '../../matches/models/match_models.dart';
 import '../cubit/chats_list_cubit.dart';
 import '../cubit/chats_list_state.dart';
 import '../models/chat_summary.dart';
 import 'chat_screen.dart';
 
+// Chat-list status chip: only non-default states get a label.
+String? _chatStatusLabel(String status) => switch (status.toUpperCase()) {
+      'IN_PROGRESS' || 'IN_DELIVERY' => 'In transit',
+      'COMPLETED' => 'Delivered',
+      _ => null,
+    };
+
+Color _chatStatusColor(String status) => switch (status.toUpperCase()) {
+      'IN_PROGRESS' || 'IN_DELIVERY' => AppColors.info,
+      'COMPLETED' => AppColors.success,
+      _ => AppColors.textSecondary,
+    };
+
 class ChatsListScreen extends StatelessWidget {
   const ChatsListScreen({super.key});
-
-  static MatchEngagement? _matchFor(String matchId, EngagementState state) {
-    final matches = state.response?.matchedOffers ?? const <MatchEngagement>[];
-    for (final m in matches) {
-      if (m.id == matchId) return m;
-    }
-    return null;
-  }
-
-  static MatchResponse? _toMatchResponse(MatchEngagement? m) {
-    if (m == null) return null;
-    return MatchResponse(
-      id: m.id,
-      offerId: m.offerId,
-      status: m.status,
-      totalPrice: m.totalPrice,
-      receiverNeeded: m.receiverNeeded,
-      matchedItems: m.matchedItems,
-      chatId: m.chatId,
-    );
-  }
-
-  static List<ChatSummary> _summariesFromEngagements(EngagementState state) {
-    final matches = state.response?.matchedOffers ?? const <MatchEngagement>[];
-    final isCarrier = state.response?.mode.toUpperCase() == 'CARRIER';
-    return matches.where((match) => match.hasAvailableChat).map((m) {
-      final other = m.otherParty(viewerIsCarrier: isCarrier);
-      return ChatSummary(
-        matchId: m.id,
-        title: m.matchedItems.isNotEmpty
-            ? m.matchedItems.map((i) => i.itemName).take(2).join(', ')
-            : 'Match',
-        otherPartyName: other?.displayName,
-        otherPartyAvatarUrl: other?.profilePictureUrl,
-        lastMessage: m.status.replaceAll('_', ' '),
-        lastMessageAt: DateTime.tryParse(m.updatedAt),
-      );
-    }).toList()..sort((a, b) {
-      final at = a.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bt = b.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      return bt.compareTo(at);
-    });
-  }
-
-  static List<ChatSummary> _resolveChats(
-    ChatsListState chatsState,
-    EngagementState engagementState,
-  ) => _summariesFromEngagements(engagementState);
 
   @override
   Widget build(BuildContext context) {
@@ -73,83 +34,68 @@ class ChatsListScreen extends StatelessWidget {
 
     return BlocBuilder<ChatsListCubit, ChatsListState>(
       builder: (context, chatsState) {
-        return BlocBuilder<EngagementCubit, EngagementState>(
-          builder: (context, engagementState) {
-            final chats = _resolveChats(chatsState, engagementState);
-            final viewerIsCarrier =
-                context.watch<UserModeCubit>().state == UserMode.carrier;
-            final loading = engagementState.loading && chats.isEmpty;
+        final chats = chatsState.chats;
+        final loading = chatsState.loading && chats.isEmpty;
 
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Messages',
-                      style: TextStyle(
-                        fontFamily: 'Manrope',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.4,
-                        color: textPrimary,
-                      ),
-                    ),
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Messages',
+                  style: TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
+                    color: textPrimary,
                   ),
                 ),
-                Expanded(
-                  child: loading
-                      ? const SkeletonChatList()
-                      : chats.isEmpty
-                      ? _EmptyState(onRefresh: () => _refresh(context))
-                      : RefreshIndicator(
-                          color: AppColors.primary,
-                          onRefresh: () => _refresh(context),
-                          child: ListView.separated(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-                            itemCount: chats.length,
-                            separatorBuilder: (context, _) =>
-                                const SizedBox(height: 2),
-                            itemBuilder: (_, i) => _ChatTile(
-                              summary: chats[i],
-                              match: _matchFor(
-                                chats[i].matchId,
-                                engagementState,
-                              ),
-                              isDark: isDark,
-                              viewerIsCarrier: viewerIsCarrier,
-                              showUnread: false,
-                            ),
-                          ),
+              ),
+            ),
+            Expanded(
+              child: loading
+                  ? const SkeletonChatList()
+                  : chats.isEmpty
+                  ? _EmptyState(onRefresh: () => _refresh(context))
+                  : RefreshIndicator(
+                      color: AppColors.primary,
+                      onRefresh: () => _refresh(context),
+                      child: ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+                        itemCount: chats.length,
+                        separatorBuilder: (context, _) =>
+                            const SizedBox(height: 2),
+                        itemBuilder: (_, i) => _ChatTile(
+                          summary: chats[i],
+                          isDark: isDark,
+                          showUnread: true,
                         ),
-                ),
-              ],
-            );
-          },
+                      ),
+                    ),
+            ),
+          ],
         );
       },
     );
   }
 
   static Future<void> _refresh(BuildContext context) async {
-    await context.read<EngagementCubit>().load(force: true);
+    await context.read<ChatsListCubit>().reload();
   }
 }
 
 class _ChatTile extends StatelessWidget {
   final ChatSummary summary;
-  final MatchEngagement? match;
   final bool isDark;
-  final bool viewerIsCarrier;
   final bool showUnread;
 
   const _ChatTile({
     required this.summary,
-    required this.match,
     required this.isDark,
-    required this.viewerIsCarrier,
     required this.showUnread,
   });
 
@@ -161,14 +107,13 @@ class _ChatTile extends StatelessWidget {
     final textSecondary = isDark
         ? AppColors.darkTextSecondary
         : AppColors.textSecondary;
-    final partyName =
-        summary.otherPartyName ??
-        match?.otherParty(viewerIsCarrier: viewerIsCarrier)?.displayName;
+    final partyName = summary.otherPartyName;
     // The conversation is with a person — lead with their name. Fall back to
     // the item summary only when the other party is unknown.
     final title = (partyName != null && partyName.trim().isNotEmpty)
         ? partyName
         : summary.title;
+    final statusLabel = _chatStatusLabel(summary.status);
     final avatarName = title;
     final hasUnread = showUnread && summary.unreadCount > 0;
     // Secondary line: the item(s) this conversation is about (previously shown
@@ -180,11 +125,7 @@ class _ChatTile extends StatelessWidget {
             : 'No messages yet');
 
     return InkWell(
-      onTap: () => openChatScreen(
-        context,
-        summary.matchId,
-        initialMatch: ChatsListScreen._toMatchResponse(match),
-      ),
+      onTap: () => openChatScreen(context, summary.matchId),
       borderRadius: BorderRadius.circular(14),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -212,16 +153,29 @@ class _ChatTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: textPrimary,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: textPrimary,
+                          ),
+                        ),
+                      ),
+                      if (statusLabel != null) ...[
+                        const SizedBox(width: 6),
+                        _StatusChip(
+                          label: statusLabel,
+                          color: _chatStatusColor(summary.status),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -305,6 +259,32 @@ class _EmptyState extends StatelessWidget {
             message: 'Matched deliveries will appear here.',
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _StatusChip({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
       ),
     );
   }

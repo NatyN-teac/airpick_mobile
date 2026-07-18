@@ -318,7 +318,7 @@ class _OfferRequestForm extends StatelessWidget {
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
               // ── Special note ──────────────────────────────────────
               _Label('Special note  (optional)', isDark: isDark),
@@ -330,7 +330,7 @@ class _OfferRequestForm extends StatelessWidget {
                 initialValue: state.isEditing ? state.specialNote : null,
                 onChanged: cubit.setSpecialNote,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
 
               // ── Error ─────────────────────────────────────────────
               if (state.error != null)
@@ -390,6 +390,7 @@ class _OfferRequestForm extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 35),
             ],
           ),
         );

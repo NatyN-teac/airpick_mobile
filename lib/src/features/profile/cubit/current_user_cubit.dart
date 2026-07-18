@@ -24,9 +24,10 @@ class CurrentUserCubit extends Cubit<ProfileSnapshot?> {
     // (false -> true), regardless of which path flipped it (Veriff result or a
     // server refresh).
     final wasVerified = state?.isVerified ?? false;
-    if (!wasVerified && profile.isVerified) {
-      AppNotifications.verified();
-    }
+    //TODO: Local notification should not be there because verification notification should be pushed.
+    // if (!wasVerified && profile.isVerified) {
+    //   AppNotifications.verified();
+    // }
     _profileSyncGen++;
     emit(profile);
     _settings.saveProfile(profile);
@@ -74,6 +75,7 @@ class CurrentUserCubit extends Cubit<ProfileSnapshot?> {
     final gen = ++_profileSyncGen;
     try {
       final detail = await users.getUserProfile(userId);
+      print("Is am ai verified: ${detail.isVerified}");
       if (isClosed || gen != _profileSyncGen) return;
       final base = state ?? const ProfileSnapshot(email: '');
       updateProfile(ProfileSnapshot.fromDetail(detail, current: base));

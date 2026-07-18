@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_message.dart';
-import '../../chat/screens/chat_screen.dart';
 import '../../home/cubit/user_mode_cubit.dart';
 import '../../matches/models/match_models.dart';
-import '../../matches/repository/match_repository.dart';
 import '../../matches/screens/create_match_screen.dart';
+import '../../offer_requests/models/offer_request_models.dart';
+import '../../offer_requests/repository/offer_request_repository.dart';
+import '../../offer_requests/screens/browse_offer_requests_screen.dart';
+import '../../offer_requests/widgets/browse_request_card.dart';
 import '../../offers/models/offer_response.dart';
 import '../../offers/repository/offer_repository.dart';
 import '../../offers/widgets/browse_offer_card.dart';
@@ -31,7 +33,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _loading = false;
   bool _hasSearched = false;
   String? _error;
-  List<MatchResponse> _matchResults = const [];
+  List<OfferRequestResponse> _requestResults = const [];
   List<OfferResponse> _offerResults = const [];
 
   static const _initialRecentSearches = [
@@ -78,7 +80,7 @@ class _SearchScreenState extends State<SearchScreen> {
         _loading = false;
         _hasSearched = false;
         _error = null;
-        _matchResults = const [];
+        _requestResults = const [];
         _offerResults = const [];
       });
       return;
@@ -99,16 +101,18 @@ class _SearchScreenState extends State<SearchScreen> {
 
     try {
       final mode = _mode ?? context.read<UserModeCubit>().state;
-      final matchResults = mode == UserMode.carrier
-          ? await _searchShipperMatches(query, _scope)
-          : const <MatchResponse>[];
+      // Carrier searches OPEN offer requests to propose to; sender searches OPEN
+      // carrier offers to match with. Both filter by source/destination country.
+      final requestResults = mode == UserMode.carrier
+          ? await _searchOpenRequests(query, _scope)
+          : const <OfferRequestResponse>[];
       final offerResults = mode == UserMode.sender
           ? await _searchOffers(query, _scope)
           : const <OfferResponse>[];
 
       if (!mounted || version != _searchVersion) return;
       setState(() {
-        _matchResults = matchResults;
+        _requestResults = requestResults;
         _offerResults = offerResults;
         _loading = false;
       });
@@ -116,31 +120,31 @@ class _SearchScreenState extends State<SearchScreen> {
       if (!mounted || version != _searchVersion) return;
       setState(() {
         _loading = false;
-        _matchResults = const [];
+        _requestResults = const [];
         _offerResults = const [];
         _error = e.toString().replaceFirst('Exception: ', '');
       });
     }
   }
 
-  Future<List<MatchResponse>> _searchShipperMatches(
+  Future<List<OfferRequestResponse>> _searchOpenRequests(
     String query,
     _SearchScope scope,
   ) async {
-    final repo = context.read<MatchRepository>();
+    final repo = context.read<OfferRequestRepository>();
     return switch (scope) {
-      _SearchScope.sourceCountry => repo.searchShipperTrack(
-        sourceCountry: query,
-      ),
-      _SearchScope.sourceCity => repo.searchShipperTrack(sourceCity: query),
-      _SearchScope.destinationCountry => repo.searchShipperTrack(
-        destinationCountry: query,
-      ),
-      // "Anywhere" is a free-text search: the backend filters are AND-combined
-      // per field, so run each field query and merge the unique results. This
-      // makes a general search match on origin OR destination (previously it
-      // only matched the source country, so destinations never surfaced).
-      _SearchScope.anywhere => _searchAnywhere(repo, query),
+      // Search is country-based; city isn't supported server-side, so the
+      // (deprecated) city scope falls back to a source-country search.
+      _SearchScope.sourceCountry || _SearchScope.sourceCity =>
+        repo.searchOpenRequests(sourceCountry: query),
+      _SearchScope.destinationCountry =>
+        repo.searchOpenRequests(destinationCountry: query),
+      // "Anywhere" — match the query against source OR destination country and
+      // merge the unique results.
+      _SearchScope.anywhere => _mergeUnique([
+        repo.searchOpenRequests(sourceCountry: query),
+        repo.searchOpenRequests(destinationCountry: query),
+      ], (r) => r.id),
     };
   }
 
@@ -150,50 +154,28 @@ class _SearchScreenState extends State<SearchScreen> {
   ) async {
     final repo = context.read<OfferRepository>();
     return switch (scope) {
-      _SearchScope.sourceCountry => repo.searchCarrierOffers(
-        sourceCountry: query,
-      ),
-      _SearchScope.sourceCity => repo.searchCarrierOffers(sourceCity: query),
-      _SearchScope.destinationCountry => repo.searchCarrierOffers(
-        destinationCountry: query,
-      ),
-      _SearchScope.anywhere => _searchCarrierAnywhere(repo, query),
+      _SearchScope.sourceCountry || _SearchScope.sourceCity =>
+        repo.searchCarrierOffers(sourceCountry: query),
+      _SearchScope.destinationCountry =>
+        repo.searchCarrierOffers(destinationCountry: query),
+      _SearchScope.anywhere => _mergeUnique([
+        repo.searchCarrierOffers(sourceCountry: query),
+        repo.searchCarrierOffers(destinationCountry: query),
+      ], (o) => o.id),
     };
   }
 
-  Future<List<MatchResponse>> _searchAnywhere(
-    MatchRepository repo,
-    String query,
+  // Runs the given searches in parallel and merges results, de-duped by id.
+  Future<List<T>> _mergeUnique<T>(
+    List<Future<List<T>>> futures,
+    String Function(T) idOf,
   ) async {
-    final batches = await Future.wait([
-      repo.searchShipperTrack(sourceCountry: query),
-      repo.searchShipperTrack(sourceCity: query),
-      repo.searchShipperTrack(destinationCountry: query),
-    ]);
+    final batches = await Future.wait(futures);
     final seen = <String>{};
-    final merged = <MatchResponse>[];
+    final merged = <T>[];
     for (final batch in batches) {
-      for (final match in batch) {
-        if (seen.add(match.id)) merged.add(match);
-      }
-    }
-    return merged;
-  }
-
-  Future<List<OfferResponse>> _searchCarrierAnywhere(
-    OfferRepository repo,
-    String query,
-  ) async {
-    final batches = await Future.wait([
-      repo.searchCarrierOffers(sourceCountry: query),
-      repo.searchCarrierOffers(sourceCity: query),
-      repo.searchCarrierOffers(destinationCountry: query),
-    ]);
-    final seen = <String>{};
-    final merged = <OfferResponse>[];
-    for (final batch in batches) {
-      for (final offer in batch) {
-        if (seen.add(offer.id)) merged.add(offer);
+      for (final item in batch) {
+        if (seen.add(idOf(item))) merged.add(item);
       }
     }
     return merged;
@@ -207,7 +189,7 @@ class _SearchScreenState extends State<SearchScreen> {
         _loading = false;
         _hasSearched = false;
         _error = null;
-        _matchResults = const [];
+        _requestResults = const [];
         _offerResults = const [];
       });
       return;
@@ -254,7 +236,7 @@ class _SearchScreenState extends State<SearchScreen> {
       _loading = false;
       _hasSearched = false;
       _error = null;
-      _matchResults = const [];
+      _requestResults = const [];
       _offerResults = const [];
 
       _scope = _SearchScope.anywhere;
@@ -501,16 +483,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         loading: _loading,
                         error: _error,
                         hasSearched: _hasSearched,
-                        matchResults: _matchResults,
+                        requestResults: _requestResults,
                         offerResults: _offerResults,
                         onRefresh: () => _performSearch(rawQuery: _query),
-                        onOpenMatch: (match) {
+                        onSendProposal: (request) {
                           _rememberSearch(_query);
-                          openChatScreen(
-                            context,
-                            match.id,
-                            initialMatch: match,
-                          );
+                          launchSendProposal(context, request);
                         },
                         onMatchOffer: (offer) {
                           _rememberSearch(_query);
@@ -1098,10 +1076,10 @@ class _SearchResultsView extends StatelessWidget {
   final bool loading;
   final String? error;
   final bool hasSearched;
-  final List<MatchResponse> matchResults;
+  final List<OfferRequestResponse> requestResults;
   final List<OfferResponse> offerResults;
   final Future<void> Function() onRefresh;
-  final ValueChanged<MatchResponse> onOpenMatch;
+  final ValueChanged<OfferRequestResponse> onSendProposal;
   final ValueChanged<OfferResponse> onMatchOffer;
 
   const _SearchResultsView({
@@ -1111,10 +1089,10 @@ class _SearchResultsView extends StatelessWidget {
     required this.loading,
     required this.error,
     required this.hasSearched,
-    required this.matchResults,
+    required this.requestResults,
     required this.offerResults,
     required this.onRefresh,
-    required this.onOpenMatch,
+    required this.onSendProposal,
     required this.onMatchOffer,
   });
 
@@ -1126,7 +1104,7 @@ class _SearchResultsView extends StatelessWidget {
 
     final isCarrierMode = mode == UserMode.carrier;
     final resultCount = isCarrierMode
-        ? matchResults.length
+        ? requestResults.length
         : offerResults.length;
 
     if (loading && resultCount == 0) {
@@ -1160,9 +1138,9 @@ class _SearchResultsView extends StatelessWidget {
             AppEmptyState(
               icon: Icons.search_off_rounded,
               title: isCarrierMode
-                  ? 'No deliveries matched "$query".'
-                  : 'No carriers matched "$query".',
-              message: 'Try a different country, city, or destination.',
+                  ? 'No open requests matched "$query".'
+                  : 'No carrier offers matched "$query".',
+              message: 'Try a different source or destination country.',
             ),
           ],
         ),
@@ -1209,13 +1187,18 @@ class _SearchResultsView extends StatelessWidget {
 
           final resultIndex = index - 1;
           if (isCarrierMode) {
-            final match = matchResults[resultIndex];
+            final request = requestResults[resultIndex];
             return Padding(
               padding: const EdgeInsets.only(bottom: 14),
-              child: _MatchSearchCard(
-                match: match,
+              child: BrowseRequestCard(
+                request: request,
                 isDark: isDark,
-                onTap: match.id.isEmpty ? null : () => onOpenMatch(match),
+                onTap: () => showBrowseRequestDetail(
+                  context,
+                  request,
+                  onSendProposal: () => onSendProposal(request),
+                ),
+                onSendProposal: () => onSendProposal(request),
               ),
             );
           }
@@ -1234,192 +1217,6 @@ class _SearchResultsView extends StatelessWidget {
 
           return const SizedBox.shrink();
         },
-      ),
-    );
-  }
-}
-
-class _MatchSearchCard extends StatelessWidget {
-  final MatchResponse match;
-  final bool isDark;
-  final VoidCallback? onTap;
-
-  const _MatchSearchCard({
-    required this.match,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textPrimary = isDark
-        ? AppColors.darkTextPrimary
-        : AppColors.textPrimary;
-    final textSecondary = isDark
-        ? AppColors.darkTextSecondary
-        : AppColors.textSecondary;
-    final surface = isDark ? AppColors.darkSurface : Colors.white;
-    final itemTitle = _itemTitle(match);
-    final route = _routeLabel(match);
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-        decoration: BoxDecoration(
-          color: surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.border,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _MatchStatusChip(status: match.status),
-                const Spacer(),
-                Text(
-                  '\$${match.totalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontFamily: 'Manrope',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              itemTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: textPrimary,
-                letterSpacing: -0.2,
-              ),
-            ),
-            if (route != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                route,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 11,
-                  color: textSecondary,
-                ),
-              ),
-            ],
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Icon(
-                  match.chatId?.trim().isNotEmpty == true
-                      ? Icons.chat_bubble_outline_rounded
-                      : Icons.receipt_long_rounded,
-                  size: 16,
-                  color: textSecondary,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    match.chatId?.trim().isNotEmpty == true
-                        ? 'Open conversation'
-                        : 'Match ${match.id}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Manrope',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: textSecondary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _itemTitle(MatchResponse match) {
-    final items = match.matchedItems;
-    if (items.isEmpty) return 'Delivery';
-    if (items.length == 1) return items.first.itemName;
-    return '${items.first.itemName} +${items.length - 1}';
-  }
-
-  String? _routeLabel(MatchResponse match) {
-    final from = match.pickupArea?.trim();
-    final to = match.deliveryArea?.trim();
-    if (from != null && from.isNotEmpty && to != null && to.isNotEmpty) {
-      return '$from → $to';
-    }
-    final leg = match.flight?.legs.isNotEmpty == true
-        ? match.flight!.legs.last
-        : null;
-    if (leg == null) return null;
-    final src = leg.srcAirport.iataCode.isNotEmpty
-        ? leg.srcAirport.iataCode
-        : leg.srcAirport.name;
-    final dest = leg.destAirport.iataCode.isNotEmpty
-        ? leg.destAirport.iataCode
-        : leg.destAirport.name;
-    return '$src → $dest';
-  }
-}
-
-class _MatchStatusChip extends StatelessWidget {
-  final String status;
-
-  const _MatchStatusChip({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final normalized = status.toUpperCase();
-    final color = switch (normalized) {
-      'COMPLETED' || 'DELIVERED' => AppColors.success,
-      'IN_PROGRESS' || 'IN_DELIVERY' => AppColors.info,
-      'ACCEPTED' => AppColors.primary,
-      'CANCELLED' || 'REJECTED' => AppColors.error,
-      _ => AppColors.warning,
-    };
-    final label = normalized
-        .split('_')
-        .where((part) => part.isNotEmpty)
-        .map((part) => '${part[0]}${part.substring(1).toLowerCase()}')
-        .join(' ');
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label.isEmpty ? 'Match' : label,
-        style: TextStyle(
-          fontFamily: 'Manrope',
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
       ),
     );
   }

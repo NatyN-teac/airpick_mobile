@@ -53,6 +53,15 @@ class ApiClient {
     }
   }
 
+  // Used for endpoints that return 204 No Content (empty body).
+  Future<void> postVoid(String path, {Map<String, dynamic>? data}) async {
+    try {
+      await _dio.post(path, data: data);
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   Future<Map<String, dynamic>> get(String path) async {
     try {
       final response = await _dio.get(path);

@@ -17,8 +17,9 @@ import 'src/core/media/upload_repository.dart';
 import 'src/core/navigation/app_navigator.dart';
 import 'src/core/notifications/notification_service.dart';
 import 'src/core/notifications/device_registration_service.dart';
-import 'src/features/chat/navigation/chat_deep_link.dart';
 import 'src/features/chat/repository/chat_repository.dart';
+import 'src/features/notifications/navigation/notification_router.dart';
+import 'src/features/notifications/repository/notification_repository.dart';
 import 'src/core/storage/token_storage.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/bloc/auth_bloc.dart';
@@ -59,8 +60,9 @@ void main() async {
   // Ask for notification permission up-front (required on iOS and Android 13+;
   // without this notifications are silently dropped).
   await NotificationService.requestPermissions();
-  // Route MATCH notifications to the chat screen (step 6).
-  NotificationService.onDeepLink = handleChatDeepLink;
+  // Route tapped notifications to their target screen (match/chat, delivery,
+  // offer request, or offer) based on the FCM data payload's refType/refId.
+  NotificationService.onDeepLink = handleNotificationDeepLink;
 
   // Set environment — switch to AppEnvironment.prod for release
   AppConfig.environment = AppEnvironment.dev;
@@ -146,6 +148,9 @@ class AirpickApp extends StatelessWidget {
         ),
         RepositoryProvider<ChatRepository>(
           create: (_) => ChatRepository(apiClient),
+        ),
+        RepositoryProvider<NotificationRepository>(
+          create: (_) => NotificationRepository(apiClient),
         ),
       ],
       child: MultiBlocProvider(

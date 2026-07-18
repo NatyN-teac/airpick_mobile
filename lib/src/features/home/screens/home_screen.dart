@@ -25,6 +25,7 @@ import '../../chat/repository/chat_repository.dart';
 import '../../chat/screens/chats_list_screen.dart';
 import '../../notifications/cubit/notifications_cubit.dart';
 import '../../notifications/cubit/notifications_state.dart';
+import '../../notifications/repository/notification_repository.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../airports/repository/airport_repository.dart';
 import '../../countries/repository/country_repository.dart';
@@ -45,7 +46,7 @@ import '../../matches/cubit/delivery_track_cubit.dart';
 import '../../matches/screens/delivery_track_list_screen.dart';
 import '../../matches/models/delivery_track_models.dart';
 import '../../matches/widgets/delivery_track_card.dart';
-import '../../chat/screens/chat_screen.dart';
+import '../../matches/screens/delivery_detail_screen.dart';
 import '../widgets/mode_picker_dialog.dart';
 import 'engagements_list_screen.dart';
 
@@ -70,6 +71,7 @@ class HomeScreen extends StatelessWidget {
           create: (context) => EngagementCubit(
             context.read<UserRepository>(),
             context.read<OfferRequestRepository>(),
+            context.read<MatchRepository>(),
           )..load(),
         ),
         BlocProvider(
@@ -80,7 +82,11 @@ class HomeScreen extends StatelessWidget {
           create: (context) =>
               ChatsListCubit(context.read<ChatRepository>())..load(),
         ),
-        BlocProvider(create: (_) => NotificationsCubit()),
+        BlocProvider(
+          create: (context) =>
+              NotificationsCubit(context.read<NotificationRepository>())
+                ..load(),
+        ),
       ],
       child: const _HomeView(),
     );
@@ -612,10 +618,10 @@ class _InDeliveryPreview extends StatelessWidget {
           isDark: isDark,
           viewerIsCarrier: viewerIsCarrier,
           width: cardWidth,
-          onTap: () => openChatScreen(
+          onTap: () => openDeliveryDetail(
             context,
-            items[i].match.id,
-            initialMatch: items[i].match,
+            items[i].match,
+            viewerIsCarrier: viewerIsCarrier,
           ),
         ),
       ),

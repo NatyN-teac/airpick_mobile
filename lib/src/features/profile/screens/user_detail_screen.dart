@@ -37,6 +37,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
   bool _hasChanges = false;
   bool _ignoreFormChanges = false;
   bool _showSuccess = false;
+  bool _didInitLoad = false;
   String? _email;
   String? _error;
   DateTime? _dob;
@@ -66,7 +67,17 @@ class _UserDetailScreenState extends State<UserDetailScreen>
     _snapshot = context.read<CurrentUserCubit>().state;
     _seedFromSnapshot(_snapshot);
     _captureBaseline();
-    _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // _load() reads l10n(context) (an inherited widget), which isn't allowed in
+    // initState — run it here, once, after dependencies are available.
+    if (!_didInitLoad) {
+      _didInitLoad = true;
+      _load();
+    }
   }
 
   @override

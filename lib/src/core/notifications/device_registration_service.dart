@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '../network/api_client.dart';
 import '../storage/token_storage.dart';
+import '../utils/app_refresh_bus.dart';
 import 'notification_service.dart';
 
 /// Handles FCM messages delivered while the app is backgrounded or terminated.
@@ -88,12 +89,21 @@ class DeviceRegistrationService {
 
     _foregroundSub ??= FirebaseMessaging.onMessage.listen((message) {
       final notification = message.notification;
-      if (notification == null) return;
+      final data = message.data;
+      // The backend sends data-only messages (title/body live in `data`), which
+      // have a null notification block. Fall back to the data payload so the
+      // push still surfaces a heads-up while the app is foregrounded, instead of
+      // being silently dropped.
+      final title = notification?.title ?? data['title'];
+      final body = notification?.body ?? data['body'];
+      if (title == null && body == null) return;
       NotificationService.show(
-        title: notification.title ?? 'Airpick',
-        body: notification.body ?? '',
-        payload: message.data.isNotEmpty ? jsonEncode(message.data) : null,
+        title: title ?? 'Airpick',
+        body: body ?? '',
+        payload: data.isNotEmpty ? jsonEncode(data) : null,
       );
+      // Re-fetch the inbox so the unread badge updates live.
+      AppRefreshBus.instance.emit(RefreshTopic.notifications);
     });
 
     _openedAppSub ??= FirebaseMessaging.onMessageOpenedApp.listen((message) {
@@ -131,7 +141,7 @@ class DeviceRegistrationService {
 
   Future<void> _sendRegistration(String token) async {
     try {
-      await _apiClient.post(_devicesPath, {
+      await _apiClient.postVoid(_devicesPath, data: {
         'fcmToken': token,
         'platform': _platform,
         'deviceName': await _deviceName(),

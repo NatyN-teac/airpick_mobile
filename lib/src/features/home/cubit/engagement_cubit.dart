@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/utils/app_refresh_bus.dart';
 import '../../matches/models/match_models.dart';
+import '../../matches/repository/match_repository.dart';
 import '../../offer_requests/models/proposal_models.dart';
 import '../../offer_requests/repository/offer_request_repository.dart';
 import '../../profile/repository/user_repository.dart';
@@ -45,10 +46,11 @@ class EngagementState extends Equatable {
 class EngagementCubit extends Cubit<EngagementState> {
   final UserRepository _users;
   final OfferRequestRepository _proposals;
+  final MatchRepository _matches;
   bool _loadedOnce = false;
   StreamSubscription<void>? _refreshSub;
 
-  EngagementCubit(this._users, this._proposals)
+  EngagementCubit(this._users, this._proposals, this._matches)
       : super(const EngagementState()) {
     // Reload whenever a proposal is created/mutated anywhere in the app, so the
     // engagements list updates live instead of only after an app restart.
@@ -119,6 +121,19 @@ class EngagementCubit extends Cubit<EngagementState> {
     final match = await _proposals.acceptProposal(proposalId, request);
     await load(force: true);
     return match;
+  }
+
+  // Carrier accepts a PENDING match (offer path) → PATCH /matches/{id}/accept.
+  Future<MatchResponse> acceptMatch(String matchId) async {
+    final match = await _matches.acceptMatch(matchId);
+    await load(force: true);
+    return match;
+  }
+
+  // Carrier rejects a PENDING match → PATCH /matches/{id}/reject (reason required).
+  Future<void> rejectMatch(String matchId, String reason) async {
+    await _matches.rejectMatch(matchId, reason);
+    await load(force: true);
   }
 
   void _removeProposalLocally(String proposalId) {

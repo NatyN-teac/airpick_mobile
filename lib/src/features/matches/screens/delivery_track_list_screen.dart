@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_message.dart';
-import '../../chat/screens/chat_screen.dart';
 import '../../home/cubit/user_mode_cubit.dart';
 import '../cubit/delivery_track_cubit.dart';
 import '../models/delivery_track_models.dart';
 import '../widgets/delivery_track_card.dart';
+import 'delivery_detail_screen.dart';
 
 void openDeliveryTrackList(BuildContext context) {
   Navigator.of(context).push(
@@ -161,10 +161,10 @@ class _DeliveryTrackListScreenState extends State<DeliveryTrackListScreen> {
                             onTap: items[i].match.id.isEmpty
                                 ? null
                                 : () {
-                                    openChatScreen(
+                                    openDeliveryDetail(
                                       context,
-                                      items[i].match.id,
-                                      initialMatch: items[i].match,
+                                      items[i].match,
+                                      viewerIsCarrier: viewerIsCarrier,
                                     );
                                   },
                           ),

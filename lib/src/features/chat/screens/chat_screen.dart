@@ -144,6 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                         _StatusLine(
                           connState: state.connState,
+                          pending: state.status == ChatStatus.pending,
                           route: route,
                           itemSummary: state.itemSummary,
                           textSecondary: textSecondary,
@@ -197,17 +198,20 @@ class _ChatScreenState extends State<ChatScreen> {
                   busy: state.pickingUp,
                   onPickUp: () => _confirmPickup(context),
                 ),
-              _Composer(
-                controller: _input,
-                isDark: isDark,
-                enabled:
-                    state.status == ChatStatus.ready &&
-                    state.connState == ChatConnState.connected,
-                onSend: () {
-                  context.read<ChatCubit>().send(_input.text);
-                  _input.clear();
-                },
-              ),
+              if (state.status == ChatStatus.ready && state.isReadOnly)
+                _ReadOnlyNotice(status: state.displayStatus, isDark: isDark)
+              else
+                _Composer(
+                  controller: _input,
+                  isDark: isDark,
+                  enabled:
+                      state.status == ChatStatus.ready &&
+                      state.connState == ChatConnState.connected,
+                  onSend: () {
+                    context.read<ChatCubit>().send(_input.text);
+                    _input.clear();
+                  },
+                ),
             ],
           ),
         );
@@ -221,6 +225,16 @@ class _ChatScreenState extends State<ChatScreen> {
         child: CircularProgressIndicator(
           strokeWidth: 2,
           color: AppColors.primary,
+        ),
+      );
+    }
+    if (state.status == ChatStatus.pending) {
+      return Center(
+        child: AppEmptyState(
+          icon: Icons.hourglass_top_rounded,
+          title: 'Waiting for carrier',
+          message:
+              'This match is pending the carrier’s acceptance. Your chat will open here as soon as they accept.',
         ),
       );
     }
@@ -303,11 +317,13 @@ class _ChatScreenState extends State<ChatScreen> {
 // "connecting…/reconnecting…" otherwise — no intrusive banner.
 class _StatusLine extends StatelessWidget {
   final ChatConnState connState;
+  final bool pending;
   final String? route;
   final String itemSummary;
   final Color textSecondary;
   const _StatusLine({
     required this.connState,
+    this.pending = false,
     required this.route,
     required this.itemSummary,
     required this.textSecondary,
@@ -315,6 +331,18 @@ class _StatusLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Match not yet accepted — don't surface socket "connecting…" noise.
+    if (pending) {
+      return const Text(
+        'awaiting carrier acceptance',
+        style: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppColors.warning,
+        ),
+      );
+    }
     if (connState == ChatConnState.connected) {
       if (route != null && route!.isNotEmpty) {
         return Text(
@@ -377,7 +405,7 @@ class _MatchBanner extends StatelessWidget {
         ? AppColors.darkTextSecondary
         : AppColors.textSecondary;
     final route = state.routeLabel;
-    final status = state.displayStatus;
+    final status = state.displayStatusLabel;
 
     return GestureDetector(
       onTap: onTap,
@@ -874,9 +902,9 @@ class _MatchDetailSheet extends StatelessWidget {
                           color: textPrimary,
                         ),
                       ),
-                      if (state.displayStatus != null) ...[
+                      if (state.displayStatusLabel != null) ...[
                         const SizedBox(height: 4),
-                        _StatusPill(status: state.displayStatus!),
+                        _StatusPill(status: state.displayStatusLabel!),
                       ],
                     ],
                   ),
@@ -1157,6 +1185,45 @@ class _DaySeparator extends StatelessWidget {
 
 // ── Composer ──────────────────────────────────────────────────────────────────
 
+// Shown in place of the composer for delivered/cancelled conversations —
+// history stays visible but no new messages can be sent.
+class _ReadOnlyNotice extends StatelessWidget {
+  final String? status;
+  final bool isDark;
+  const _ReadOnlyNotice({required this.status, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final s = (status ?? '').toUpperCase();
+    final message = s == 'CANCELLED'
+        ? 'This match was cancelled. You can view the conversation but can’t send new messages.'
+        : 'This delivery is complete. You can view the conversation but can’t send new messages.';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Row(
+        children: [
+          Icon(Icons.lock_outline_rounded, size: 15, color: textSecondary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 12,
+                height: 1.35,
+                color: textSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Composer extends StatelessWidget {
   final TextEditingController controller;
   final bool isDark;
@@ -1344,7 +1411,7 @@ class _StatusPill extends StatelessWidget {
   Color get _color => switch (status.toUpperCase()) {
     'MATCHED' || 'ACCEPTED' => AppColors.success,
     'IN_PROGRESS' || 'IN_DELIVERY' || 'IN_TRANSIT' => AppColors.info,
-    'COLLECTED' => AppColors.info,
+    'COLLECTED' || 'PICKED UP' => AppColors.info,
     'COMPLETED' => AppColors.textSecondary,
     _ => AppColors.primary,
   };

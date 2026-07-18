@@ -7,6 +7,7 @@ class ChatSummary {
   final String lastMessage;
   final DateTime? lastMessageAt;
   final int unreadCount;
+  final String status; // match status: ACCEPTED / IN_PROGRESS / COMPLETED
 
   const ChatSummary({
     required this.matchId,
@@ -16,6 +17,7 @@ class ChatSummary {
     this.lastMessage = '',
     this.lastMessageAt,
     this.unreadCount = 0,
+    this.status = '',
   });
 
   factory ChatSummary.fromJson(Map<String, dynamic> json) {
@@ -53,6 +55,7 @@ class ChatSummary {
           ? DateTime.tryParse(lastTs.toString())?.toLocal()
           : null,
       unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
+      status: (json['status'] ?? '').toString(),
     );
   }
 }

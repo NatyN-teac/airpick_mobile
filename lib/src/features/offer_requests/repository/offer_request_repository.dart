@@ -26,6 +26,35 @@ class OfferRequestRepository {
     return OfferRequestResponse.fromJson(_payload(response));
   }
 
+  // GET /api/v1/search/shipper?sourceCountry=&destinationCountry=
+  // Marketplace search of OPEN offer requests by source/destination country
+  // (for a carrier looking for requests to propose to).
+  Future<List<OfferRequestResponse>> searchOpenRequests({
+    String? sourceCountry,
+    String? destinationCountry,
+  }) async {
+    final params = <String, String>{
+      if (sourceCountry != null && sourceCountry.trim().isNotEmpty)
+        'sourceCountry': sourceCountry.trim(),
+      if (destinationCountry != null && destinationCountry.trim().isNotEmpty)
+        'destinationCountry': destinationCountry.trim(),
+    };
+    final query = params.isEmpty
+        ? ''
+        : '?${params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&')}';
+    final response = await _client.get('/search/shipper$query');
+    final list = (response['content'] ?? response['data'] ?? []) as List<dynamic>;
+    return list
+        .map((e) => OfferRequestResponse.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  // GET /api/v1/offer-requests/{id} — single request, for deep-linking.
+  Future<OfferRequestResponse> fetchOfferRequestById(String id) async {
+    final response = await _client.get('/offer-requests/$id');
+    return OfferRequestResponse.fromJson(_payload(response));
+  }
+
   Future<List<OfferRequestResponse>> fetchMyOfferRequests() async {
     final response = await _client.get('/offer-requests/me');
     final list = (response['content'] ?? response['data']) as List<dynamic>;

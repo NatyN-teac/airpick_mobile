@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/app_refresh_bus.dart';
 import '../../home/cubit/user_mode_cubit.dart';
 import '../models/delivery_track_models.dart';
 import '../repository/match_repository.dart';
@@ -36,8 +38,21 @@ class DeliveryTrackCubit extends Cubit<DeliveryTrackState> {
   final MatchRepository _matches;
   UserMode _mode = UserMode.sender;
   bool _loadedOnce = false;
+  StreamSubscription<void>? _refreshSub;
 
-  DeliveryTrackCubit(this._matches) : super(const DeliveryTrackState());
+  DeliveryTrackCubit(this._matches) : super(const DeliveryTrackState()) {
+    // A match advancing elsewhere (e.g. the carrier confirming pickup in chat)
+    // invalidates this list — re-fetch so stage indicators stay in sync.
+    _refreshSub = AppRefreshBus.instance.on(RefreshTopic.deliveries).listen((_) {
+      if (_loadedOnce) reload();
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _refreshSub?.cancel();
+    return super.close();
+  }
 
   Future<void> load({required UserMode mode, bool force = false}) async {
     _mode = mode;

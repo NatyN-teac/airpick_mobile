@@ -50,16 +50,16 @@ class OfferFormStep extends StatelessWidget {
               const SizedBox(height: 16),
 
               // ── Urgency ────────────────────────────────────────────
-              FormLabel(l.urgencyLevel, isDark: isDark),
-              const SizedBox(height: 6),
-              _FormDropdown<UrgencyLevel>(
-                isDark: isDark,
-                value: state.urgencyLevel,
-                options: UrgencyLevel.values,
-                label: (u) => u.label,
-                onChanged: cubit.setUrgencyLevel,
-              ),
-              const SizedBox(height: 16),
+              // FormLabel(l.urgencyLevel, isDark: isDark),
+              // const SizedBox(height: 6),
+              // _FormDropdown<UrgencyLevel>(
+              //   isDark: isDark,
+              //   value: state.urgencyLevel,
+              //   options: UrgencyLevel.values,
+              //   label: (u) => u.label,
+              //   onChanged: cubit.setUrgencyLevel,
+              // ),
+              // const SizedBox(height: 16),
 
               // ── Payment methods (horizontal scroll, multi-select) ──
               FormLabel(l.paymentMethods, isDark: isDark),
@@ -197,7 +197,7 @@ class OfferFormStep extends StatelessWidget {
                 const SizedBox(height: 8),
                 // List — 2 cards visible, rest scrollable
                 SizedBox(
-                  height: 192,
+                  height: 190,
                   child: ListView.builder(
                     itemCount: state.items.length,
                     itemBuilder: (_, i) => Padding(
@@ -291,6 +291,8 @@ class OfferFormStep extends StatelessWidget {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 30),
             ],
           ),
         );

@@ -18,70 +18,46 @@ class OfferRepository {
   // GET /api/v1/offers/browse — open offers from other carriers.
   Future<List<OfferResponse>> browseOffers() async {
     final response = await _client.get('/offers/browse');
+    print("What is this Offer browsse response: ${response}");
     final list =
         (response['content'] ?? response['data'] ?? []) as List<dynamic>;
+    print("What COUNT: ${list.length}");
     return list
         .map((e) => OfferResponse.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
-  // GET /api/v1/matches/me/track/carrier/search?sourceCountry=...
+  // GET /api/v1/search/carrier?sourceCountry=&destinationCountry= — open carrier
+  // offers (excluding own) whose flight route touches the given country/ies.
   Future<List<OfferResponse>> searchCarrierOffers({
     String? sourceCountry,
-    String? sourceCity,
     String? destinationCountry,
   }) async {
     final params = <String, String>{
-      if (sourceCountry != null && sourceCountry.isNotEmpty)
+      if (sourceCountry != null && sourceCountry.trim().isNotEmpty)
         'sourceCountry': sourceCountry.trim(),
-      if (sourceCity != null && sourceCity.isNotEmpty)
-        'sourceCity': sourceCity.trim(),
-      if (destinationCountry != null && destinationCountry.isNotEmpty)
+      if (destinationCountry != null && destinationCountry.trim().isNotEmpty)
         'destinationCountry': destinationCountry.trim(),
     };
 
     final query = params.isEmpty
         ? ''
         : '?${params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&')}';
-    final response = await _client.get(
-      '/matches/me/track/carrier/search$query',
-    );
-    final resultJson = _searchBucketItems(response, nestedKey: 'offer');
-    final results = resultJson
-        .map((json) => OfferResponse.fromJson(json))
-        .toList();
-    return results;
-  }
-
-  List<Map<String, dynamic>> _searchBucketItems(
-    Map<String, dynamic> response, {
-    required String nestedKey,
-  }) {
-    final body = response['content'] ?? response['data'] ?? [];
-    final rawItems = body is List<dynamic>
-        ? body
-        : body is Map<String, dynamic>
-        ? const ['completed', 'inProgress', 'collected']
-              .expand(
-                (key) => body[key] is List<dynamic>
-                    ? body[key] as List<dynamic>
-                    : const <dynamic>[],
-              )
-              .toList()
-        : const <dynamic>[];
-
-    return rawItems
-        .map((item) {
-          if (item is! Map<String, dynamic>) return null;
-          final nested = item[nestedKey];
-          if (nested is Map<String, dynamic>) return nested;
-          return item;
-        })
-        .whereType<Map<String, dynamic>>()
+    final response = await _client.get('/search/carrier$query');
+    final list = (response['content'] ?? response['data'] ?? []) as List<dynamic>;
+    return list
+        .map((e) => OfferResponse.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
   // GET /api/v1/offers/me — the carrier's own offers.
+  // GET /api/v1/offers/{offerId} — single offer, for deep-linking.
+  Future<OfferResponse> fetchOfferById(String id) async {
+    final response = await _client.get('/offers/$id');
+    final data = (response['content'] ?? response['data']) as Map<String, dynamic>;
+    return OfferResponse.fromJson(data);
+  }
+
   Future<List<OfferResponse>> fetchMyOffers() async {
     final response = await _client.get('/offers/me');
     final list =

@@ -45,6 +45,7 @@ class UserRepository {
   // GET /api/v1/users/{userId}/profile
   Future<UserProfileDetail> getUserProfile(String userId) async {
     final response = await _client.get('/users/$userId/profile');
+    print("Profile response: ${response}");
     return _parseProfileDetail(response);
   }
 

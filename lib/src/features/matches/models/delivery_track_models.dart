@@ -3,18 +3,30 @@ import 'match_models.dart';
 /// Backend track buckets — maps to match lifecycle groups.
 enum DeliveryTrackGroup { collected, inProgress, completed }
 
+/// Ordered labels for the 4-stage delivery phase (progress bar segments). Shared
+/// so the status chip and the progress bar can't drift.
+const deliveryStageLabels = <String>[
+  'Awaiting pickup',
+  'Picked up',
+  'In transit',
+  'Delivered',
+];
+
+/// 0-based index into [deliveryStageLabels] for the current phase. The ACCEPTED
+/// (`collected`) bucket splits into "awaiting pickup" vs "picked up" by whether
+/// the carrier has uploaded the pickup photo.
+int deliveryStageIndex(DeliveryTrackGroup group, bool hasPickupPhoto) =>
+    switch (group) {
+      DeliveryTrackGroup.collected => hasPickupPhoto ? 1 : 0,
+      DeliveryTrackGroup.inProgress => 2,
+      DeliveryTrackGroup.completed => 3,
+    };
+
 extension DeliveryTrackGroupX on DeliveryTrackGroup {
   String get label => switch (this) {
-        DeliveryTrackGroup.collected => 'Picked up',
+        DeliveryTrackGroup.collected => 'Awaiting pickup',
         DeliveryTrackGroup.inProgress => 'In progress',
         DeliveryTrackGroup.completed => 'Delivered',
-      };
-
-  /// Three-step progress: 1/3, 2/3, 3/3.
-  int get activeSteps => switch (this) {
-        DeliveryTrackGroup.collected => 1,
-        DeliveryTrackGroup.inProgress => 2,
-        DeliveryTrackGroup.completed => 3,
       };
 }
 
@@ -70,13 +82,15 @@ class DeliveryTrackResponse {
 
   bool get isEmpty => totalCount == 0;
 
-  List<TrackedDeliveryItem> filtered(DeliveryTrackFilter filter) =>
-      switch (filter) {
-        DeliveryTrackFilter.all => all,
-        DeliveryTrackFilter.collected => collected,
-        DeliveryTrackFilter.inProgress => inProgress,
-        DeliveryTrackFilter.completed => completed,
-      };
+  List<TrackedDeliveryItem> filtered(DeliveryTrackFilter filter) {
+    print("FILTERED: $filter");
+    return switch (filter) {
+      DeliveryTrackFilter.all => all,
+      DeliveryTrackFilter.collected => collected,
+      DeliveryTrackFilter.inProgress => inProgress,
+      DeliveryTrackFilter.completed => completed,
+    };
+  }
 }
 
 enum DeliveryTrackFilter { all, collected, inProgress, completed }
@@ -84,7 +98,7 @@ enum DeliveryTrackFilter { all, collected, inProgress, completed }
 extension DeliveryTrackFilterX on DeliveryTrackFilter {
   String get label => switch (this) {
         DeliveryTrackFilter.all => 'All',
-        DeliveryTrackFilter.collected => 'Picked up',
+        DeliveryTrackFilter.collected => 'Awaiting pickup',
         DeliveryTrackFilter.inProgress => 'In progress',
         DeliveryTrackFilter.completed => 'Delivered',
       };

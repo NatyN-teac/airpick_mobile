@@ -1,14 +1,44 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/app_refresh_bus.dart';
 import '../models/chat_summary.dart';
 import '../repository/chat_repository.dart';
 import 'chats_list_state.dart';
 
 class ChatsListCubit extends Cubit<ChatsListState> {
-  ChatsListCubit(ChatRepository _) : super(const ChatsListState());
+  final ChatRepository _repo;
+  bool _loadedOnce = false;
+  StreamSubscription<void>? _refreshSub;
 
+  ChatsListCubit(this._repo) : super(const ChatsListState()) {
+    // A delivery status change (e.g. carrier confirmed pickup / delivered)
+    // invalidates the inbox — re-fetch so statuses stay in sync.
+    _refreshSub = AppRefreshBus.instance.on(RefreshTopic.deliveries).listen((_) {
+      if (_loadedOnce) reload();
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _refreshSub?.cancel();
+    return super.close();
+  }
+
+  // GET /chats — the conversation inbox (backend sorts: active first,
+  // delivered pinned to the bottom).
   Future<void> load({bool force = false}) async {
-    // The backend currently has no GET /chats inbox endpoint. Chat rows are
-    // derived from accepted matches in EngagementCubit instead.
+    if (_loadedOnce && !force) return;
+    emit(state.copyWith(loading: true, error: null));
+    try {
+      final chats = await _repo.fetchChats();
+      _loadedOnce = true;
+      emit(state.copyWith(chats: chats, loading: false));
+    } catch (e) {
+      emit(state.copyWith(
+        loading: false,
+        error: e.toString().replaceFirst('Exception: ', ''),
+      ));
+    }
   }
 
   Future<void> reload() => load(force: true);
@@ -25,6 +55,7 @@ class ChatsListCubit extends Cubit<ChatsListState> {
                   lastMessage: c.lastMessage,
                   lastMessageAt: c.lastMessageAt,
                   unreadCount: 0,
+                  status: c.status,
                 )
               : c,
         )

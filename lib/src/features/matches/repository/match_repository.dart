@@ -32,6 +32,36 @@ class MatchRepository {
     return MatchResponse.fromJson(_payload(response));
   }
 
+  // PATCH /api/v1/matches/{matchId}/accept — carrier accepts a PENDING match.
+  Future<MatchResponse> acceptMatch(String matchId) async {
+    final response = await _client.patch('/matches/$matchId/accept', const {});
+    return MatchResponse.fromJson(_payload(response));
+  }
+
+  // PATCH /api/v1/matches/{matchId}/reject — carrier rejects a PENDING match.
+  // The backend requires a rejection reason.
+  Future<MatchResponse> rejectMatch(String matchId, String reason) async {
+    final response = await _client.patch(
+      '/matches/$matchId/reject',
+      {'rejectionReason': reason},
+    );
+    return MatchResponse.fromJson(_payload(response));
+  }
+
+  // PATCH /api/v1/matches/{matchId}/start — carrier: picked up → in transit
+  // (ACCEPTED → IN_PROGRESS). Requires the pickup photo already uploaded.
+  Future<MatchResponse> startMatch(String matchId) async {
+    final response = await _client.patch('/matches/$matchId/start', const {});
+    return MatchResponse.fromJson(_payload(response));
+  }
+
+  // PATCH /api/v1/matches/{matchId}/complete — carrier: in transit → delivered
+  // (IN_PROGRESS → COMPLETED).
+  Future<MatchResponse> completeMatch(String matchId) async {
+    final response = await _client.patch('/matches/$matchId/complete', const {});
+    return MatchResponse.fromJson(_payload(response));
+  }
+
   // GET /api/v1/matches/{matchId} — full match with items + status.
   Future<MatchResponse> getMatch(String matchId) async {
     final response = await _client.get('/matches/$matchId');

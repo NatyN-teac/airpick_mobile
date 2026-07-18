@@ -156,7 +156,7 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
 
   void setPickupArea(String v) => emit(state.copyWith(pickupArea: v));
   void setDeliveryArea(String v) => emit(state.copyWith(deliveryArea: v));
-  void setUrgencyLevel(UrgencyLevel v) => emit(state.copyWith(urgencyLevel: v));
+  void setUrgencyLevel(UrgencyLevel v) => emit( state.copyWith(urgencyLevel: v));
   void setCurrency(Currency v) => emit(state.copyWith(currency: v));
   void setDiscount(double? v) => emit(state.copyWith(discount: v));
   void setSpecialNote(String v) => emit(state.copyWith(specialNote: v));
@@ -217,7 +217,7 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
     emit(state.copyWith(creatingOffer: true, offerError: null));
     try {
       final hasManualItem = state.items.any((d) => d.item.isManuallyCreated);
-      final created = await _offers.createOffer(CreateOfferRequest(
+      var offerToCreate = CreateOfferRequest(
         flightId: state.flightId!,
         pickupArea: state.pickupArea,
         deliveryArea: state.deliveryArea,
@@ -230,16 +230,19 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
         paymentMethods: state.paymentMethods,
         items: state.items
             .map((d) => OfferItemRequest(
-                  itemId: d.item.id,
-                  quantity: d.quantity,
-                  pricePerItem: d.pricePerItem,
-                ))
+          itemId: d.item.id,
+          quantity: d.quantity,
+          pricePerItem: d.pricePerItem,
+        ))
             .toList(),
-      ));
+      );
+      print("Offer in creation : ${offerToCreate.toJson()}");
+      final created = await _offers.createOffer(offerToCreate);
       AppNotifications.offerPosted();
       emit(state.copyWith(
           creatingOffer: false, offerCreated: true, createdOffer: created));
     } catch (e) {
+      debugPrint("Something is wrong: ${e}");
       emit(state.copyWith(
           creatingOffer: false, offerError: e.toString()));
     }

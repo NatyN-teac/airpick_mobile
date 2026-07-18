@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/storage/token_storage.dart';
+import '../../../core/utils/app_refresh_bus.dart';
 import '../../matches/repository/match_repository.dart';
 import '../../matches/models/match_models.dart';
 import '../models/chat.dart';
@@ -45,11 +46,27 @@ class ChatCubit extends Cubit<ChatState> {
       final match =
           usedCachedMatch ? initialMatch! : await _matches.getMatch(matchId);
       if (!match.hasAvailableChat) {
-        throw Exception(
-          match.status.toUpperCase() == 'PENDING'
-              ? 'Chat will be available after the carrier accepts this match.'
-              : 'Chat is not available for this match.',
-        );
+        // A freshly-created match is PENDING until the carrier accepts it — the
+        // chat room doesn't exist yet, so there's nothing to connect to. Show a
+        // friendly "waiting for the carrier" state instead of a connection error.
+        if (match.status.toUpperCase() == 'PENDING') {
+          emit(state.copyWith(
+            status: ChatStatus.pending,
+            match: match,
+            currentUserId: userId,
+            isCarrier: match.carrierId == userId,
+            clearError: true,
+          ));
+          return;
+        }
+        // A cancelled match keeps its chat room — let the user view the history
+        // read-only rather than erroring. Anything else (e.g. REJECTED) has no
+        // chat to show.
+        final cancelledWithChat = match.status.toUpperCase() == 'CANCELLED' &&
+            (match.chatId?.trim().isNotEmpty ?? false);
+        if (!cancelledWithChat) {
+          throw Exception('Chat is not available for this match.');
+        }
       }
       final chat = await _repo.getChatByMatch(matchId);
       debugPrint(
@@ -131,6 +148,8 @@ class ChatCubit extends Cubit<ChatState> {
         match: updated,
         context: _enrichedContext(state.context, updated),
       ));
+      // The delivery list's pickup stage is now stale — tell it to re-fetch.
+      AppRefreshBus.instance.emit(RefreshTopic.deliveries);
     } catch (e) {
       emit(state.copyWith(
           pickingUp: false,
@@ -166,6 +185,7 @@ class ChatCubit extends Cubit<ChatState> {
 
   // Step 5 — optimistic append, server echo reconciles.
   void send(String content) {
+    if (state.isReadOnly) return; // delivered/cancelled — view-only
     final text = content.trim();
     if (text.isEmpty) return;
     if (state.connState != ChatConnState.connected) {

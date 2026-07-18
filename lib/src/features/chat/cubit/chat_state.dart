@@ -4,7 +4,7 @@ import '../models/chat.dart';
 import '../models/chat_message.dart';
 import '../service/chat_socket.dart';
 
-enum ChatStatus { loading, ready, error }
+enum ChatStatus { loading, ready, error, pending }
 
 class ChatState extends Equatable {
   final ChatStatus status;
@@ -51,6 +51,25 @@ class ChatState extends Equatable {
   int get itemCount => match?.matchedItems.length ?? context?.itemCount ?? 0;
 
   String? get displayStatus => match?.status ?? context?.status;
+
+  /// A delivered or cancelled conversation is view-only — history is visible but
+  /// the user can't send new messages.
+  bool get isReadOnly {
+    final s = match?.status.toUpperCase();
+    return s == 'COMPLETED' || s == 'CANCELLED';
+  }
+
+  /// Status label for display. The backend keeps a match `ACCEPTED` until the
+  /// carrier starts delivery, so once the pickup photo is in we surface it as
+  /// "Picked up" instead of "Accepted".
+  String? get displayStatusLabel {
+    final s = displayStatus;
+    if (s == null) return null;
+    if (s.toUpperCase() == 'ACCEPTED' && (match?.hasPickupPhoto ?? false)) {
+      return 'Picked up';
+    }
+    return s;
+  }
 
   String? get routeLabel {
     final from = match?.pickupArea?.trim().isNotEmpty == true

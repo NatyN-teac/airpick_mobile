@@ -12,6 +12,12 @@ enum RefreshTopic {
   /// A proposal was sent / withdrawn / accepted / rejected — engagements changed.
   engagements,
 
+  /// A match advanced (e.g. carrier confirmed pickup) — delivery lists changed.
+  deliveries,
+
+  /// A push notification arrived — the inbox + unread badge should re-fetch.
+  notifications,
+
   /// An airport was added — airport pickers should re-fetch.
   airports,
 }
