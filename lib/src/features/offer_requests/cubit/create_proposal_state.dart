@@ -56,6 +56,8 @@ class CreateProposalState extends Equatable {
   final bool submitting;
   final bool created;
   final String? error;
+  // Set true on a submit attempt so required-field errors become visible.
+  final bool showErrors;
 
   const CreateProposalState({
     this.partialAllowed = false,
@@ -79,6 +81,7 @@ class CreateProposalState extends Equatable {
     this.submitting = false,
     this.created = false,
     this.error,
+    this.showErrors = false,
   });
 
   List<ProposalItemDraft> get selectedItems =>
@@ -94,15 +97,27 @@ class CreateProposalState extends Equatable {
       arrivalDate != null &&
       arrivalTime != null;
 
-  bool get isValid =>
-      flightValid &&
-      pickupArea.isNotEmpty &&
-      deliveryArea.isNotEmpty &&
-      meetupPlaces.isNotEmpty &&
-      paymentMethods.isNotEmpty &&
-      selectedItems.isNotEmpty &&
-      (partialAllowed || !isPartial) &&
-      selectedItems.every((d) => d.price > 0);
+  // Named required-field checks — the single source of truth for validity.
+  // `isValid` is derived from this, so behaviour is unchanged; we just know why.
+  List<String> get missingFields => [
+        if (!flightValid) 'Flight details',
+        if (pickupArea.isEmpty) 'Pickup area',
+        if (deliveryArea.isEmpty) 'Delivery area',
+        if (meetupPlaces.isEmpty) 'Meetup place',
+        if (paymentMethods.isEmpty) 'Payment method',
+        if (selectedItems.isEmpty) 'At least one item',
+        if (!partialAllowed && isPartial) 'All items selected (or allow partial)',
+        if (selectedItems.isNotEmpty && selectedItems.any((d) => d.price <= 0))
+          'A price for every item',
+      ];
+
+  bool get isValid => missingFields.isEmpty;
+
+  // Per-field error text, only surfaced once a submit has been attempted.
+  String? get pickupError =>
+      showErrors && pickupArea.isEmpty ? 'Pickup area is required' : null;
+  String? get deliveryError =>
+      showErrors && deliveryArea.isEmpty ? 'Delivery area is required' : null;
 
   double get total => selectedItems.fold(0.0, (s, d) => s + d.price);
 
@@ -128,6 +143,7 @@ class CreateProposalState extends Equatable {
     bool? submitting,
     bool? created,
     String? error,
+    bool? showErrors,
   }) =>
       CreateProposalState(
         partialAllowed: partialAllowed ?? this.partialAllowed,
@@ -151,6 +167,7 @@ class CreateProposalState extends Equatable {
         submitting: submitting ?? this.submitting,
         created: created ?? this.created,
         error: error,
+        showErrors: showErrors ?? this.showErrors,
       );
 
   @override
@@ -161,6 +178,6 @@ class CreateProposalState extends Equatable {
         departureDate, departureTime, arrivalDate, arrivalTime,
         pickupArea, deliveryArea, discount, note,
         meetupPlaces, paymentMethods, currency, items,
-        submitting, created, error,
+        submitting, created, error, showErrors,
       ];
 }

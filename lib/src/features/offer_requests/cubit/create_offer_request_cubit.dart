@@ -175,6 +175,12 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
 
   // ── Submit ─────────────────────────────────────────────────────────────────
 
+  // Flip on required-field errors; returns the missing fields to surface.
+  List<String> markErrors() {
+    emit(state.copyWith(showErrors: true));
+    return state.missingFields;
+  }
+
   Future<void> submit() async {
     if (!state.isValid) return;
     emit(state.copyWith(submitting: true, error: null));

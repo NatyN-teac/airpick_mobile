@@ -9,6 +9,8 @@ const kOfferStatuses = ['OPEN', 'MATCHED', 'IN_DELIVERY', 'COMPLETED', 'EXPIRED'
 String offerStatusLabel(String s, AppLocalizations l) => switch (s) {
       'OPEN' => l.statusOpen,
       'MATCHED' => l.statusMatched,
+      // Presentation only — a fully-matched offer reads as "Fully booked".
+      'FULLY_MATCHED' => 'Fully booked',
       'IN_DELIVERY' => l.sectionInDelivery,
       'COMPLETED' => l.statusCompleted,
       'EXPIRED' => l.statusExpired,

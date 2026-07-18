@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/form_validation.dart';
 import '../../flights/models/flight_models.dart';
 import '../cubit/create_offer_cubit.dart';
 import '../cubit/create_offer_state.dart';
@@ -282,9 +283,17 @@ class FlightFormStep extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: GestureDetector(
-                  onTap: state.flightFormValid && !state.creatingFlight
-                      ? () => cubit.createFlight()
-                      : null,
+                  onTap: state.creatingFlight
+                      ? null
+                      : () {
+                          if (state.flightFormValid) {
+                            cubit.createFlight();
+                          } else {
+                            cubit.markErrors();
+                            showMissingFields(
+                                context, state.flightMissingFields);
+                          }
+                        },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(

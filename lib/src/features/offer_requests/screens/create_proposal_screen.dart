@@ -8,6 +8,7 @@ import '../../offers/models/offer_models.dart';
 import '../../offers/widgets/form_widgets.dart';
 import '../../offers/widgets/meetup_places_field.dart';
 import '../../../core/utils/verification_gate.dart';
+import '../../../core/utils/form_validation.dart';
 import '../cubit/create_proposal_cubit.dart';
 import '../cubit/create_proposal_state.dart';
 import '../models/offer_request_models.dart';
@@ -208,6 +209,7 @@ class CreateProposalScreen extends StatelessWidget {
                   isDark: isDark,
                   hint: l.offerDeliveryHint,
                   onChanged: cubit.setPickupArea,
+                  errorText: state.pickupError,
                 ),
                 const SizedBox(height: 10),
                 FormLabel(l.deliveryArea, isDark: isDark),
@@ -216,6 +218,7 @@ class CreateProposalScreen extends StatelessWidget {
                   isDark: isDark,
                   hint: l.offerPickupHint,
                   onChanged: cubit.setDeliveryArea,
+                  errorText: state.deliveryError,
                 ),
                 const SizedBox(height: 20),
 
@@ -387,9 +390,16 @@ class CreateProposalScreen extends StatelessWidget {
                     ],
                     const Spacer(),
                     GestureDetector(
-                      onTap: state.isValid && !state.submitting
-                          ? () => cubit.submit()
-                          : null,
+                      onTap: state.submitting
+                          ? null
+                          : () {
+                              if (state.isValid) {
+                                cubit.submit();
+                              } else {
+                                showMissingFields(
+                                    context, cubit.markErrors());
+                              }
+                            },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 28, vertical: 14),

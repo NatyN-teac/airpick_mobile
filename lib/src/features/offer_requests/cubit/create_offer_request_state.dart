@@ -58,6 +58,8 @@ class CreateOfferRequestState extends Equatable {
   final bool created;
   final OfferRequestResponse? result;
   final String? error;
+  // Set true on a submit attempt so required-field errors become visible.
+  final bool showErrors;
 
   const CreateOfferRequestState({
     this.availableItems = const [],
@@ -79,17 +81,26 @@ class CreateOfferRequestState extends Equatable {
     this.created = false,
     this.result,
     this.error,
+    this.showErrors = false,
   });
 
   bool get isEditing => editingId != null;
 
-  bool get isValid =>
-      sourceCountry != null &&
-      sourceCity.isNotEmpty &&
-      destinationCountry != null &&
-      preferredDate != null &&
-      items.isNotEmpty &&
-      items.every((d) => d.quantity > 0);
+  // Named required-field checks — the single source of truth for validity.
+  List<String> get missingFields => [
+        if (sourceCountry == null) 'Source country',
+        if (sourceCity.isEmpty) 'Source city',
+        if (destinationCountry == null) 'Destination country',
+        if (preferredDate == null) 'Preferred date',
+        if (items.isEmpty) 'At least one item',
+        if (items.isNotEmpty && items.any((d) => d.quantity <= 0))
+          'A quantity for every item',
+      ];
+
+  bool get isValid => missingFields.isEmpty;
+
+  String? get sourceCityError =>
+      showErrors && sourceCity.isEmpty ? 'Source city is required' : null;
 
   CreateOfferRequestState copyWith({
     List<ItemModel>? availableItems,
@@ -111,6 +122,7 @@ class CreateOfferRequestState extends Equatable {
     bool? created,
     OfferRequestResponse? result,
     String? error,
+    bool? showErrors,
   }) =>
       CreateOfferRequestState(
         availableItems: availableItems ?? this.availableItems,
@@ -133,6 +145,7 @@ class CreateOfferRequestState extends Equatable {
         created: created ?? this.created,
         result: result ?? this.result,
         error: error ?? this.error,
+        showErrors: showErrors ?? this.showErrors,
       );
 
   @override
@@ -141,6 +154,6 @@ class CreateOfferRequestState extends Equatable {
         availableCountries, countriesLoading, countriesError,
         sourceCountry, sourceCity, destinationCountry,
         preferredDate, urgencyLevel, specialNote, partialProposalAccepted,
-        items, editingId, submitting, created, result, error,
+        items, editingId, submitting, created, result, error, showErrors,
       ];
 }

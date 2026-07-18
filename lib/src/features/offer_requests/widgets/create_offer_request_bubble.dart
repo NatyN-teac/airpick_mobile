@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/form_validation.dart';
 import '../../countries/repository/country_repository.dart';
 import '../../countries/widgets/country_picker_field.dart';
 import '../../items/models/item_models.dart';
@@ -349,9 +350,15 @@ class _OfferRequestForm extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: GestureDetector(
-                  onTap: state.isValid && !state.submitting
-                      ? () => cubit.submit()
-                      : null,
+                  onTap: state.submitting
+                      ? null
+                      : () {
+                          if (state.isValid) {
+                            cubit.submit();
+                          } else {
+                            showMissingFields(context, cubit.markErrors());
+                          }
+                        },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(

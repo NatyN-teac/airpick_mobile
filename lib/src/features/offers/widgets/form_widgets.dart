@@ -32,6 +32,8 @@ class FormTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int maxLines;
   final TextEditingController? controller;
+  // When set, shows this message under the field and a red border.
+  final String? errorText;
 
   const FormTextField({
     super.key,
@@ -41,6 +43,7 @@ class FormTextField extends StatelessWidget {
     this.keyboardType,
     this.maxLines = 1,
     this.controller,
+    this.errorText,
   });
 
   @override
@@ -53,6 +56,8 @@ class FormTextField extends StatelessWidget {
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
     final placeholder =
         isDark ? AppColors.darkTextTertiary : AppColors.textTertiary;
+    final hasError = errorText != null && errorText!.isNotEmpty;
+    final baseBorder = hasError ? AppColors.error : border;
 
     return TextField(
       controller: controller,
@@ -71,22 +76,38 @@ class FormTextField extends StatelessWidget {
           fontSize: 13,
           color: placeholder,
         ),
+        errorText: hasError ? errorText : null,
+        errorStyle: const TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 11,
+          color: AppColors.error,
+        ),
         filled: true,
         fillColor: surface,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: border),
+          borderSide: BorderSide(color: baseBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: border),
+          borderSide: BorderSide(color: baseBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide:
-              const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide(
+            color: hasError ? AppColors.error : AppColors.primary,
+            width: 1.5,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/form_validation.dart';
 import '../cubit/create_offer_cubit.dart';
 import '../cubit/create_offer_state.dart';
 import '../models/offer_models.dart';
@@ -38,6 +39,7 @@ class OfferFormStep extends StatelessWidget {
                 isDark: isDark,
                 hint: 'e.g. New York, NY',
                 onChanged: cubit.setPickupArea,
+                errorText: state.pickupError,
               ),
               const SizedBox(height: 12),
               FormLabel(l.deliveryArea, isDark: isDark),
@@ -46,6 +48,7 @@ class OfferFormStep extends StatelessWidget {
                 isDark: isDark,
                 hint: 'e.g. Los Angeles, CA',
                 onChanged: cubit.setDeliveryArea,
+                errorText: state.deliveryError,
               ),
               const SizedBox(height: 16),
 
@@ -251,9 +254,17 @@ class OfferFormStep extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: GestureDetector(
-                  onTap: state.offerFormValid && !state.creatingOffer
-                      ? () => cubit.createOffer()
-                      : null,
+                  onTap: state.creatingOffer
+                      ? null
+                      : () {
+                          if (state.offerFormValid) {
+                            cubit.createOffer();
+                          } else {
+                            cubit.markErrors();
+                            showMissingFields(
+                                context, state.offerMissingFields);
+                          }
+                        },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(

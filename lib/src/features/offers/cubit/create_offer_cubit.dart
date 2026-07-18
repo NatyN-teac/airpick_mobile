@@ -110,6 +110,9 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
   void setReturnArrivalTime(TimeOfDay t) =>
       emit(state.copyWith(returnArrivalTime: t));
 
+  // Reveal required-field errors (called on a submit attempt while invalid).
+  void markErrors() => emit(state.copyWith(showErrors: true));
+
   // ── Create flight → advance to offer step ─────────────────────────────────
 
   Future<void> createFlight() async {

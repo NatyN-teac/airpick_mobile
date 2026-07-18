@@ -97,6 +97,13 @@ class CreateProposalCubit extends Cubit<CreateProposalState> {
     ));
   }
 
+  // Flip on required-field errors so empty fields are highlighted. Returns the
+  // list of missing fields for the caller to surface.
+  List<String> markErrors() {
+    emit(state.copyWith(showErrors: true));
+    return state.missingFields;
+  }
+
   Future<void> submit() async {
     if (!state.isValid || state.submitting) return;
     emit(state.copyWith(submitting: true, error: null));

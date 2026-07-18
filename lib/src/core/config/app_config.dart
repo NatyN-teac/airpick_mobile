@@ -6,8 +6,8 @@ class AppConfig {
   static AppEnvironment environment = AppEnvironment.dev;
 
   static String get baseUrl => switch (environment) {
-    AppEnvironment.dev => 'https://994b-209-127-211-232.ngrok-free.app',
-        // 'https://airdash-155736728726.us-east4.run.app',
+    AppEnvironment.dev => 'https://airdash-155736728726.us-east4.run.app',
+        // 'https://994b-209-127-211-232.ngrok-free.app',
     AppEnvironment.prod => 'https://api.airpick.app', // replace when live
   };
 

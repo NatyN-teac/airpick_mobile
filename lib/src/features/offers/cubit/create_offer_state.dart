@@ -91,6 +91,8 @@ class CreateOfferState extends Equatable {
   final bool offerCreated;
   final OfferResponse? createdOffer;
   final String? offerError;
+  // Set true on a submit attempt so required-field errors become visible.
+  final bool showErrors;
 
   const CreateOfferState({
     this.step = CreateOfferStep.flight,
@@ -129,6 +131,7 @@ class CreateOfferState extends Equatable {
     this.offerCreated = false,
     this.createdOffer,
     this.offerError,
+    this.showErrors = false,
   });
 
   CreateOfferState copyWith({
@@ -168,6 +171,7 @@ class CreateOfferState extends Equatable {
     bool? offerCreated,
     OfferResponse? createdOffer,
     String? offerError,
+    bool? showErrors,
   }) =>
       CreateOfferState(
         step: step ?? this.step,
@@ -206,6 +210,7 @@ class CreateOfferState extends Equatable {
         offerCreated: offerCreated ?? this.offerCreated,
         createdOffer: createdOffer ?? this.createdOffer,
         offerError: offerError ?? this.offerError,
+        showErrors: showErrors ?? this.showErrors,
       );
 
   bool get flightFormValid =>
@@ -226,12 +231,40 @@ class CreateOfferState extends Equatable {
   double get totalPrice =>
       items.fold(0.0, (sum, d) => sum + d.pricePerItem * d.quantity);
 
-  bool get offerFormValid =>
-      pickupArea.isNotEmpty &&
-      deliveryArea.isNotEmpty &&
-      paymentMethods.isNotEmpty &&
-      items.isNotEmpty &&
-      items.every((d) => d.quantity > 0 && d.pricePerItem > 0);
+  bool get offerFormValid => offerMissingFields.isEmpty;
+
+  // Named required-field checks per step.
+  List<String> get flightMissingFields => [
+        if (fromAirport == null) 'Departure airport',
+        if (toAirport == null) 'Arrival airport',
+        if (departureDate == null) 'Departure date',
+        if (departureTime == null) 'Departure time',
+        if (arrivalDate == null) 'Arrival date',
+        if (arrivalTime == null) 'Arrival time',
+        if (flightType != FlightType.oneWay) ...[
+          if (returnFromAirport == null) 'Return departure airport',
+          if (returnToAirport == null) 'Return arrival airport',
+          if (returnDepartureDate == null) 'Return departure date',
+          if (returnDepartureTime == null) 'Return departure time',
+          if (returnArrivalDate == null) 'Return arrival date',
+          if (returnArrivalTime == null) 'Return arrival time',
+        ],
+      ];
+
+  List<String> get offerMissingFields => [
+        if (pickupArea.isEmpty) 'Pickup area',
+        if (deliveryArea.isEmpty) 'Delivery area',
+        if (paymentMethods.isEmpty) 'Payment method',
+        if (items.isEmpty) 'At least one item',
+        if (items.isNotEmpty &&
+            items.any((d) => d.quantity <= 0 || d.pricePerItem <= 0))
+          'A quantity and price for every item',
+      ];
+
+  String? get pickupError =>
+      showErrors && pickupArea.isEmpty ? 'Pickup area is required' : null;
+  String? get deliveryError =>
+      showErrors && deliveryArea.isEmpty ? 'Delivery area is required' : null;
 
   @override
   List<Object?> get props => [
@@ -246,6 +279,6 @@ class CreateOfferState extends Equatable {
         creatingFlight, flightId, flightError,
         pickupArea, deliveryArea, urgencyLevel, currency, discount, specialNote,
         meetupPlaces, paymentMethods, items,
-        creatingOffer, offerCreated, createdOffer, offerError,
+        creatingOffer, offerCreated, createdOffer, offerError, showErrors,
       ];
 }
