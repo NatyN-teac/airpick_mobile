@@ -91,17 +91,21 @@ class ItemModel extends Equatable {
     this.isManuallyCreated = false,
   });
 
-  factory ItemModel.fromJson(Map<String, dynamic> json) => ItemModel(
+  factory ItemModel.fromJson(Map<String, dynamic> json) {
+    print("fetched items states: $json");
+    return
+      ItemModel(
         id: json['id'] as String,
         name: json['name'] as String,
         category: ItemCategoryX.fromApi(json['category'] as String),
         measurementType:
-            MeasurementTypeX.fromApi(json['measurementType'] as String),
+        MeasurementTypeX.fromApi(json['measurementType'] as String),
         measurementUnit:
-            MeasurementUnitX.fromApi(json['measurementUnit'] as String),
+        MeasurementUnitX.fromApi(json['measurementUnit'] as String),
         isApproved: json['isApproved'] as bool? ?? true,
         isManuallyCreated: json['isManuallyCreated'] as bool? ?? false,
       );
+  }
 
   @override
   List<Object?> get props => [

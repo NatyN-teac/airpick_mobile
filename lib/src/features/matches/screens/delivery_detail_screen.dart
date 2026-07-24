@@ -49,21 +49,12 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   final _picker = ImagePicker();
   late MatchResponse _match = widget.match;
   bool _busy = false;
+  bool _loadingId = false;
 
-  // 0=awaiting pickup, 1=picked up, 2=in transit, 3=delivered.
-  int get _stage {
-    switch (_match.status.toUpperCase()) {
-      case 'ACCEPTED':
-        return _match.hasPickupPhoto ? 1 : 0;
-      case 'IN_PROGRESS':
-      case 'IN_DELIVERY':
-        return 2;
-      case 'COMPLETED':
-        return 3;
-      default:
-        return 0;
-    }
-  }
+  // 0=awaiting pickup, 1=picked up, 2=in transit, 3=carrier delivered
+  // (awaiting sender confirmation), 4=confirmed/complete.
+  int get _stage =>
+      deliveryStageForStatus(_match.status, _match.hasPickupPhoto);
 
   String? get _routeLabel {
     final from = _match.pickupArea?.trim();
@@ -110,7 +101,29 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
 
   Future<void> _markDelivered() async {
     await _runAction(() => widget.repository.completeMatch(_match.id));
-    if (mounted) _snack('Marked as delivered');
+    if (mounted) _snack('Marked as delivered — awaiting confirmation');
+  }
+
+  // Sender confirms the carrier's delivery, completing the match.
+  Future<void> _confirmDelivery() async {
+    await _runAction(() => widget.repository.confirmDelivery(_match.id));
+    if (mounted) _snack('Delivery confirmed');
+  }
+
+  // Fetch a fresh short-lived signed URL for the receiver's ID and open it
+  // full-screen so the carrier can compare it against the person in front of them.
+  Future<void> _viewReceiverId() async {
+    setState(() => _loadingId = true);
+    try {
+      final url = await widget.repository.getReceiverIdPhotoUrl(_match.id);
+      if (!mounted) return;
+      setState(() => _loadingId = false);
+      await showReceiverIdViewer(context, url, receiver: _match.receiver);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loadingId = false);
+      _snack(e.toString().replaceFirst('Exception: ', ''), isError: true);
+    }
   }
 
   Future<ImageSource?> _chooseSource() {
@@ -237,6 +250,19 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
                   )),
             ],
           ),
+          // Receiver ID check — only for the carrier, only while delivering
+          // (in transit), and only when a third-party receiver was designated.
+          if (widget.viewerIsCarrier &&
+              _match.receiverNeeded &&
+              _stage == 2) ...[
+            const SizedBox(height: 24),
+            _ReceiverVerifyCard(
+              receiver: _match.receiver,
+              loading: _loadingId,
+              isDark: isDark,
+              onView: _viewReceiverId,
+            ),
+          ],
           const SizedBox(height: 24),
           _buildAction(isDark, textSecondary),
         ],
@@ -244,9 +270,17 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     );
   }
 
-  // Carrier: one action per stage. Sender: a read-only note.
+  // Carrier: one action per stage (through "mark delivered"). Sender: a confirm
+  // action once the carrier has delivered, otherwise a read-only note.
   Widget _buildAction(bool isDark, Color textSecondary) {
     if (!widget.viewerIsCarrier) {
+      if (_stage == 3) {
+        return _ActionButton(
+          label: 'Confirm delivery',
+          busy: _busy,
+          onPressed: _confirmDelivery,
+        );
+      }
       return _ReadOnlyNote(stage: _stage, isDark: isDark);
     }
     return switch (_stage) {
@@ -273,7 +307,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
 }
 
 class _StageTracker extends StatelessWidget {
-  final int stage; // 0..3
+  final int stage; // 0..4
   final bool isDark;
   const _StageTracker({required this.stage, required this.isDark});
 
@@ -286,7 +320,7 @@ class _StageTracker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          children: List.generate(4, (i) {
+          children: List.generate(deliveryStageLabels.length, (i) {
             final isActive = i <= stage;
             return Expanded(
               child: Padding(
@@ -305,14 +339,16 @@ class _StageTracker extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Row(
-          children: List.generate(4, (i) {
+          children: List.generate(deliveryStageLabels.length, (i) {
             final isActive = i <= stage;
             return Expanded(
               child: Text(
                 deliveryStageLabels[i],
                 textAlign: i == 0
                     ? TextAlign.left
-                    : (i == 3 ? TextAlign.right : TextAlign.center),
+                    : (i == deliveryStageLabels.length - 1
+                        ? TextAlign.right
+                        : TextAlign.center),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -382,6 +418,7 @@ class _ReadOnlyNote extends StatelessWidget {
       0 => 'Waiting for the carrier to confirm pickup.',
       1 => 'The carrier has picked up your items.',
       2 => 'Your items are on the way.',
+      3 => 'Delivered — waiting for the sender to confirm.',
       _ => 'This delivery is complete.',
     };
     return Container(
@@ -403,6 +440,189 @@ class _ReadOnlyNote extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Prompts the carrier to check the receiver's ID before marking delivered.
+class _ReceiverVerifyCard extends StatelessWidget {
+  final MatchReceiverInfo? receiver;
+  final bool loading;
+  final bool isDark;
+  final VoidCallback onView;
+
+  const _ReceiverVerifyCard({
+    required this.receiver,
+    required this.loading,
+    required this.isDark,
+    required this.onView,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final name = receiver?.fullName ?? '';
+    final phone = receiver?.phone ?? '';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.badge_outlined,
+                  size: 18, color: AppColors.warning),
+              const SizedBox(width: 8),
+              Text(
+                'Verify receiver',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w800,
+                  color: textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Check this ID against the person receiving the items before you '
+            'mark the delivery as done.',
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 12,
+              height: 1.4,
+              color: textSecondary,
+            ),
+          ),
+          if (name.isNotEmpty || phone.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            if (name.isNotEmpty)
+              _kv(Icons.person_outline_rounded, name, textPrimary,
+                  textSecondary),
+            if (phone.isNotEmpty)
+              _kv(Icons.phone_outlined, phone, textPrimary, textSecondary),
+          ],
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: OutlinedButton.icon(
+              onPressed: loading ? null : onView,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.warning,
+                side: BorderSide(
+                    color: AppColors.warning.withValues(alpha: 0.6)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: loading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.warning),
+                    )
+                  : const Icon(Icons.image_outlined, size: 18),
+              label: const Text(
+                'View ID photo',
+                style: TextStyle(
+                    fontFamily: 'Manrope', fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _kv(IconData icon, String value, Color primary, Color secondary) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 15, color: secondary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen, zoomable viewer for the receiver's ID photo (signed URL).
+Future<void> showReceiverIdViewer(
+  BuildContext context,
+  String url, {
+  MatchReceiverInfo? receiver,
+}) {
+  final title = receiver?.fullName.isNotEmpty == true
+      ? receiver!.fullName
+      : 'Receiver ID';
+  return Navigator.of(context).push(
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        body: Center(
+          child: InteractiveViewer(
+            minScale: 0.8,
+            maxScale: 4,
+            child: Image.network(
+              url,
+              fit: BoxFit.contain,
+              loadingBuilder: (ctx, child, progress) {
+                if (progress == null) return child;
+                return const CircularProgressIndicator(color: Colors.white);
+              },
+              errorBuilder: (ctx, error, stack) => const Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Could not load the ID photo. The link may have expired — '
+                  'close and try again.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontFamily: 'Manrope', color: Colors.white70, height: 1.4),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _SectionLabel extends StatelessWidget {

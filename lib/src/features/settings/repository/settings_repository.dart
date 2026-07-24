@@ -10,6 +10,7 @@ class SettingsRepository {
   static const _localeKey = 'settings_locale';
   static const _modeKey = 'settings_user_mode';
   static const _profileKey = 'settings_profile_snapshot';
+  static const _basicsPromptedKey = 'profile_basics_prompted';
 
   const SettingsRepository(this._prefs);
 
@@ -70,5 +71,13 @@ class SettingsRepository {
 
   Future<void> clearProfile() async {
     await _prefs.remove(_profileKey);
+  }
+
+  // ── One-time "complete your basic info" prompt ───────────────────────────────
+
+  bool getBasicsPrompted() => _prefs.getBool(_basicsPromptedKey) ?? false;
+
+  Future<void> setBasicsPrompted() async {
+    await _prefs.setBool(_basicsPromptedKey, true);
   }
 }

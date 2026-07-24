@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../core/utils/time_format.dart';
+
 class ChatMessage extends Equatable {
   final String id;
   final String content;
@@ -38,7 +40,9 @@ class ChatMessage extends Equatable {
   static DateTime _parseDate(dynamic v) {
     if (v == null) return DateTime.now();
     if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
-    return DateTime.tryParse(v.toString())?.toLocal() ?? DateTime.now();
+    // Server timestamps often arrive without a timezone suffix; parseServerTime
+    // treats those as UTC and converts to the device's local time.
+    return TimeFormat.parseServerTime(v.toString()) ?? DateTime.now();
   }
 
   ChatMessage copyWith({String? id, bool? pending}) => ChatMessage(

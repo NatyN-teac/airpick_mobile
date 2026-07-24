@@ -102,6 +102,21 @@ class _BubbleContent extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
+                          if (state.step == CreateOfferStep.offer) ...[
+                            GestureDetector(
+                              onTap: () =>
+                                  context.read<CreateOfferCubit>().goToFlightStep(),
+                              behavior: HitTestBehavior.opaque,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 10),
+                                child: Icon(
+                                  Icons.arrow_back_rounded,
+                                  size: 20,
+                                  color: textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

@@ -53,6 +53,10 @@ class ProposalEngagement {
   final double totalPrice;
   final String createdAt;
   final String updatedAt;
+  // Set only for an ACCEPTED proposal: the match created on acceptance and its
+  // chat, so the request owner can open the conversation directly.
+  final String? matchId;
+  final String? chatId;
 
   const ProposalEngagement({
     required this.id,
@@ -70,7 +74,15 @@ class ProposalEngagement {
     this.meetupPlaces = const [],
     this.paymentMethods = const [],
     this.note,
+    this.matchId,
+    this.chatId,
   });
+
+  /// An accepted proposal whose chat is ready to open.
+  bool get hasAvailableChat =>
+      status.toUpperCase() == 'ACCEPTED' &&
+      (matchId?.trim().isNotEmpty ?? false) &&
+      (chatId?.trim().isNotEmpty ?? false);
 
   factory ProposalEngagement.fromJson(Map<String, dynamic> json) =>
       ProposalEngagement(
@@ -98,6 +110,8 @@ class ProposalEngagement {
         totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0,
         createdAt: (json['createdAt'] ?? '').toString(),
         updatedAt: (json['updatedAt'] ?? '').toString(),
+        matchId: json['matchId']?.toString(),
+        chatId: json['chatId']?.toString(),
       );
 }
 
@@ -347,7 +361,7 @@ class EngagementListItem {
   factory EngagementListItem.fromMatch(MatchEngagement m) {
     final displayStatus = switch (m.status.toUpperCase()) {
       'ACCEPTED' => EngagementDisplayStatus.matched,
-      'IN_PROGRESS' => EngagementDisplayStatus.inProgress,
+      'IN_PROGRESS' || 'CARRIER_DELIVERED' => EngagementDisplayStatus.inProgress,
       _ => EngagementDisplayStatus.pending,
     };
     final title = m.matchedItems.isNotEmpty

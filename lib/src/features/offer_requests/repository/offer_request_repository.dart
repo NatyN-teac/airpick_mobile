@@ -1,4 +1,5 @@
 import '../../../core/network/api_client.dart';
+import '../../home/models/engagement_models.dart';
 import '../../matches/models/match_models.dart';
 import '../models/offer_request_models.dart';
 import '../models/proposal_models.dart';
@@ -53,6 +54,19 @@ class OfferRequestRepository {
   Future<OfferRequestResponse> fetchOfferRequestById(String id) async {
     final response = await _client.get('/offer-requests/$id');
     return OfferRequestResponse.fromJson(_payload(response));
+  }
+
+  // GET /api/v1/offer-requests/{requestId}/proposals — proposals on the owner's
+  // request. ACCEPTED ones carry matchId/chatId for chat routing.
+  Future<List<ProposalEngagement>> getProposalsForRequest(
+      String requestId) async {
+    final response =
+        await _client.get('/offer-requests/$requestId/proposals');
+    final list =
+        (response['content'] ?? response['data'] ?? []) as List<dynamic>;
+    return list
+        .map((e) => ProposalEngagement.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<OfferRequestResponse>> fetchMyOfferRequests() async {

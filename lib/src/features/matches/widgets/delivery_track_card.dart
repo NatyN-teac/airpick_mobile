@@ -55,6 +55,7 @@ class DeliveryTrackCard extends StatelessWidget {
               children: [
                 _GroupChip(
                   group: item.group,
+                  status: item.match.status,
                   hasPickupPhoto: item.match.hasPickupPhoto,
                 ),
                 const Spacer(),
@@ -132,6 +133,7 @@ class DeliveryTrackCard extends StatelessWidget {
             const SizedBox(height: 12),
             DeliveryTrackProgressBar(
               group: item.group,
+              status: item.match.status,
               hasPickupPhoto: item.match.hasPickupPhoto,
               isDark: isDark,
             ),
@@ -160,8 +162,13 @@ class DeliveryTrackCard extends StatelessWidget {
 
 class _GroupChip extends StatelessWidget {
   final DeliveryTrackGroup group;
+  final String status;
   final bool hasPickupPhoto;
-  const _GroupChip({required this.group, required this.hasPickupPhoto});
+  const _GroupChip({
+    required this.group,
+    required this.status,
+    required this.hasPickupPhoto,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +184,7 @@ class _GroupChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        deliveryStageLabels[deliveryStageIndex(group, hasPickupPhoto)],
+        deliveryStageLabels[deliveryStageForStatus(status, hasPickupPhoto)],
         style: TextStyle(
           fontFamily: 'Manrope',
           fontSize: 10,
@@ -194,20 +201,22 @@ class _GroupChip extends StatelessWidget {
 /// two stages by whether the carrier has uploaded the pickup photo.
 class DeliveryTrackProgressBar extends StatelessWidget {
   final DeliveryTrackGroup group;
+  final String status;
   final bool hasPickupPhoto;
   final bool isDark;
 
   const DeliveryTrackProgressBar({
     super.key,
     required this.group,
+    required this.status,
     required this.hasPickupPhoto,
     required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 1-based active stage (1..4), shared with the status chip.
-    final active = deliveryStageIndex(group, hasPickupPhoto) + 1;
+    // 1-based active stage (1..5), shared with the status chip.
+    final active = deliveryStageForStatus(status, hasPickupPhoto) + 1;
     final track = isDark ? AppColors.darkBorder : const Color(0xFFEEF0F3);
     final fill = switch (group) {
       DeliveryTrackGroup.collected => const Color(0xFFED8936),
@@ -219,7 +228,7 @@ class DeliveryTrackProgressBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          children: List.generate(4, (i) {
+          children: List.generate(deliveryStageLabels.length, (i) {
             final step = i + 1;
             final isActive = step <= active;
             final isCurrent = step == active;
@@ -253,7 +262,7 @@ class DeliveryTrackProgressBar extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Row(
-          children: List.generate(4, (i) {
+          children: List.generate(deliveryStageLabels.length, (i) {
             final step = i + 1;
             final isActive = step <= active;
             return Expanded(
@@ -261,7 +270,9 @@ class DeliveryTrackProgressBar extends StatelessWidget {
                 deliveryStageLabels[i],
                 textAlign: i == 0
                     ? TextAlign.left
-                    : (i == 3 ? TextAlign.right : TextAlign.center),
+                    : (i == deliveryStageLabels.length - 1
+                        ? TextAlign.right
+                        : TextAlign.center),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

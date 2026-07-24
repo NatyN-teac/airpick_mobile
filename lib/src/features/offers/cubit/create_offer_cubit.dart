@@ -113,6 +113,10 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
   // Reveal required-field errors (called on a submit attempt while invalid).
   void markErrors() => emit(state.copyWith(showErrors: true));
 
+  // Step 2 → step 1. Only changes the visible step; the created flight, form
+  // values, and everything else are left as-is.
+  void goToFlightStep() => emit(state.copyWith(step: CreateOfferStep.flight));
+
   // ── Create flight → advance to offer step ─────────────────────────────────
 
   Future<void> createFlight() async {

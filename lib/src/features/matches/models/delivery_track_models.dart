@@ -3,14 +3,27 @@ import 'match_models.dart';
 /// Backend track buckets — maps to match lifecycle groups.
 enum DeliveryTrackGroup { collected, inProgress, completed }
 
-/// Ordered labels for the 4-stage delivery phase (progress bar segments). Shared
-/// so the status chip and the progress bar can't drift.
+/// Ordered labels for the 5-stage delivery phase (progress bar segments). Shared
+/// so the status chip and the progress bar can't drift. "Delivered" = the carrier
+/// dropped off (awaiting sender confirmation); "Confirmed" = fully complete.
 const deliveryStageLabels = <String>[
   'Awaiting pickup',
   'Picked up',
   'In transit',
   'Delivered',
+  'Confirmed',
 ];
+
+/// 0-based index into [deliveryStageLabels] for a match status (0..4).
+/// CARRIER_DELIVERED sits at "Delivered"; COMPLETED at "Confirmed".
+int deliveryStageForStatus(String status, bool hasPickupPhoto) =>
+    switch (status.toUpperCase()) {
+      'ACCEPTED' => hasPickupPhoto ? 1 : 0,
+      'IN_PROGRESS' || 'IN_DELIVERY' => 2,
+      'CARRIER_DELIVERED' => 3,
+      'COMPLETED' => 4,
+      _ => 0,
+    };
 
 /// 0-based index into [deliveryStageLabels] for the current phase. The ACCEPTED
 /// (`collected`) bucket splits into "awaiting pickup" vs "picked up" by whether
@@ -19,7 +32,7 @@ int deliveryStageIndex(DeliveryTrackGroup group, bool hasPickupPhoto) =>
     switch (group) {
       DeliveryTrackGroup.collected => hasPickupPhoto ? 1 : 0,
       DeliveryTrackGroup.inProgress => 2,
-      DeliveryTrackGroup.completed => 3,
+      DeliveryTrackGroup.completed => 4,
     };
 
 extension DeliveryTrackGroupX on DeliveryTrackGroup {

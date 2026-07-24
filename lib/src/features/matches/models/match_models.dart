@@ -101,12 +101,40 @@ class MatchedItemResponse {
   }
 }
 
+/// The third-party receiver's identity, shown to the carrier at delivery so they
+/// can check it against the person receiving the items. The government-issued ID
+/// photo itself is fetched separately as a signed URL (never carried inline).
+class MatchReceiverInfo {
+  final String firstName;
+  final String lastName;
+  final String phone;
+  final bool isActive;
+
+  const MatchReceiverInfo({
+    required this.firstName,
+    required this.lastName,
+    required this.phone,
+    this.isActive = false,
+  });
+
+  factory MatchReceiverInfo.fromJson(Map<String, dynamic> json) =>
+      MatchReceiverInfo(
+        firstName: (json['firstName'] ?? '').toString(),
+        lastName: (json['lastName'] ?? '').toString(),
+        phone: (json['phone'] ?? '').toString(),
+        isActive: json['isActive'] as bool? ?? false,
+      );
+
+  String get fullName => '$firstName $lastName'.trim();
+}
+
 class MatchResponse {
   final String id;
   final String offerId;
   final String status;
   final double totalPrice;
   final bool receiverNeeded;
+  final MatchReceiverInfo? receiver;
   final List<MatchedItemResponse> matchedItems;
   final String? chatId;
   final String? pickupArea;
@@ -127,6 +155,7 @@ class MatchResponse {
     required this.totalPrice,
     required this.receiverNeeded,
     required this.matchedItems,
+    this.receiver,
     this.chatId,
     this.pickupArea,
     this.deliveryArea,
@@ -149,6 +178,9 @@ class MatchResponse {
       status: (json['status'] ?? 'PENDING').toString(),
       totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0,
       receiverNeeded: json['receiverNeeded'] as bool? ?? false,
+      receiver: json['receiver'] is Map<String, dynamic>
+          ? MatchReceiverInfo.fromJson(json['receiver'] as Map<String, dynamic>)
+          : null,
       chatId: json['chatId'] as String?,
       carrierId: json['carrierId']?.toString(),
       shipperId: json['shipperId']?.toString(),
@@ -169,8 +201,13 @@ class MatchResponse {
 
   bool get hasAvailableChat =>
       chatId?.trim().isNotEmpty == true &&
-      const {'ACCEPTED', 'IN_PROGRESS', 'IN_DELIVERY', 'COMPLETED'}
-          .contains(status.toUpperCase());
+      const {
+        'ACCEPTED',
+        'IN_PROGRESS',
+        'IN_DELIVERY',
+        'CARRIER_DELIVERED',
+        'COMPLETED',
+      }.contains(status.toUpperCase());
 
   static FlightResponse? _parseFlight(dynamic raw) {
     if (raw is! Map<String, dynamic>) return null;

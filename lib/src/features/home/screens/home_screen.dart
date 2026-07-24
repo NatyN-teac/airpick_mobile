@@ -40,6 +40,8 @@ import '../../offers/widgets/create_offer_bubble.dart';
 import '../../profile/cubit/current_user_cubit.dart';
 import '../../profile/repository/user_repository.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../profile/widgets/complete_profile_dialog.dart';
+import '../../settings/repository/settings_repository.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../search/screens/search_screen.dart';
 import '../../matches/cubit/delivery_track_cubit.dart';
@@ -101,6 +103,8 @@ class _HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<_HomeView> {
+  bool _basicsChecked = false;
+
   @override
   void initState() {
     super.initState();
@@ -109,13 +113,32 @@ class _HomeViewState extends State<_HomeView> {
     // are singletons and cache in-memory, so later reads come from cache.
     context.read<ItemRepository>().fetchItems().ignore();
     context.read<CountryRepository>().fetchCountries().ignore();
-    context.read<CurrentUserCubit>().refreshFromServer(
-      context.read<UserRepository>(),
-      context.read<TokenStorage>(),
-    );
+    // Once the freshest profile lands, prompt for missing basic info (once).
+    context
+        .read<CurrentUserCubit>()
+        .refreshFromServer(
+          context.read<UserRepository>(),
+          context.read<TokenStorage>(),
+        )
+        .whenComplete(_maybePromptCompleteProfile);
     context.read<DeliveryTrackCubit>().load(
       mode: context.read<UserModeCubit>().state,
     );
+  }
+
+  // Show the mandatory "complete your profile" dialog when a basic field is
+  // missing and we haven't already captured it. Fires at most once per launch;
+  // the persisted flag + completed data keep it from reappearing.
+  void _maybePromptCompleteProfile() {
+    if (!mounted || _basicsChecked) return;
+    final settings = context.read<SettingsRepository>();
+    if (settings.getBasicsPrompted()) return;
+    final profile = context.read<CurrentUserCubit>().state;
+    if (profile == null || !profile.needsBasicInfo) return;
+    _basicsChecked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showCompleteProfileDialog(context);
+    });
   }
 
   // Opens the mode-appropriate create form as a bottom sheet.
@@ -164,7 +187,24 @@ class _HomeViewState extends State<_HomeView> {
       builder: (context, chatsState) {
         return BlocBuilder<NotificationsCubit, NotificationsState>(
           builder: (context, notificationsState) {
-            return BlocBuilder<NavCubit, int>(
+            return BlocConsumer<NavCubit, int>(
+              // Opening a tab should pull the latest — IndexedStack keeps each
+              // tab alive, so without this they'd show stale data until a manual
+              // pull-to-refresh.
+              listener: (context, index) {
+                switch (index) {
+                  case 0: // Home
+                    final mode = context.read<UserModeCubit>().state;
+                    context.read<EngagementCubit>().load(force: true);
+                    context
+                        .read<DeliveryTrackCubit>()
+                        .load(mode: mode, force: true);
+                  case 1: // Chat
+                    context.read<ChatsListCubit>().reload();
+                  case 3: // Alerts
+                    context.read<NotificationsCubit>().refresh();
+                }
+              },
               builder: (context, currentIndex) {
                 final badgeCounts = <int, int>{
                   if (chatsState.totalUnread > 0) 1: chatsState.totalUnread,

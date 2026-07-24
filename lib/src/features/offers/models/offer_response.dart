@@ -112,6 +112,8 @@ class OfferResponse {
   final List<OfferItemResponse> items;
   final String createdAt;
   final String updatedAt;
+  // Number of active matches on this offer (from GET /offers/me).
+  final int matchCount;
 
   const OfferResponse({
     required this.id,
@@ -132,6 +134,7 @@ class OfferResponse {
     required this.updatedAt,
     this.discount,
     this.specialNote,
+    this.matchCount = 0,
   });
 
   factory OfferResponse.fromJson(Map<String, dynamic> json) => OfferResponse(
@@ -163,6 +166,7 @@ class OfferResponse {
             .toList(),
         createdAt: (json['createdAt'] ?? '').toString(),
         updatedAt: (json['updatedAt'] ?? '').toString(),
+        matchCount: (json['matchCount'] as num?)?.toInt() ?? 0,
       );
 
   // ── Display helpers ──────────────────────────────────────────────────────

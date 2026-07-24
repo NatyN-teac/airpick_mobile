@@ -1,3 +1,5 @@
+import '../../../core/utils/time_format.dart';
+
 // One row in the conversations list. Parsed defensively (endpoint shape TBD).
 class ChatSummary {
   final String matchId;
@@ -51,9 +53,8 @@ class ChatSummary {
       otherPartyAvatarUrl:
           (other?['profilePictureUrl'] ?? other?['avatarUrl']) as String?,
       lastMessage: lastText is String ? lastText : '',
-      lastMessageAt: lastTs != null
-          ? DateTime.tryParse(lastTs.toString())?.toLocal()
-          : null,
+      lastMessageAt:
+          lastTs != null ? TimeFormat.parseServerTime(lastTs.toString()) : null,
       unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
       status: (json['status'] ?? '').toString(),
     );

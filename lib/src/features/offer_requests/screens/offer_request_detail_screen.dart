@@ -1,17 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../chat/screens/chat_screen.dart';
+import '../../home/models/engagement_models.dart';
+import '../../home/widgets/proposal_engagement_dialog.dart';
+import '../repository/offer_request_repository.dart';
 import '../models/offer_request_models.dart';
 
-// View-only detail screen. Edit + delete now live on the list card.
-class OfferRequestDetailScreen extends StatelessWidget {
+// Detail screen. When the owner opens their own request (`showProposals`), it
+// lists the proposals received — tap PENDING to accept/reject, ACCEPTED to chat.
+class OfferRequestDetailScreen extends StatefulWidget {
   final OfferRequestResponse request;
+  final bool showProposals;
 
-  const OfferRequestDetailScreen({super.key, required this.request});
+  const OfferRequestDetailScreen({
+    super.key,
+    required this.request,
+    this.showProposals = false,
+  });
+
+  @override
+  State<OfferRequestDetailScreen> createState() =>
+      _OfferRequestDetailScreenState();
+}
+
+class _OfferRequestDetailScreenState extends State<OfferRequestDetailScreen> {
+  List<ProposalEngagement> _proposals = const [];
+  bool _loadingProposals = false;
+  String? _proposalsError;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.showProposals) _loadProposals();
+  }
+
+  Future<void> _loadProposals() async {
+    setState(() {
+      _loadingProposals = true;
+      _proposalsError = null;
+    });
+    try {
+      final proposals = await context
+          .read<OfferRequestRepository>()
+          .getProposalsForRequest(widget.request.id);
+      if (!mounted) return;
+      setState(() {
+        _proposals = proposals;
+        _loadingProposals = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadingProposals = false;
+        _proposalsError = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  // Accepted → open the chat; pending → the shipper's accept/reject flow.
+  Future<void> _onProposalTap(ProposalEngagement proposal) async {
+    if (proposal.hasAvailableChat) {
+      openChatScreen(context, proposal.matchId!);
+      return;
+    }
+    if (proposal.status.toUpperCase() == 'PENDING') {
+      await ProposalEngagementDialog.show(
+        context,
+        proposal: proposal,
+        kind: EngagementKind.proposalReceived,
+      );
+      if (mounted) _loadProposals();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final request = widget.request;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
     final l = l10n(context);
@@ -111,6 +178,13 @@ class OfferRequestDetailScreen extends StatelessWidget {
               ),
             const SizedBox(height: 20),
 
+            // ── Proposals ──────────────────────────────────────────
+            if (widget.showProposals) ...[
+              _buildProposalsSection(
+                  context, isDark, textPrimary, textSecondary),
+              const SizedBox(height: 24),
+            ],
+
             // ── Items ──────────────────────────────────────────────
             Row(
               children: [
@@ -190,6 +264,78 @@ class OfferRequestDetailScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProposalsSection(
+    BuildContext context,
+    bool isDark,
+    Color textPrimary,
+    Color textSecondary,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Proposals',
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
+                letterSpacing: -0.2,
+              ),
+            ),
+            if (_proposals.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Text(
+                '· ${_proposals.length}',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 12,
+                  color: textSecondary,
+                ),
+              ),
+            ],
+            const Spacer(),
+            if (_loadingProposals)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_proposalsError != null)
+          Text(
+            _proposalsError!,
+            style: const TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 13,
+              color: AppColors.error,
+            ),
+          )
+        else if (!_loadingProposals && _proposals.isEmpty)
+          Text(
+            'No proposals yet on this request.',
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 13,
+              color: textSecondary,
+            ),
+          )
+        else
+          ..._proposals.map(
+            (p) => _ProposalRow(
+              proposal: p,
+              isDark: isDark,
+              onTap: () => _onProposalTap(p),
+            ),
+          ),
+      ],
     );
   }
 
@@ -455,6 +601,159 @@ class _ItemTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Proposal row ────────────────────────────────────────────────────────────
+
+class _ProposalRow extends StatelessWidget {
+  final ProposalEngagement proposal;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ProposalRow({
+    required this.proposal,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  static String _fmtQty(double n) =>
+      n % 1 == 0 ? n.toInt().toString() : n.toStringAsFixed(1);
+
+  String get _itemsSummary {
+    if (proposal.items.isEmpty) return 'Proposal';
+    return proposal.items
+        .map((i) => '${_fmtQty(i.quantity)}× ${i.itemName}')
+        .join(', ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = isDark ? AppColors.darkSurface : Colors.white;
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final border = isDark ? AppColors.darkBorder : AppColors.border;
+    final isPending = proposal.status.toUpperCase() == 'PENDING';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: surface,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: border),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _itemsSummary,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          _ProposalStatusChip(status: proposal.status),
+                          if (proposal.totalPrice > 0) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              _fmtQty(proposal.totalPrice),
+                              style: TextStyle(
+                                fontFamily: 'Manrope',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (proposal.hasAvailableChat)
+                  const Icon(Icons.chat_bubble_outline_rounded,
+                      size: 18, color: AppColors.primary)
+                else if (isPending)
+                  Row(
+                    children: const [
+                      Text('Review',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          )),
+                      Icon(Icons.chevron_right_rounded,
+                          size: 18, color: AppColors.primary),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProposalStatusChip extends StatelessWidget {
+  final String status;
+  const _ProposalStatusChip({required this.status});
+
+  Color get _c => switch (status.toUpperCase()) {
+        'PENDING' => AppColors.warning,
+        'ACCEPTED' => AppColors.info,
+        'REJECTED' => AppColors.error,
+        'WITHDRAWN' => AppColors.textDisabled,
+        _ => AppColors.textSecondary,
+      };
+
+  String get _label => switch (status.toUpperCase()) {
+        'PENDING' => 'Pending',
+        'ACCEPTED' => 'Accepted',
+        'REJECTED' => 'Rejected',
+        'WITHDRAWN' => 'Withdrawn',
+        _ => status,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: _c.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        _label,
+        style: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: _c,
+        ),
       ),
     );
   }

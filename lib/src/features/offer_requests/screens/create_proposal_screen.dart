@@ -396,6 +396,7 @@ class CreateProposalScreen extends StatelessWidget {
                               if (state.isValid) {
                                 cubit.submit();
                               } else {
+                                print("What is the error: ${cubit.markErrors()}");
                                 showMissingFields(
                                     context, cubit.markErrors());
                               }

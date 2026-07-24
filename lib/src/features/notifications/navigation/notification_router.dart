@@ -40,7 +40,9 @@ Future<void> routeNotification(
   final t = (type ?? '').toUpperCase();
   switch ((refType ?? '').toUpperCase()) {
     case 'MATCH':
-      if (t == 'MATCH_IN_PROGRESS' || t == 'MATCH_DELIVERED') {
+      if (t == 'MATCH_IN_PROGRESS' ||
+          t == 'MATCH_CARRIER_DELIVERED' ||
+          t == 'MATCH_DELIVERED') {
         _openDeliveryTracking(ctx);
       } else {
         await _openMatch(ctx, id);

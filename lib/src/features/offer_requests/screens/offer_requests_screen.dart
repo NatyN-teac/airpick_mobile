@@ -5,6 +5,8 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
+import '../../home/cubit/engagement_cubit.dart';
+import '../../home/cubit/nav_cubit.dart';
 import '../../home/widgets/create_fab.dart';
 import '../cubit/offer_requests_cubit.dart';
 import '../models/offer_request_models.dart';
@@ -207,14 +209,36 @@ class _StatusFilterBar extends StatelessWidget {
   }
 }
 
-// Pushes the view-only detail screen.
+// Pushes the request detail screen. Pass showProposals when the owner opens their
+// own request so it lists the proposals received.
 Future<void> openOfferRequestDetail(
   BuildContext context,
-  OfferRequestResponse request,
-) {
+  OfferRequestResponse request, {
+  bool showProposals = false,
+}) {
+  final screen = OfferRequestDetailScreen(
+    request: request,
+    showProposals: showProposals,
+  );
+  if (!showProposals) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => screen),
+    );
+  }
+  // The proposal accept/reject flow (ProposalEngagementDialog) reads EngagementCubit
+  // and NavCubit from context; the pushed route sits above the home subtree that
+  // owns them, so hand them down explicitly.
+  final engagementCubit = context.read<EngagementCubit>();
+  final navCubit = context.read<NavCubit>();
   return Navigator.of(context).push(
     MaterialPageRoute(
-      builder: (_) => OfferRequestDetailScreen(request: request),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: engagementCubit),
+          BlocProvider.value(value: navCubit),
+        ],
+        child: screen,
+      ),
     ),
   );
 }
@@ -247,7 +271,8 @@ class _RequestsList extends StatelessWidget {
               final isNew = req.id == latestId;
               final card = GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => openOfferRequestDetail(context, req),
+                onTap: () =>
+                    openOfferRequestDetail(context, req, showProposals: true),
                 child: _OfferRequestCard(
                   request: req,
                   isDark: isDark,

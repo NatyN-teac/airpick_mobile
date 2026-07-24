@@ -102,7 +102,10 @@ class _OffersScreenState extends State<OffersScreen> {
             behavior: HitTestBehavior.opaque,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => OfferDetailScreen(offer: offer),
+                builder: (_) => OfferDetailScreen(
+                  offer: offer,
+                  showMatches: true,
+                ),
               ),
             ),
             child: _MyOfferCard(
@@ -485,12 +488,52 @@ class _MyOfferCardState extends State<_MyOfferCard>
                         color: textTertiary,
                       ),
                     ),
+                    if (o.matchCount > 0) ...[
+                      const SizedBox(width: 8),
+                      _MatchCountBadge(count: o.matchCount),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Circular badge showing how many active matches an offer has.
+class _MatchCountBadge extends StatelessWidget {
+  final int count;
+  const _MatchCountBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.info.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.handshake_rounded,
+            size: 11,
+            color: AppColors.info,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            count > 99 ? '99+' : '$count',
+            style: const TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.info,
+            ),
+          ),
+        ],
       ),
     );
   }

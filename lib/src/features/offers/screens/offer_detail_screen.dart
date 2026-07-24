@@ -1,23 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:airpick/l10n/app_localizations.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../chat/screens/chat_screen.dart';
+import '../../matches/models/match_models.dart';
+import '../../matches/repository/match_repository.dart';
 import '../cubit/offers_cubit.dart';
 import '../models/offer_response.dart';
+import '../widgets/offer_match_row.dart';
 
-class OfferDetailScreen extends StatelessWidget {
+class OfferDetailScreen extends StatefulWidget {
   final OfferResponse offer;
   final bool showMatchAction;
   final VoidCallback? onMatch;
+  // When true (carrier viewing their own offer), loads and shows the offer's
+  // matches. Requires offer ownership — GET /matches/offer/{id} is owner-scoped.
+  final bool showMatches;
 
   const OfferDetailScreen({
     super.key,
     required this.offer,
     this.showMatchAction = false,
     this.onMatch,
+    this.showMatches = false,
   });
 
   @override
+  State<OfferDetailScreen> createState() => _OfferDetailScreenState();
+}
+
+class _OfferDetailScreenState extends State<OfferDetailScreen> {
+  List<MatchResponse> _matches = const [];
+  bool _loadingMatches = false;
+  String? _matchesError;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.showMatches) _loadMatches();
+  }
+
+  Future<void> _loadMatches() async {
+    setState(() {
+      _loadingMatches = true;
+      _matchesError = null;
+    });
+    try {
+      final matches =
+          await context.read<MatchRepository>().getMatchesByOffer(widget.offer.id);
+      if (!mounted) return;
+      setState(() {
+        _matches = matches;
+        _loadingMatches = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadingMatches = false;
+        _matchesError = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  // Tap a match: eligible → chat; pending → accept/reject (carrier owns the
+  // offer, so they're always the carrier here) — mirrors the engagement flow.
+  Future<void> _onMatchTap(MatchResponse match) async {
+    if (match.hasAvailableChat) {
+      openChatScreen(context, match.id, initialMatch: match);
+      return;
+    }
+    if (match.status.toUpperCase() == 'PENDING') {
+      final changed = await showOfferMatchActions(context, match);
+      if (changed == true) _loadMatches();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final offer = widget.offer;
+    final showMatchAction = widget.showMatchAction;
+    final onMatch = widget.onMatch;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
     final l = l10n(context);
@@ -70,25 +133,19 @@ class OfferDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            _Tile(Icons.flight_takeoff_rounded, l.pickupArea, offer.pickupArea,
-                isDark),
-            _Tile(Icons.flight_land_rounded, l.deliveryArea, offer.deliveryArea,
-                isDark),
-            _Tile(Icons.bolt_rounded, l.urgencyLevel, offer.urgencyLabel, isDark),
-            _Tile(Icons.payments_rounded, l.offerCurrency, offer.currency, isDark),
-            if (offer.discount != null && offer.discount! > 0)
-              _Tile(Icons.local_offer_rounded, l.offerDiscountLabel,
-                  '${offer.currency} ${offer.discount!.toStringAsFixed(2)}', isDark),
-            if (offer.paymentMethods.isNotEmpty)
-              _Tile(Icons.account_balance_wallet_rounded, l.offerPayment,
-                  offer.paymentMethods.join(', '), isDark),
-            if (offer.meetupPlaces.isNotEmpty)
-              _Tile(Icons.place_rounded, l.offerMeetup,
-                  offer.meetupPlaces.join(', '), isDark),
+            // Compact two-column grid of offer details.
+            _buildDetailsGrid(offer, l, isDark),
             if (offer.specialNote?.isNotEmpty == true)
               _Tile(Icons.sticky_note_2_outlined, l.offerNote, offer.specialNote!,
                   isDark),
             const SizedBox(height: 20),
+
+            // ── Matches (before items, for a nicer flow) ──────────
+            if (widget.showMatches) ...[
+              _buildMatchesSection(
+                  context, isDark, textPrimary, textSecondary),
+              const SizedBox(height: 24),
+            ],
 
             // ── Items ─────────────────────────────────────────────
             Row(
@@ -181,6 +238,123 @@ class OfferDetailScreen extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  // Lays the short offer-detail fields out two-per-row so the screen stays
+  // compact and the matches list surfaces higher up.
+  Widget _buildDetailsGrid(OfferResponse offer, AppLocalizations l, bool isDark) {
+    final entries = <(IconData, String, String)>[
+      (Icons.flight_takeoff_rounded, l.pickupArea, offer.pickupArea),
+      (Icons.flight_land_rounded, l.deliveryArea, offer.deliveryArea),
+      (Icons.bolt_rounded, l.urgencyLevel, offer.urgencyLabel),
+      (Icons.payments_rounded, l.offerCurrency, offer.currency),
+      if (offer.discount != null && offer.discount! > 0)
+        (
+          Icons.local_offer_rounded,
+          l.offerDiscountLabel,
+          '${offer.currency} ${offer.discount!.toStringAsFixed(2)}'
+        ),
+      if (offer.paymentMethods.isNotEmpty)
+        (
+          Icons.account_balance_wallet_rounded,
+          l.offerPayment,
+          offer.paymentMethods.join(', ')
+        ),
+      if (offer.meetupPlaces.isNotEmpty)
+        (Icons.place_rounded, l.offerMeetup, offer.meetupPlaces.join(', ')),
+    ].where((e) => e.$3.trim().isNotEmpty).toList();
+
+    final rows = <Widget>[];
+    for (var i = 0; i < entries.length; i += 2) {
+      final left = entries[i];
+      final right = i + 1 < entries.length ? entries[i + 1] : null;
+      rows.add(Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: _Tile(left.$1, left.$2, left.$3, isDark)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: right == null
+                ? const SizedBox.shrink()
+                : _Tile(right.$1, right.$2, right.$3, isDark),
+          ),
+        ],
+      ));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: rows,
+    );
+  }
+
+  Widget _buildMatchesSection(
+    BuildContext context,
+    bool isDark,
+    Color textPrimary,
+    Color textSecondary,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Matches',
+              style: TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
+                letterSpacing: -0.2,
+              ),
+            ),
+            if (_matches.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Text(
+                '· ${_matches.length}',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontSize: 12,
+                  color: textSecondary,
+                ),
+              ),
+            ],
+            const Spacer(),
+            if (_loadingMatches)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_matchesError != null)
+          _matchesInfo(_matchesError!, textSecondary, isError: true)
+        else if (!_loadingMatches && _matches.isEmpty)
+          _matchesInfo('No matches yet on this offer.', textSecondary)
+        else
+          ..._matches.map(
+            (m) => OfferMatchRow(
+              match: m,
+              isDark: isDark,
+              onTap: () => _onMatchTap(m),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _matchesInfo(String text, Color textSecondary, {bool isError = false}) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontFamily: 'Manrope',
+        fontSize: 13,
+        color: isError ? AppColors.error : textSecondary,
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/l10n/l10n.dart';
@@ -159,6 +161,7 @@ class OfferFormStep extends StatelessWidget {
                         onCreate: cubit.createAndSelectItem,
                       );
                       if (selected.isNotEmpty) cubit.addItems(selected);
+                      print("SElected items: ${selected}");
                     },
                     child: Row(
                       children: [
@@ -835,7 +838,7 @@ class _ItemRow extends StatelessWidget {
   }
 }
 
-class _MiniField extends StatelessWidget {
+class _MiniField extends StatefulWidget {
   final bool isDark;
   final String hint;
   final String? initialValue;
@@ -851,20 +854,107 @@ class _MiniField extends StatelessWidget {
   });
 
   @override
+  State<_MiniField> createState() => _MiniFieldState();
+}
+
+class _MiniFieldState extends State<_MiniField> with WidgetsBindingObserver {
+  final FocusNode _focusNode = FocusNode();
+  OverlayEntry? _doneBar;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  // Keep the bar pinned above the keyboard as it animates open/closed.
+  @override
+  void didChangeMetrics() => _doneBar?.markNeedsBuild();
+
+  void _onFocusChange() {
+    // iOS number pads have no dismiss key — add a "Done" bar above the keyboard.
+    if (defaultTargetPlatform != TargetPlatform.iOS) return;
+    if (_focusNode.hasFocus) {
+      _insertDoneBar();
+    } else {
+      _removeDoneBar();
+    }
+  }
+
+  void _insertDoneBar() {
+    if (_doneBar != null) return;
+    _doneBar = OverlayEntry(
+      builder: (ctx) {
+        final inset = MediaQuery.of(ctx).viewInsets.bottom;
+        if (inset <= 0) return const SizedBox.shrink();
+        return Positioned(
+          left: 0,
+          right: 0,
+          bottom: inset,
+          child: Material(
+            color: widget.isDark
+                ? AppColors.darkSurface
+                : const Color(0xFFF2F2F7),
+            child: SizedBox(
+              height: 44,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => _focusNode.unfocus(),
+                    child: const Text(
+                      'Done',
+                      style: TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    Overlay.of(context, rootOverlay: true).insert(_doneBar!);
+  }
+
+  void _removeDoneBar() {
+    _doneBar?.remove();
+    _doneBar = null;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _removeDoneBar();
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = widget.isDark;
     final surface = isDark ? AppColors.darkSurface : Colors.white;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
     final textPrimary =
         isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
 
     return TextFormField(
-      initialValue: initialValue,
-      onChanged: onChanged,
-      keyboardType: keyboardType,
-      style: TextStyle(
-          fontFamily: 'Manrope', fontSize: 12, color: textPrimary),
-      decoration: InputDecoration(
-        hintText: hint,
+        focusNode: _focusNode,
+        initialValue: widget.initialValue,
+        onChanged: widget.onChanged,
+        keyboardType: widget.keyboardType,
+        style: TextStyle(
+            fontFamily: 'Manrope', fontSize: 12, color: textPrimary),
+        decoration: InputDecoration(
+        hintText: widget.hint,
         hintStyle: TextStyle(
             fontFamily: 'Manrope',
             fontSize: 12,

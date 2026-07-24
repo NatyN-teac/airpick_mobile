@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 
 import '../models/offer_models.dart';
@@ -62,6 +63,7 @@ class OfferRepository {
     final response = await _client.get('/offers/me');
     final list =
         (response['content'] ?? response['data'] ?? []) as List<dynamic>;
+
     return list
         .map((e) => OfferResponse.fromJson(e as Map<String, dynamic>))
         .toList();

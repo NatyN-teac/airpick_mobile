@@ -197,4 +197,14 @@ class ProfileSnapshot {
       (lastName?.trim().isNotEmpty ?? false) ||
       (profilePictureUrl?.trim().isNotEmpty ?? false) ||
       email.isNotEmpty;
+
+  /// True when a mandatory basic field is still missing — drives the one-time
+  /// "complete your profile" prompt on the home screen.
+  bool get needsBasicInfo =>
+      _isBlank(firstName) ||
+      _isBlank(lastName) ||
+      _isBlank(dob) ||
+      _isBlank(country);
+
+  static bool _isBlank(String? v) => v == null || v.trim().isEmpty;
 }

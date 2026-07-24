@@ -8,7 +8,10 @@ class UploadRepository {
 
   UploadRepository(this._client);
 
-  /// POST /api/v1/uploads — returns a public URL for the uploaded file.
+  /// POST /api/v1/uploads — stores the file in a private bucket and returns an
+  /// opaque object *reference* (not a directly loadable URL). Persist this
+  /// reference (e.g. as a receiver's photoIdUrl); view it later by exchanging it
+  /// for a short-lived signed URL through the owning resource.
   Future<String> uploadFile(File file) async {
     final name = file.path.split('/').last;
     final formData = FormData.fromMap({
@@ -18,9 +21,13 @@ class UploadRepository {
     final content = response['content'] ?? response['data'];
     if (content is String && content.isNotEmpty) return content;
     if (content is Map<String, dynamic>) {
-      final url = content['url'] ?? content['fileUrl'] ?? content['photoIdUrl'];
-      if (url is String && url.isNotEmpty) return url;
+      // New private-upload shape returns `reference`; keep legacy fallbacks.
+      final ref = content['reference'] ??
+          content['url'] ??
+          content['fileUrl'] ??
+          content['photoIdUrl'];
+      if (ref is String && ref.isNotEmpty) return ref;
     }
-    throw Exception('Upload succeeded but no URL was returned.');
+    throw Exception('Upload succeeded but no reference was returned.');
   }
 }

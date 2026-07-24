@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/time_format.dart';
 
 enum NotificationType {
   match,
@@ -72,7 +73,7 @@ class AppNotification {
       title: (json['title'] ?? '').toString(),
       body: (json['body'] ?? '').toString(),
       time: created != null && created.isNotEmpty
-          ? (DateTime.tryParse(created) ?? DateTime.now())
+          ? (TimeFormat.parseServerTime(created) ?? DateTime.now())
           : DateTime.now(),
       read: json['isRead'] == true,
       rawType: rawType,
@@ -115,6 +116,7 @@ NotificationType _displayTypeFrom(String backendType) {
     case 'MATCH_CANCELLED':
       return NotificationType.match;
     case 'MATCH_IN_PROGRESS':
+    case 'MATCH_CARRIER_DELIVERED':
     case 'MATCH_DELIVERED':
       return NotificationType.delivery;
     case 'NEW_MESSAGE':
