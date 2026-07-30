@@ -43,7 +43,6 @@ class FirebaseAuthService {
       debugPrint("GET TOKEN: signing with google");
       return await _getFirebaseToken(userCredential);
     } on GoogleSignInException catch (e) {
-      print("Exception AUTH: ${e}");
       if (e.code == GoogleSignInExceptionCode.canceled) {
         throw const AuthCancelledException('Google');
       }
@@ -86,11 +85,13 @@ class FirebaseAuthService {
       // Apple only returns the user's name on the very first authorization.
       // When present, persist it to the Firebase profile so downstream
       // registration has a display name instead of a blank.
-      final fullName = appleCredential.givenName != null ||
+      final fullName =
+          appleCredential.givenName != null ||
               appleCredential.familyName != null
-          ? [appleCredential.givenName, appleCredential.familyName]
-              .where((p) => p != null && p.isNotEmpty)
-              .join(' ')
+          ? [
+              appleCredential.givenName,
+              appleCredential.familyName,
+            ].where((p) => p != null && p.isNotEmpty).join(' ')
           : null;
       if (fullName != null &&
           fullName.isNotEmpty &&
@@ -104,9 +105,7 @@ class FirebaseAuthService {
       if (e.code == AuthorizationErrorCode.canceled) {
         throw const AuthCancelledException('Apple');
       }
-      throw AuthConfigurationException(
-        'Apple sign-in failed: ${e.message}',
-      );
+      throw AuthConfigurationException('Apple sign-in failed: ${e.message}');
     } on SignInWithAppleNotSupportedException catch (e) {
       throw AuthConfigurationException(
         'Apple sign-in is not available on this device: ${e.message}',

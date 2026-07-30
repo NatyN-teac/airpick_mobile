@@ -1,6 +1,3 @@
-import 'package:flutter/foundation.dart';
-import 'package:logger/logger.dart';
-
 import '../models/offer_models.dart';
 import '../models/offer_response.dart';
 import '../../../core/network/api_client.dart';
@@ -45,7 +42,8 @@ class OfferRepository {
         ? ''
         : '?${params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&')}';
     final response = await _client.get('/search/carrier$query');
-    final list = (response['content'] ?? response['data'] ?? []) as List<dynamic>;
+    final list =
+        (response['content'] ?? response['data'] ?? []) as List<dynamic>;
     return list
         .map((e) => OfferResponse.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -55,7 +53,8 @@ class OfferRepository {
   // GET /api/v1/offers/{offerId} — single offer, for deep-linking.
   Future<OfferResponse> fetchOfferById(String id) async {
     final response = await _client.get('/offers/$id');
-    final data = (response['content'] ?? response['data']) as Map<String, dynamic>;
+    final data =
+        (response['content'] ?? response['data']) as Map<String, dynamic>;
     return OfferResponse.fromJson(data);
   }
 

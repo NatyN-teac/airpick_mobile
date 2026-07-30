@@ -107,8 +107,8 @@ class AirpickApp extends StatelessWidget {
         RepositoryProvider<ApiClient>(create: (_) => apiClient),
         RepositoryProvider<DeviceRegistrationService>(
           lazy: false,
-          create: (_) => DeviceRegistrationService(apiClient, tokenStorage)
-            ..start(),
+          create: (_) =>
+              DeviceRegistrationService(apiClient, tokenStorage)..start(),
         ),
         RepositoryProvider<IAuthRepository>(
           create: (_) => AuthRepository(

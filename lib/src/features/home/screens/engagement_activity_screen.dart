@@ -67,10 +67,20 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
         backgroundColor: bg,
         elevation: 0,
         scrolledUnderElevation: 0,
+        // The label is localised, so it must never be squeezed into a fixed
+        // box — a clamped leadingWidth wrapped "Cancel" onto two lines.
         leading: TextButton(
           onPressed: () => Navigator.of(context).pop(),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
           child: Text(
             l10n(context).cancel,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.fade,
             style: TextStyle(
               fontFamily: 'Manrope',
               fontSize: 14,
@@ -79,7 +89,7 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
             ),
           ),
         ),
-        leadingWidth: 72,
+        leadingWidth: 96,
         title: Text(
           l10n(context).viewAll,
           style: TextStyle(

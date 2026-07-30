@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/notifications/app_notifications.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../auth/models/user_model.dart';
 import '../../settings/repository/settings_repository.dart';
@@ -51,10 +50,9 @@ class CurrentUserCubit extends Cubit<ProfileSnapshot?> {
   void updateVerification({required bool isVerified, String? status}) {
     final current = state;
     if (current == null) return;
-    updateProfile(current.copyWith(
-      isVerified: isVerified,
-      verificationStatus: status,
-    ));
+    updateProfile(
+      current.copyWith(isVerified: isVerified, verificationStatus: status),
+    );
   }
 
   void clear() {

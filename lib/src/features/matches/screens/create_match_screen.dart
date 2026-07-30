@@ -93,21 +93,24 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
 
   void _onSuccessDismiss(BuildContext context, MatchResponse result) {
     widget.onMatched(result);
-    // Return to the home stack, then open the match chat so the sender and
-    // carrier can coordinate pickup and delivery — they can arrange the pickup
-    // later from that conversation rather than losing the thread here.
+    // Return to the home stack. A brand-new match is PENDING until the carrier
+    // accepts it, so there is no chat room to open yet — pushing into one only
+    // stranded the user on the "waiting for the carrier" screen. Confirm with a
+    // snackbar instead; the chat opens from the accept flow (and the Chats tab).
     Navigator.of(context).popUntil((route) => route.isFirst);
-    final matchId = result.id;
-    if (matchId.isEmpty) return;
+    if (result.id.isEmpty) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ctx = appNavigatorKey.currentContext;
-      if (ctx != null) {
+      if (ctx == null) return;
+      if (result.hasAvailableChat) {
         openChatScreen(
           ctx,
-          matchId,
+          result.id,
           welcomeMessage: buildMatchWelcomeMessage(result),
           initialMatch: result,
         );
+      } else {
+        showMatchPendingNotice(ctx);
       }
     });
   }

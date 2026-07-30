@@ -13,7 +13,10 @@
       "Bash(flutter gen-l10n *)",
       "Bash(python3 *)",
       "Bash(sed -n '70,95p' lib/src/features/offers/widgets/create_offer_bubble.dart)",
-      "Bash(sed -n '/Future<void> showCreateOfferBubble/,/^\\) async {/p' lib/src/features/offers/widgets/create_offer_bubble.dart)"
+      "Bash(sed -n '/Future<void> showCreateOfferBubble/,/^\\) async {/p' lib/src/features/offers/widgets/create_offer_bubble.dart)",
+      "mcp__codebase-memory-mcp__list_projects",
+      "mcp__codebase-memory-mcp__index_repository",
+      "mcp__codebase-memory-mcp__search_code"
     ]
   }
 }

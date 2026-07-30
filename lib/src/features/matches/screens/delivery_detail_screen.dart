@@ -580,12 +580,21 @@ Future<void> showReceiverIdViewer(
   return Navigator.of(context).push(
     MaterialPageRoute(
       fullscreenDialog: true,
-      builder: (_) => Scaffold(
+      builder: (viewerContext) => Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
+          // The global AppBarTheme sets iconTheme, which takes precedence over
+          // foregroundColor — without this override the close button renders in
+          // near-black on the black bar and looks like there's no way out.
+          iconTheme: const IconThemeData(color: Colors.white),
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close_rounded, color: Colors.white),
+            tooltip: MaterialLocalizations.of(viewerContext).closeButtonTooltip,
+            onPressed: () => Navigator.of(viewerContext).pop(),
+          ),
           title: Text(
             title,
             style: const TextStyle(

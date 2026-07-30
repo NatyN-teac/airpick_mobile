@@ -272,9 +272,7 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                                   ),
                                   const SizedBox(height: 14),
                                   Text(
-                                    starting
-                                        ? l.avPreparing
-                                        : l.avChecking,
+                                    starting ? l.avPreparing : l.avChecking,
                                     style: TextStyle(
                                       fontFamily: 'Manrope',
                                       fontSize: 14,
