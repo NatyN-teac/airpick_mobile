@@ -9,7 +9,7 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appName => 'Airpick';
+  String get appName => 'GuzoMy';
 
   @override
   String get skip => 'Passer';
@@ -257,7 +257,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileAbout => 'À propos';
 
   @override
-  String get profileAboutSub => 'En savoir plus sur Airpick';
+  String get profileAboutSub => 'En savoir plus sur GuzoMy';
 
   @override
   String get profileCloseAccount => 'Fermer le compte';
@@ -279,7 +279,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get modeChooseSubtitle =>
-      'Choisissez comment utiliser Airpick. Votre profil et votre écran d’accueil se mettent à jour instantanément.';
+      'Choisissez comment utiliser GuzoMy. Votre profil et votre écran d’accueil se mettent à jour instantanément.';
 
   @override
   String aboutVersion(Object version) {
@@ -287,11 +287,11 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get aboutSectionTitle => 'À propos d’Airpick';
+  String get aboutSectionTitle => 'À propos d’GuzoMy';
 
   @override
   String get aboutBody =>
-      'Airpick met en relation les voyageurs et les expéditeurs pour une livraison de colis sécurisée entre particuliers, d’un aéroport à l’autre. Que vous voyagiez et puissiez transporter des articles, ou que vous ayez besoin d’une livraison, Airpick vous aide à trouver des partenaires de confiance.';
+      'GuzoMy met en relation les voyageurs et les expéditeurs pour une livraison de colis sécurisée entre particuliers, d’un aéroport à l’autre. Que vous voyagiez et puissiez transporter des articles, ou que vous ayez besoin d’une livraison, GuzoMy vous aide à trouver des partenaires de confiance.';
 
   @override
   String get aboutKeyFeatures => 'Fonctionnalités clés';
@@ -431,8 +431,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get modePickerTitle => 'Changer de mode';
 
   @override
-  String get modePickerQuestion =>
-      'Comment utilisez-vous Airpick aujourd’hui ?';
+  String get modePickerQuestion => 'Comment utilisez-vous GuzoMy aujourd’hui ?';
 
   @override
   String get active => 'Actif';
@@ -534,7 +533,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get avVerifiedSub =>
-      'Votre identité est confirmée. Vous êtes prêt sur Airpick.';
+      'Votre identité est confirmée. Vous êtes prêt sur GuzoMy.';
 
   @override
   String get avCouldNotLoad => 'Impossible de charger la vérification';
@@ -557,7 +556,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get avStatusVerifiedBody =>
-      'Votre identité a été confirmée. Merci de contribuer à la sécurité d’Airpick.';
+      'Votre identité a été confirmée. Merci de contribuer à la sécurité d’GuzoMy.';
 
   @override
   String get avStatusReviewTitle => 'Examen en cours';

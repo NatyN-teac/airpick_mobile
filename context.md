@@ -1,4 +1,4 @@
-# Airpick Flutter App — Session Context
+# GuzoMy Flutter App — Session Context
 
 ## What this app is
 Peer-to-peer luggage/package delivery marketplace. Travelers (carriers) carry items for senders between airports. Think "human courier network". Old reference project lives at `/Users/nate/Documents/airdash`.
@@ -529,6 +529,6 @@ Mirrors the offer-requests flow, for carrier-created offers.
 
 **Engagements (home tab)** — replaced the scrollable `_EngagementList` with a **non-scrollable `_EngagementTeaser`**: a single attention-seeking card (primary-tinted gradient, pulsing glow via one repeating `AnimationController`, a "live" success dot, count + latest-engagement peek) with a gradient **"See all →"** pill. Tapping it (or the section header's See all) pushes `_EngagementsScreen` (the full scrollable list of `_EngagementCard`s). Users must tap See all to view details — the home only teases.
 
-**Animated splash** — `_LoadingView` (shown during `AppLoading`) is now an animated splash: logo (`assets/logo_me.png`) scale+fade-in (entrance controller) + **"Airpick" with a shimmer sweep** (ShaderMask + repeating gradient) + tagline. Performant (2 controllers, no heavy effects). **Native splash** (the pre-Flutter OS splash that showed the default Flutter logo) replaced via `flutter_native_splash` (config in pubspec, logo + white/dark colors); regenerate with `dart run flutter_native_splash:create`.
+**Animated splash** — `_LoadingView` (shown during `AppLoading`) is now an animated splash: logo (`assets/logo_me.png`) scale+fade-in (entrance controller) + **"GuzoMy" with a shimmer sweep** (ShaderMask + repeating gradient) + tagline. Performant (2 controllers, no heavy effects). **Native splash** (the pre-Flutter OS splash that showed the default Flutter logo) replaced via `flutter_native_splash` (config in pubspec, logo + white/dark colors); regenerate with `dart run flutter_native_splash:create`.
 
 **Apple sign-in** — already implemented in `auth_screen.dart`: `_showAppleButton` = `Platform.isIOS || Platform.isMacOS`, so iPhone shows BOTH Google + Apple, Android shows Google only. Bloc/repo (`AuthAppleSignInRequested` → `signInWithApple`) were already wired. No change needed.

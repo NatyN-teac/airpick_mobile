@@ -199,7 +199,7 @@ class AirpickApp extends StatelessWidget {
             return BlocBuilder<LocaleCubit, Locale>(
               builder: (context, locale) {
                 return MaterialApp(
-                  title: 'Airpick',
+                  title: 'GuzoMy',
                   debugShowCheckedModeBanner: false,
                   navigatorKey: appNavigatorKey,
                   theme: AppTheme.light,

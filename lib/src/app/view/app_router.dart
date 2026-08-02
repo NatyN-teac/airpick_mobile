@@ -172,7 +172,7 @@ class _LoadingViewState extends State<_LoadingView>
               ),
             ),
             const SizedBox(height: 14),
-            // "Airpick" — solid text with a single shimmer sweep
+            // "GuzoMy" — solid text with a single shimmer sweep
             FadeTransition(
               opacity: _fade,
               child: AnimatedBuilder(
@@ -180,7 +180,7 @@ class _LoadingViewState extends State<_LoadingView>
                 builder: (context, _) {
                   final running = _shimmer.value > 0 && _shimmer.value < 1;
                   if (!running) {
-                    return Text('Airpick',
+                    return Text('GuzoMy',
                         style: TextStyle(
                           fontFamily: 'Manrope',
                           fontSize: 34,
@@ -204,7 +204,7 @@ class _LoadingViewState extends State<_LoadingView>
                     ).createShader(
                         Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
                     child: const Text(
-                      'Airpick',
+                      'GuzoMy',
                       style: TextStyle(
                         fontFamily: 'Manrope',
                         fontSize: 34,

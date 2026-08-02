@@ -105,7 +105,7 @@ abstract class AppLocalizations {
   /// Application name
   ///
   /// In en, this message translates to:
-  /// **'Airpick'**
+  /// **'GuzoMy'**
   String get appName;
 
   /// No description provided for @skip.
@@ -579,7 +579,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileAboutSub.
   ///
   /// In en, this message translates to:
-  /// **'Learn more about Airpick'**
+  /// **'Learn more about GuzoMy'**
   String get profileAboutSub;
 
   /// No description provided for @profileCloseAccount.
@@ -621,7 +621,7 @@ abstract class AppLocalizations {
   /// No description provided for @modeChooseSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Select how you want to use Airpick. Your profile and home screen update instantly.'**
+  /// **'Select how you want to use GuzoMy. Your profile and home screen update instantly.'**
   String get modeChooseSubtitle;
 
   /// App version label
@@ -633,13 +633,13 @@ abstract class AppLocalizations {
   /// No description provided for @aboutSectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'About Airpick'**
+  /// **'About GuzoMy'**
   String get aboutSectionTitle;
 
   /// No description provided for @aboutBody.
   ///
   /// In en, this message translates to:
-  /// **'Airpick connects travelers and senders for secure, peer-to-peer package delivery between airports. Whether you are traveling and can carry items, or need something delivered, Airpick helps you find trusted matches.'**
+  /// **'GuzoMy connects travelers and senders for secure, peer-to-peer package delivery between airports. Whether you are traveling and can carry items, or need something delivered, GuzoMy helps you find trusted matches.'**
   String get aboutBody;
 
   /// No description provided for @aboutKeyFeatures.
@@ -885,7 +885,7 @@ abstract class AppLocalizations {
   /// No description provided for @modePickerQuestion.
   ///
   /// In en, this message translates to:
-  /// **'How are you using Airpick today?'**
+  /// **'How are you using GuzoMy today?'**
   String get modePickerQuestion;
 
   /// No description provided for @active.
@@ -1077,7 +1077,7 @@ abstract class AppLocalizations {
   /// No description provided for @avVerifiedSub.
   ///
   /// In en, this message translates to:
-  /// **'Your identity is confirmed. You\'re all set on Airpick.'**
+  /// **'Your identity is confirmed. You\'re all set on GuzoMy.'**
   String get avVerifiedSub;
 
   /// No description provided for @avCouldNotLoad.
@@ -1119,7 +1119,7 @@ abstract class AppLocalizations {
   /// No description provided for @avStatusVerifiedBody.
   ///
   /// In en, this message translates to:
-  /// **'Your identity has been confirmed. Thanks for helping keep Airpick safe.'**
+  /// **'Your identity has been confirmed. Thanks for helping keep GuzoMy safe.'**
   String get avStatusVerifiedBody;
 
   /// No description provided for @avStatusReviewTitle.

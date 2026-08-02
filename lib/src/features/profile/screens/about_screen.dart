@@ -65,7 +65,7 @@ class _AboutScreenState extends State<AboutScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Airpick',
+              'GuzoMy',
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 28,

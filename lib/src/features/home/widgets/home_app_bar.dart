@@ -35,7 +35,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
             Image.asset('assets/logo_me.png', width: 32, height: 32),
             const SizedBox(width: 8),
             Text(
-              'Airpick',
+              'GuzoMy',
               style: TextStyle(
                 fontFamily: 'Manrope',
                 fontSize: 20,

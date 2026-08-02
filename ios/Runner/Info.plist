@@ -7,7 +7,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Airpick</string>
+		<string>GuzoMy</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>airpick</string>
+		<string>GuzoMy</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleURLTypes</key>
@@ -78,11 +78,11 @@
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 		<key>NSCameraUsageDescription</key>
-		<string>Airpick needs camera access to verify your identity with Veriff.</string>
+		<string>GuzoMy needs camera access to verify your identity with Veriff.</string>
 		<key>NSMicrophoneUsageDescription</key>
-		<string>Airpick may use the microphone during identity verification.</string>
+		<string>GuzoMy may use the microphone during identity verification.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>Airpick may access photos if you choose to upload an ID image.</string>
+		<string>GuzoMy may access photos if you choose to upload an ID image.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
 		<key>UIBackgroundModes</key>

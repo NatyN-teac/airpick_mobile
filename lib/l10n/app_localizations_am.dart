@@ -9,7 +9,7 @@ class AppLocalizationsAm extends AppLocalizations {
   AppLocalizationsAm([String locale = 'am']) : super(locale);
 
   @override
-  String get appName => 'Airpick';
+  String get appName => 'GuzoMy';
 
   @override
   String get skip => 'ዝለል';
@@ -252,7 +252,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get profileAbout => 'ስለ';
 
   @override
-  String get profileAboutSub => 'ስለ Airpick የበለጠ ይወቁ';
+  String get profileAboutSub => 'ስለ GuzoMy የበለጠ ይወቁ';
 
   @override
   String get profileCloseAccount => 'መለያ ዝጋ';
@@ -274,7 +274,7 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get modeChooseSubtitle =>
-      'Airpickን እንዴት መጠቀም እንደሚፈልጉ ይምረጡ። መገለጫዎ እና መነሻ ገጽዎ ወዲያውኑ ይዘምናሉ።';
+      'GuzoMyን እንዴት መጠቀም እንደሚፈልጉ ይምረጡ። መገለጫዎ እና መነሻ ገጽዎ ወዲያውኑ ይዘምናሉ።';
 
   @override
   String aboutVersion(Object version) {
@@ -282,11 +282,11 @@ class AppLocalizationsAm extends AppLocalizations {
   }
 
   @override
-  String get aboutSectionTitle => 'ስለ Airpick';
+  String get aboutSectionTitle => 'ስለ GuzoMy';
 
   @override
   String get aboutBody =>
-      'Airpick ተጓዦችንና ላኪዎችን በአውሮፕላን ማረፊያዎች መካከል ደህንነቱ ለተጠበቀ አቻ-ለ-አቻ የእሽግ ዴሊቨሪ ያገናኛል። እየተጓዙ እቃ መያዝ ቢችሉም ሆነ የሚደርስልዎ ነገር ቢፈልጉ፣ Airpick የታመኑ አጋሮችን እንዲያገኙ ይረዳዎታል።';
+      'GuzoMy ተጓዦችንና ላኪዎችን በአውሮፕላን ማረፊያዎች መካከል ደህንነቱ ለተጠበቀ አቻ-ለ-አቻ የእሽግ ዴሊቨሪ ያገናኛል። እየተጓዙ እቃ መያዝ ቢችሉም ሆነ የሚደርስልዎ ነገር ቢፈልጉ፣ GuzoMy የታመኑ አጋሮችን እንዲያገኙ ይረዳዎታል።';
 
   @override
   String get aboutKeyFeatures => 'ዋና ዋና ባህሪያት';
@@ -418,7 +418,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get modePickerTitle => 'ሁነታ ቀይር';
 
   @override
-  String get modePickerQuestion => 'ዛሬ Airpickን እንዴት እየተጠቀሙ ነው?';
+  String get modePickerQuestion => 'ዛሬ GuzoMyን እንዴት እየተጠቀሙ ነው?';
 
   @override
   String get active => 'ንቁ';
@@ -517,7 +517,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get avVerifiedTitle => 'ተረጋግጠዋል!';
 
   @override
-  String get avVerifiedSub => 'ማንነትዎ ተረጋግጧል። በAirpick ላይ ዝግጁ ነዎት።';
+  String get avVerifiedSub => 'ማንነትዎ ተረጋግጧል። በGuzoMy ላይ ዝግጁ ነዎት።';
 
   @override
   String get avCouldNotLoad => 'ማረጋገጫ መጫን አልተቻለም';
@@ -539,7 +539,7 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get avStatusVerifiedBody =>
-      'ማንነትዎ ተረጋግጧል። Airpickን ደህንነቱ የተጠበቀ ለማድረግ ስለረዱ እናመሰግናለን።';
+      'ማንነትዎ ተረጋግጧል። GuzoMyን ደህንነቱ የተጠበቀ ለማድረግ ስለረዱ እናመሰግናለን።';
 
   @override
   String get avStatusReviewTitle => 'ግምገማ በሂደት ላይ';

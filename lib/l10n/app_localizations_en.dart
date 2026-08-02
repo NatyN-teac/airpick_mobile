@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Airpick';
+  String get appName => 'GuzoMy';
 
   @override
   String get skip => 'Skip';
@@ -255,7 +255,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAbout => 'About';
 
   @override
-  String get profileAboutSub => 'Learn more about Airpick';
+  String get profileAboutSub => 'Learn more about GuzoMy';
 
   @override
   String get profileCloseAccount => 'Close account';
@@ -277,7 +277,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get modeChooseSubtitle =>
-      'Select how you want to use Airpick. Your profile and home screen update instantly.';
+      'Select how you want to use GuzoMy. Your profile and home screen update instantly.';
 
   @override
   String aboutVersion(Object version) {
@@ -285,11 +285,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get aboutSectionTitle => 'About Airpick';
+  String get aboutSectionTitle => 'About GuzoMy';
 
   @override
   String get aboutBody =>
-      'Airpick connects travelers and senders for secure, peer-to-peer package delivery between airports. Whether you are traveling and can carry items, or need something delivered, Airpick helps you find trusted matches.';
+      'GuzoMy connects travelers and senders for secure, peer-to-peer package delivery between airports. Whether you are traveling and can carry items, or need something delivered, GuzoMy helps you find trusted matches.';
 
   @override
   String get aboutKeyFeatures => 'Key features';
@@ -425,7 +425,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get modePickerTitle => 'Switch mode';
 
   @override
-  String get modePickerQuestion => 'How are you using Airpick today?';
+  String get modePickerQuestion => 'How are you using GuzoMy today?';
 
   @override
   String get active => 'Active';
@@ -526,7 +526,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avVerifiedSub =>
-      'Your identity is confirmed. You\'re all set on Airpick.';
+      'Your identity is confirmed. You\'re all set on GuzoMy.';
 
   @override
   String get avCouldNotLoad => 'Could not load verification';
@@ -548,7 +548,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avStatusVerifiedBody =>
-      'Your identity has been confirmed. Thanks for helping keep Airpick safe.';
+      'Your identity has been confirmed. Thanks for helping keep GuzoMy safe.';
 
   @override
   String get avStatusReviewTitle => 'Review in progress';

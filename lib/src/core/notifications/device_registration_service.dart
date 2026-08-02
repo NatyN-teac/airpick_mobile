@@ -30,7 +30,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // The plugin isn't initialized in this isolate; set it up before showing.
   await NotificationService.initialize();
   await NotificationService.show(
-    title: title ?? 'Airpick',
+    title: title ?? 'GuzoMy',
     body: body ?? '',
     payload: data.isNotEmpty ? jsonEncode(data) : null,
   );
@@ -98,7 +98,7 @@ class DeviceRegistrationService {
       final body = notification?.body ?? data['body'];
       if (title == null && body == null) return;
       NotificationService.show(
-        title: title ?? 'Airpick',
+        title: title ?? 'GuzoMy',
         body: body ?? '',
         payload: data.isNotEmpty ? jsonEncode(data) : null,
       );

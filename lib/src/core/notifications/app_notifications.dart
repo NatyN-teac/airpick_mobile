@@ -17,7 +17,7 @@ class AppNotifications {
 
   static Future<void> welcome() => NotificationService.show(
         id: _idWelcome,
-        title: 'Welcome to Airpick ✈️',
+        title: 'Welcome to GuzoMy ✈️',
         body: 'Complete verification and set your mode to get started.',
       );
 

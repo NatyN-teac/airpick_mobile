@@ -41,10 +41,10 @@ class AuthScreen extends StatelessWidget {
               context,
               message: state.message,
               onRetry: () => context.read<AuthBloc>().add(
-                    state.providerName == 'Apple'
-                        ? const AuthAppleSignInRequested()
-                        : const AuthGoogleSignInRequested(),
-                  ),
+                state.providerName == 'Apple'
+                    ? const AuthAppleSignInRequested()
+                    : const AuthGoogleSignInRequested(),
+              ),
             );
           }
         },
@@ -58,18 +58,18 @@ class AuthScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _LogoMark(),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Airpick',
-                        style: TextStyle(
-                          fontFamily: 'Manrope',
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                          letterSpacing: -1.0,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
+
+                      // const SizedBox(height: 4),
+                      // // const Text(
+                      // //   'GuzoMy',
+                      // //   style: TextStyle(
+                      // //     fontFamily: 'Manrope',
+                      // //     fontSize: 32,
+                      // //     fontWeight: FontWeight.w800,
+                      // //     color: AppColors.textPrimary,
+                      // //     letterSpacing: -1.0,
+                      // //   ),
+                      // // ),
                       Text(
                         l10n(context).peerToPeerDelivery,
                         style: const TextStyle(
@@ -127,9 +127,9 @@ class AuthScreen extends StatelessWidget {
                           icon: _GoogleIcon(),
                           onPressed: isLoading
                               ? null
-                              : () => context
-                                  .read<AuthBloc>()
-                                  .add(const AuthGoogleSignInRequested()),
+                              : () => context.read<AuthBloc>().add(
+                                  const AuthGoogleSignInRequested(),
+                                ),
                         ),
 
                         if (_showAppleButton) ...[
@@ -143,9 +143,9 @@ class AuthScreen extends StatelessWidget {
                             ),
                             onPressed: isLoading
                                 ? null
-                                : () => context
-                                    .read<AuthBloc>()
-                                    .add(const AuthAppleSignInRequested()),
+                                : () => context.read<AuthBloc>().add(
+                                    const AuthAppleSignInRequested(),
+                                  ),
                             isDark: true,
                           ),
                         ],
@@ -184,11 +184,7 @@ class AuthScreen extends StatelessWidget {
 class _LogoMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/logo_me.png',
-      width: 88,
-      height: 88,
-    );
+    return Image.asset('assets/logo-long.png', height: 150);
   }
 }
 

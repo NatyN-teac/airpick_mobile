@@ -1,5 +1,5 @@
 name: airpick
-description: "Airpick mobile application."
+description: "GuzoMy mobile application."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -53,8 +53,12 @@ dev_dependencies:
 # App icon (run: dart run flutter_launcher_icons)
 flutter_launcher_icons:
   android: true
-  ios: false
+  ios: true
   image_path: assets/logo_foreground.png
+  # iOS uses a pre-flattened 1024px source (opaque white, no alpha) since the
+  # App Store rejects icons with transparency.
+  image_path_ios: assets/logo_icon_ios.png
+  remove_alpha_ios: true
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: assets/logo_foreground.png
   min_sdk_android: 21

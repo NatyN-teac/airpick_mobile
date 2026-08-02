@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appName => 'Airpick';
+  String get appName => 'GuzoMy';
 
   @override
   String get skip => 'تخطّي';
@@ -254,7 +254,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileAbout => 'حول';
 
   @override
-  String get profileAboutSub => 'تعرّف أكثر على Airpick';
+  String get profileAboutSub => 'تعرّف أكثر على GuzoMy';
 
   @override
   String get profileCloseAccount => 'إغلاق الحساب';
@@ -276,7 +276,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get modeChooseSubtitle =>
-      'اختر كيف تريد استخدام Airpick. سيتم تحديث ملفك الشخصي وشاشتك الرئيسية فورًا.';
+      'اختر كيف تريد استخدام GuzoMy. سيتم تحديث ملفك الشخصي وشاشتك الرئيسية فورًا.';
 
   @override
   String aboutVersion(Object version) {
@@ -284,11 +284,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get aboutSectionTitle => 'حول Airpick';
+  String get aboutSectionTitle => 'حول GuzoMy';
 
   @override
   String get aboutBody =>
-      'يربط Airpick المسافرين والمُرسِلين لتوصيل الطرود بشكل آمن بين الأفراد عبر المطارات. سواء كنت مسافرًا ويمكنك حمل الأغراض، أو تحتاج إلى توصيل شيء ما، يساعدك Airpick في العثور على شركاء موثوقين.';
+      'يربط GuzoMy المسافرين والمُرسِلين لتوصيل الطرود بشكل آمن بين الأفراد عبر المطارات. سواء كنت مسافرًا ويمكنك حمل الأغراض، أو تحتاج إلى توصيل شيء ما، يساعدك GuzoMy في العثور على شركاء موثوقين.';
 
   @override
   String get aboutKeyFeatures => 'الميزات الرئيسية';
@@ -421,7 +421,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get modePickerTitle => 'تبديل الوضع';
 
   @override
-  String get modePickerQuestion => 'كيف تستخدم Airpick اليوم؟';
+  String get modePickerQuestion => 'كيف تستخدم GuzoMy اليوم؟';
 
   @override
   String get active => 'نشط';
@@ -521,7 +521,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get avVerifiedTitle => 'تم التحقق منك!';
 
   @override
-  String get avVerifiedSub => 'تم تأكيد هويتك. أنت جاهز على Airpick.';
+  String get avVerifiedSub => 'تم تأكيد هويتك. أنت جاهز على GuzoMy.';
 
   @override
   String get avCouldNotLoad => 'تعذّر تحميل التحقق';
@@ -543,7 +543,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get avStatusVerifiedBody =>
-      'تم تأكيد هويتك. شكرًا لمساعدتك في الحفاظ على أمان Airpick.';
+      'تم تأكيد هويتك. شكرًا لمساعدتك في الحفاظ على أمان GuzoMy.';
 
   @override
   String get avStatusReviewTitle => 'المراجعة قيد التقدم';

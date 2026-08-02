@@ -1,8 +1,8 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TokenStorage {
-  static const _jwtKey = 'airpick_jwt';
-  static const _userIdKey = 'airpick_user_id';
+  static const _jwtKey = 'guzomy_jwt';
+  static const _userIdKey = 'guzomy_user_id';
 
   final FlutterSecureStorage _storage;
 

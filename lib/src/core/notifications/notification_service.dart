@@ -11,8 +11,8 @@ class NotificationService {
   static void Function(Map<String, dynamic> data)? onDeepLink;
 
   static const _channelId = 'airpick_main';
-  static const _channelName = 'Airpick Notifications';
-  static const _channelDesc = 'General Airpick notifications';
+  static const _channelName = 'GuzoMy Notifications';
+  static const _channelDesc = 'General GuzoMy notifications';
 
   // Android status-bar small icon. Must be a monochrome drawable — the adaptive
   // @mipmap/ic_launcher cannot be used as a small icon and makes notifications
