@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../auth/models/user_model.dart';
 import '../../settings/repository/settings_repository.dart';
@@ -73,7 +74,7 @@ class CurrentUserCubit extends Cubit<ProfileSnapshot?> {
     final gen = ++_profileSyncGen;
     try {
       final detail = await users.getUserProfile(userId);
-      print("Is am ai verified: ${detail.isVerified}");
+      appLogger.d("Is am ai verified: ${detail.isVerified}");
       if (isClosed || gen != _profileSyncGen) return;
       final base = state ?? const ProfileSnapshot(email: '');
       updateProfile(ProfileSnapshot.fromDetail(detail, current: base));

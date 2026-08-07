@@ -4,7 +4,7 @@ import 'dart:io' show Platform;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
+import '../utils/app_logger.dart';
 
 import '../network/api_client.dart';
 import '../storage/token_storage.dart';
@@ -130,25 +130,28 @@ class DeviceRegistrationService {
 
       final token = await _resolveFcmToken();
       if (token == null || token.isEmpty) {
-        debugPrint('[DeviceRegistration] No FCM token available; skipping.');
+        appLogger.d('[DeviceRegistration] No FCM token available; skipping.');
         return;
       }
       await _sendRegistration(token);
     } catch (e, st) {
-      debugPrint('[DeviceRegistration] register failed: $e\n$st');
+      appLogger.e('[DeviceRegistration] register failed', e, st);
     }
   }
 
   Future<void> _sendRegistration(String token) async {
     try {
-      await _apiClient.postVoid(_devicesPath, data: {
-        'fcmToken': token,
-        'platform': _platform,
-        'deviceName': await _deviceName(),
-      });
-      debugPrint('[DeviceRegistration] Registered device token.');
+      await _apiClient.postVoid(
+        _devicesPath,
+        data: {
+          'fcmToken': token,
+          'platform': _platform,
+          'deviceName': await _deviceName(),
+        },
+      );
+      appLogger.d('[DeviceRegistration] Registered device token.');
     } catch (e, st) {
-      debugPrint('[DeviceRegistration] send failed: $e\n$st');
+      appLogger.e('[DeviceRegistration] send failed', e, st);
     }
   }
 
@@ -169,9 +172,9 @@ class DeviceRegistrationService {
       );
       // Invalidate the local token so a future login mints a fresh one.
       await _messaging.deleteToken();
-      debugPrint('[DeviceRegistration] Unregistered device token.');
+      appLogger.d('[DeviceRegistration] Unregistered device token.');
     } catch (e, st) {
-      debugPrint('[DeviceRegistration] unregister failed: $e\n$st');
+      appLogger.e('[DeviceRegistration] unregister failed', e, st);
     }
   }
 

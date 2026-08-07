@@ -258,6 +258,10 @@
   "@centerRequests": {},
   "centerOffers": "Offers",
   "@centerOffers": {},
+  "fabCreate": "Create",
+  "@fabCreate": {
+    "description": "Label on the floating action button that opens the create offer/request sheet"
+  },
   "activeEngagements": "{count, plural, =1{1 active engagement} other{{count} active engagements}}",
   "@activeEngagements": {
     "description": "Count of active engagements"
@@ -294,6 +298,8 @@
   "@verifyActionDefault": {},
   "verifyActionCreateOffer": "create an offer",
   "@verifyActionCreateOffer": {},
+  "verifyActionCreateRequest": "create a request",
+  "@verifyActionCreateRequest": {},
   "udErrorRefresh": "Could not refresh from server. Showing saved info — you can still edit and save.",
   "@udErrorRefresh": {},
   "udCouldNotLoad": "Could not load profile",

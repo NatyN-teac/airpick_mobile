@@ -5,6 +5,8 @@ import '../../home/models/engagement_models.dart';
 import '../models/account_verification.dart';
 import '../models/user_profile_detail.dart';
 
+import '../../../core/utils/app_logger.dart';
+
 class UserRepository {
   final ApiClient _client;
 
@@ -24,19 +26,16 @@ class UserRepository {
     }
     final content = _unwrap(response);
     if (content == null) {
-      throw Exception(
-        apiResponseMessage(response) ?? 'Profile not found.',
-      );
+      throw Exception(apiResponseMessage(response) ?? 'Profile not found.');
     }
     return UserProfileDetail.fromJson(content);
   }
 
   // PATCH /api/v1/users/update-mode { "mode": "CARRIER" }
   Future<UserMode> updateMode(UserMode mode) async {
-    final response = await _client.patch(
-      '/users/update-mode',
-      {'mode': mode.apiValue},
-    );
+    final response = await _client.patch('/users/update-mode', {
+      'mode': mode.apiValue,
+    });
     final data = _unwrap(response);
     final active = data?['activeMode'] as String?;
     return active != null ? UserModeX.fromApi(active) : mode;
@@ -45,7 +44,7 @@ class UserRepository {
   // GET /api/v1/users/{userId}/profile
   Future<UserProfileDetail> getUserProfile(String userId) async {
     final response = await _client.get('/users/$userId/profile');
-    print("Profile response: ${response}");
+
     return _parseProfileDetail(response);
   }
 
@@ -110,12 +109,7 @@ class UserRepository {
       }
       return session;
     } catch (e, st) {
-      logApi(
-        tag: 'Verification',
-        method: 'POST',
-        path: path,
-        error: '$e\n$st',
-      );
+      logApi(tag: 'Verification', method: 'POST', path: path, error: '$e\n$st');
       rethrow;
     }
   }
@@ -146,12 +140,7 @@ class UserRepository {
       }
       return VerificationStatusResponse.fromJson(data);
     } catch (e, st) {
-      logApi(
-        tag: 'Verification',
-        method: 'GET',
-        path: path,
-        error: '$e\n$st',
-      );
+      logApi(tag: 'Verification', method: 'GET', path: path, error: '$e\n$st');
       rethrow;
     }
   }

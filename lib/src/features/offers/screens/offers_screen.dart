@@ -4,7 +4,6 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
-import '../../home/widgets/create_fab.dart';
 import '../cubit/offers_cubit.dart';
 import '../models/offer_response.dart';
 import '../repository/offer_repository.dart';
@@ -13,14 +12,7 @@ import 'offer_detail_screen.dart';
 class OffersScreen extends StatefulWidget {
   final ValueChanged<OfferResponse> onEdit;
 
-  // Opens the create-offer bottom sheet.
-  final VoidCallback onCreate;
-
-  const OffersScreen({
-    super.key,
-    required this.onEdit,
-    required this.onCreate,
-  });
+  const OffersScreen({super.key, required this.onEdit});
 
   @override
   State<OffersScreen> createState() => _OffersScreenState();
@@ -40,10 +32,7 @@ class _OffersScreenState extends State<OffersScreen> {
       builder: (context, state) {
         return Scaffold(
           backgroundColor: Colors.transparent,
-          floatingActionButton: CreateFab(
-            label: l10n(context).offersTitle,
-            onTap: widget.onCreate,
-          ),
+          // The create FAB lives on the home shell so it's on every tab.
           body: Column(
             children: [
               if (state.offers.isNotEmpty)

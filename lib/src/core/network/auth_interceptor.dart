@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../session/app_session.dart';
 import '../session/session_expiry.dart';
 import '../storage/token_storage.dart';
+import '../utils/app_logger.dart';
 
 class AuthInterceptor extends Interceptor {
   final TokenStorage _tokenStorage;
@@ -24,8 +25,7 @@ class AuthInterceptor extends Interceptor {
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
       } else {
-        // ignore: avoid_print
-        print('[AuthInterceptor] No JWT for ${options.method} ${options.path}');
+        appLogger.w('[AuthInterceptor] No JWT for ${options.method} ${options.path}');
       }
     }
     handler.next(options);

@@ -1,4 +1,5 @@
 import 'match_models.dart';
+import '../../../core/utils/app_logger.dart';
 
 /// Backend track buckets — maps to match lifecycle groups.
 enum DeliveryTrackGroup { collected, inProgress, completed }
@@ -96,7 +97,7 @@ class DeliveryTrackResponse {
   bool get isEmpty => totalCount == 0;
 
   List<TrackedDeliveryItem> filtered(DeliveryTrackFilter filter) {
-    print("FILTERED: $filter");
+    appLogger.d("FILTERED: $filter");
     return switch (filter) {
       DeliveryTrackFilter.all => all,
       DeliveryTrackFilter.collected => collected,

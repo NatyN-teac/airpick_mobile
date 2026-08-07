@@ -1,7 +1,7 @@
 import 'dart:io';
+import '../../../core/utils/app_logger.dart';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
@@ -41,10 +41,9 @@ class MatchRepository {
   // PATCH /api/v1/matches/{matchId}/reject — carrier rejects a PENDING match.
   // The backend requires a rejection reason.
   Future<MatchResponse> rejectMatch(String matchId, String reason) async {
-    final response = await _client.patch(
-      '/matches/$matchId/reject',
-      {'rejectionReason': reason},
-    );
+    final response = await _client.patch('/matches/$matchId/reject', {
+      'rejectionReason': reason,
+    });
     return MatchResponse.fromJson(_payload(response));
   }
 
@@ -58,22 +57,28 @@ class MatchRepository {
   // PATCH /api/v1/matches/{matchId}/complete — carrier marks delivered
   // (IN_PROGRESS → CARRIER_DELIVERED); awaits sender confirmation.
   Future<MatchResponse> completeMatch(String matchId) async {
-    final response = await _client.patch('/matches/$matchId/complete', const {});
+    final response = await _client.patch(
+      '/matches/$matchId/complete',
+      const {},
+    );
     return MatchResponse.fromJson(_payload(response));
   }
 
   // PATCH /api/v1/matches/{matchId}/confirm-delivery — sender confirms receipt
   // (CARRIER_DELIVERED → COMPLETED).
   Future<MatchResponse> confirmDelivery(String matchId) async {
-    final response =
-        await _client.patch('/matches/$matchId/confirm-delivery', const {});
+    final response = await _client.patch(
+      '/matches/$matchId/confirm-delivery',
+      const {},
+    );
     return MatchResponse.fromJson(_payload(response));
   }
 
   // GET /api/v1/matches/offer/{offerId} — all matches on an offer the caller owns.
   Future<List<MatchResponse>> getMatchesByOffer(String offerId) async {
     final response = await _client.get('/matches/offer/$offerId');
-    final list = (response['content'] ?? response['data'] ?? []) as List<dynamic>;
+    final list =
+        (response['content'] ?? response['data'] ?? []) as List<dynamic>;
     return list
         .map((e) => MatchResponse.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -83,8 +88,9 @@ class MatchRepository {
   // to view the receiver's private government-issued ID photo. Participants only.
   // The URL expires (see backend signed-url-duration), so fetch it just before use.
   Future<String> getReceiverIdPhotoUrl(String matchId) async {
-    final response =
-        await _client.get('/matches/$matchId/receiver/id-photo/url');
+    final response = await _client.get(
+      '/matches/$matchId/receiver/id-photo/url',
+    );
     final data = _payload(response);
     final url = data['signedUrl'];
     if (url is String && url.isNotEmpty) return url;
@@ -94,7 +100,7 @@ class MatchRepository {
   // GET /api/v1/matches/{matchId} — full match with items + status.
   Future<MatchResponse> getMatch(String matchId) async {
     final response = await _client.get('/matches/$matchId');
-    debugPrint('[Match] GET /matches/$matchId → $response');
+
     return MatchResponse.fromJson(_payload(response));
   }
 
@@ -109,21 +115,21 @@ class MatchRepository {
       '/matches/$matchId/pickup-photo',
       formData,
     );
-    debugPrint('[Match] POST /matches/$matchId/pickup-photo → $response');
+
     return MatchResponse.fromJson(_payload(response));
   }
 
   // GET /api/v1/matches/me/track/shipper — active deliveries (shipper view).
   Future<DeliveryTrackResponse> fetchShipperTrack() async {
     final response = await _client.get('/matches/me/track/shipper');
-    debugPrint('[Match] GET /matches/me/track/shipper → $response');
+
     return DeliveryTrackResponse.fromJson(_payload(response));
   }
 
   // GET /api/v1/matches/me/track/carrier — active deliveries (carrier view).
   Future<DeliveryTrackResponse> fetchCarrierTrack() async {
     final response = await _client.get('/matches/me/track/carrier');
-    debugPrint('[Match] GET /matches/me/track/carrier → $response');
+
     return DeliveryTrackResponse.fromJson(_payload(response));
   }
 
@@ -141,7 +147,7 @@ class MatchRepository {
     final response = await _client.get(
       '/matches/me/track/shipper/search${_query(params)}',
     );
-    debugPrint('[Match] GET /matches/me/track/shipper/search → $response');
+
     return _matchSearchItems(response).map(MatchResponse.fromJson).toList();
   }
 
@@ -159,7 +165,6 @@ class MatchRepository {
     final response = await _client.get(
       '/matches/me/track/carrier/search${_query(params)}',
     );
-    debugPrint('[Match] GET /matches/me/track/carrier/search → $response');
     return _matchSearchItems(response).map(MatchResponse.fromJson).toList();
   }
 

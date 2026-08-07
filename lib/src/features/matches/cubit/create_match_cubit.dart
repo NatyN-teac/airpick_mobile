@@ -1,7 +1,7 @@
 import 'dart:convert';
+import '../../../core/utils/app_logger.dart';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/media/upload_repository.dart';
 import '../../offers/models/offer_response.dart';
@@ -116,14 +116,14 @@ class CreateMatchCubit extends Cubit<CreateMatchState> {
 
   void _logPayload(CreateMatchRequest request, {String? note}) {
     final json = const JsonEncoder.withIndent('  ').convert(request.toJson());
-    debugPrint(
+    appLogger.d(
       '[CreateMatch] POST /matches payload${note != null ? ' ($note)' : ''}:\n$json',
     );
   }
 
   Future<void> submit() async {
     if (!state.canSubmit) {
-      debugPrint('[CreateMatch] Send Match pressed — form incomplete, not sending.');
+      appLogger.w('[CreateMatch] Send Match pressed — form incomplete, not sending.');
       emit(state.copyWith(
         error: _incompleteReason(),
         status: CreateMatchStatus.failure,

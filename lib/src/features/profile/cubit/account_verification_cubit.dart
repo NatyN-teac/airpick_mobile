@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/app_logger.dart';
 import 'package:veriff_flutter/veriff_flutter.dart';
 import '../cubit/current_user_cubit.dart';
 import '../models/account_verification.dart';
@@ -46,8 +47,7 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
 
     try {
       final session = await _users.createVerificationSession();
-      // ignore: avoid_print
-      print('[AccountVerificationCubit] Veriff session created: '
+      appLogger.d('[AccountVerificationCubit] Veriff session created: '
           'id=${session.sessionId} url=${session.sessionUrl}');
 
       emit(state.copyWith(
@@ -81,8 +81,7 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
       }
       return VeriffFlowOutcome.submitted;
     } catch (e, st) {
-      // ignore: avoid_print
-      print('[AccountVerificationCubit] startVeriffVerification failed: $e\n$st');
+      appLogger.e('[AccountVerificationCubit] startVeriffVerification failed', e, st);
       emit(state.copyWith(
         status: AccountVerificationStatus.loaded,
         verification: current,

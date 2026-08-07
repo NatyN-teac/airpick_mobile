@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
+import '../utils/app_logger.dart';
 
 final _apiLogger = Logger(
+  filter: DebugModeFilter(),
   printer: PrettyPrinter(
     methodCount: 0,
     errorMethodCount: 0,

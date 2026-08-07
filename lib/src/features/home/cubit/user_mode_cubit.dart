@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../profile/repository/user_repository.dart';
 import '../../settings/repository/settings_repository.dart';
 
@@ -53,9 +53,9 @@ class UserModeCubit extends Cubit<UserMode> {
         emit(active);
         await _settings.saveMode(active);
       }
-    } catch (e) {
+    } catch (e, st) {
       // Roll back on failure so local + server stay consistent.
-      debugPrint('[UserModeCubit] updateMode failed: $e');
+      appLogger.e('[UserModeCubit] updateMode failed', e, st);
       emit(previous);
       await _settings.saveMode(previous);
     }

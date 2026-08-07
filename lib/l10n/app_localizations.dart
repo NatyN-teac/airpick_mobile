@@ -828,6 +828,12 @@ abstract class AppLocalizations {
   /// **'Offers'**
   String get centerOffers;
 
+  /// Label on the floating action button that opens the create offer/request sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get fabCreate;
+
   /// Count of active engagements
   ///
   /// In en, this message translates to:
@@ -923,6 +929,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'create an offer'**
   String get verifyActionCreateOffer;
+
+  /// No description provided for @verifyActionCreateRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'create a request'**
+  String get verifyActionCreateRequest;
 
   /// No description provided for @udErrorRefresh.
   ///

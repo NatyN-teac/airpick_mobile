@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
+import '../../../core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/storage/token_storage.dart';
@@ -69,7 +69,7 @@ class ChatCubit extends Cubit<ChatState> {
         }
       }
       final chat = await _repo.getChatByMatch(matchId);
-      debugPrint(
+      appLogger.d(
           '[Chat] history loaded: chatId=${chat.chatId}, messages=${chat.messages.length}, userId=$userId');
       emit(state.copyWith(
         status: ChatStatus.ready,
@@ -112,8 +112,8 @@ class ChatCubit extends Cubit<ChatState> {
         match: match,
         context: _enrichedContext(state.context, match),
       ));
-    } catch (e) {
-      debugPrint('[Chat] could not load match: $e');
+    } catch (e, st) {
+      appLogger.e('[Chat] could not load match', e, st);
       if (!isClosed && state.match == null) {
         emit(state.copyWith(
           error: 'Could not load match items. Pull to retry from chat list.',

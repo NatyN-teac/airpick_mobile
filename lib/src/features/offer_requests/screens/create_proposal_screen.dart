@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
@@ -396,7 +397,7 @@ class CreateProposalScreen extends StatelessWidget {
                               if (state.isValid) {
                                 cubit.submit();
                               } else {
-                                print("What is the error: ${cubit.markErrors()}");
+                                appLogger.w("What is the error: ${cubit.markErrors()}");
                                 showMissingFields(
                                     context, cubit.markErrors());
                               }

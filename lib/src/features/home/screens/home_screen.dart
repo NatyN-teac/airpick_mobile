@@ -15,6 +15,7 @@ import '../../offer_requests/screens/offer_requests_screen.dart';
 import '../../offer_requests/widgets/create_offer_request_bubble.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/app_nav_bar.dart';
+import '../widgets/create_fab.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/verification_gate.dart';
@@ -159,6 +160,13 @@ class _HomeViewState extends State<_HomeView> {
         onCreated: offersCubit.prepend, // optimistic — new offer on top
       );
     } else {
+      // Requests need the same verified identity as offers do.
+      if (!requireVerified(
+        context,
+        action: l10n(context).verifyActionCreateRequest,
+      )) {
+        return;
+      }
       _openRequestBubble(context);
     }
   }
@@ -227,12 +235,10 @@ class _HomeViewState extends State<_HomeView> {
                       BlocBuilder<UserModeCubit, UserMode>(
                         builder: (context, mode) => mode == UserMode.sender
                             ? OfferRequestsScreen(
-                                onCreate: () => _onCreateTap(context),
                                 onEdit: (req) =>
                                     _openRequestBubble(context, existing: req),
                               )
                             : OffersScreen(
-                                onCreate: () => _onCreateTap(context),
                                 onEdit: (offer) =>
                                     openEditOffer(context, offer),
                               ),
@@ -240,6 +246,12 @@ class _HomeViewState extends State<_HomeView> {
                       const NotificationsScreen(),
                       const ProfileScreen(),
                     ],
+                  ),
+                  // One create entry point for every tab — the sheet it opens
+                  // still follows sender/carrier mode.
+                  floatingActionButton: CreateFab(
+                    label: l10n(context).fabCreate,
+                    onTap: () => _onCreateTap(context),
                   ),
                   bottomNavigationBar: AppNavBar(
                     currentIndex: currentIndex,

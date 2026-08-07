@@ -390,6 +390,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get centerOffers => 'Offers';
 
   @override
+  String get fabCreate => 'Create';
+
+  @override
   String activeEngagements(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -446,6 +449,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyActionCreateOffer => 'create an offer';
+
+  @override
+  String get verifyActionCreateRequest => 'create a request';
 
   @override
   String get udErrorRefresh =>

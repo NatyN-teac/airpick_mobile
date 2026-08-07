@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../countries/models/country.dart';
 import '../../countries/repository/country_repository.dart';
 import '../../items/models/item_models.dart';
@@ -92,7 +92,7 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
       emit(state.copyWith(
           availableCountries: list, countriesLoading: false));
     } catch (e, st) {
-      debugPrint('[CreateOfferRequestCubit] loadCountries error: $e\n$st');
+      appLogger.e('[CreateOfferRequestCubit] loadCountries error', e, st);
       emit(state.copyWith(
           countriesLoading: false, countriesError: e.toString()));
     }
@@ -104,12 +104,12 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
     if (state.availableItems.isNotEmpty || state.itemsLoading) return;
     emit(state.copyWith(itemsLoading: true, itemsError: null));
     try {
-      debugPrint('[CreateOfferRequestCubit] GET /items...');
+      appLogger.d('[CreateOfferRequestCubit] GET /items...');
       final list = await _items.fetchItems();
-      debugPrint('[CreateOfferRequestCubit] items loaded: ${list.length}');
+      appLogger.d('[CreateOfferRequestCubit] items loaded: ${list.length}');
       emit(state.copyWith(availableItems: list, itemsLoading: false));
     } catch (e, st) {
-      debugPrint('[CreateOfferRequestCubit] loadItems error: $e\n$st');
+      appLogger.e('[CreateOfferRequestCubit] loadItems error', e, st);
       emit(state.copyWith(itemsLoading: false, itemsError: e.toString()));
     }
   }
@@ -209,10 +209,10 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
           hasManualItem: hasManualItem,
           items: itemRequests,
         );
-        debugPrint('[CreateOfferRequestCubit] PATCH /offer-requests/${state.editingId}: ${request.toJson()}');
+        appLogger.d('[CreateOfferRequestCubit] PATCH /offer-requests/${state.editingId}: ${request.toJson()}');
         result = await _offerRequests.updateOfferRequest(
             state.editingId!, request);
-        debugPrint('[CreateOfferRequestCubit] updated id=${result.id}');
+        appLogger.d('[CreateOfferRequestCubit] updated id=${result.id}');
       } else {
         final request = CreateOfferRequestRequest(
           sourceCountry: state.sourceCountry!.name,
@@ -225,13 +225,13 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
           hasManualItem: hasManualItem,
           items: itemRequests,
         );
-        debugPrint('[CreateOfferRequestCubit] POST /offer-requests: ${request.toJson()}');
+        appLogger.d('[CreateOfferRequestCubit] POST /offer-requests: ${request.toJson()}');
         result = await _offerRequests.createOfferRequest(request);
-        debugPrint('[CreateOfferRequestCubit] created id=${result.id}');
+        appLogger.d('[CreateOfferRequestCubit] created id=${result.id}');
       }
       emit(state.copyWith(submitting: false, created: true, result: result));
     } catch (e, st) {
-      debugPrint('[CreateOfferRequestCubit] submit error: $e\n$st');
+      appLogger.e('[CreateOfferRequestCubit] submit error', e, st);
       emit(state.copyWith(submitting: false, error: e.toString()));
     }
   }

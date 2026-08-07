@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
+import '../../../core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
@@ -161,7 +162,7 @@ class OfferFormStep extends StatelessWidget {
                         onCreate: cubit.createAndSelectItem,
                       );
                       if (selected.isNotEmpty) cubit.addItems(selected);
-                      print("SElected items: ${selected}");
+                      appLogger.d("Selected items: $selected");
                     },
                     child: Row(
                       children: [

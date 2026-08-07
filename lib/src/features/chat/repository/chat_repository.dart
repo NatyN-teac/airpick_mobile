@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
 import '../models/chat.dart';
@@ -26,7 +26,7 @@ class ChatRepository {
   // GET /api/v1/chats/match/{matchId} — chat room + message history.
   Future<Chat> getChatByMatch(String matchId) async {
     final response = await _client.get('/chats/match/$matchId');
-    debugPrint('[Chat] GET /chats/match/$matchId → $response');
+    appLogger.d('[Chat] GET /chats/match/$matchId → $response');
     if (response['success'] == false) {
       throw Exception(
         apiResponseMessage(response) ?? 'Failed to load chat room.',

@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/notifications/app_notifications.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../airports/models/airport.dart';
 import '../../airports/repository/airport_repository.dart';
 import '../../flights/models/flight_models.dart';
@@ -51,12 +51,12 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
     if (state.availableItems.isNotEmpty || state.itemsLoading) return;
     emit(state.copyWith(itemsLoading: true, itemsError: null));
     try {
-      debugPrint('[CreateOfferCubit] GET /items...');
+      appLogger.d('[CreateOfferCubit] GET /items...');
       final list = await _items.fetchItems();
-      debugPrint('[CreateOfferCubit] items loaded: ${list.length}');
+      appLogger.d('[CreateOfferCubit] items loaded: ${list.length}');
       emit(state.copyWith(availableItems: list, itemsLoading: false));
     } catch (e, st) {
-      debugPrint('[CreateOfferCubit] loadItems error: $e\n$st');
+      appLogger.e('[CreateOfferCubit] loadItems error', e, st);
       emit(state.copyWith(itemsLoading: false, itemsError: e.toString()));
     }
   }
@@ -144,16 +144,16 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
       ];
       final request =
           CreateFlightRequest(flightType: state.flightType, legs: legs);
-      debugPrint('[CreateOfferCubit] POST /flights payload: ${request.toJson()}');
+      appLogger.d('[CreateOfferCubit] POST /flights payload: ${request.toJson()}');
       final flight = await _flights.createFlight(request);
-      debugPrint('[CreateOfferCubit] flight created id=${flight.id}');
+      appLogger.d('[CreateOfferCubit] flight created id=${flight.id}');
       emit(state.copyWith(
         creatingFlight: false,
         flightId: flight.id,
         step: CreateOfferStep.offer,
       ));
     } catch (e, st) {
-      debugPrint('[CreateOfferCubit] createFlight error: $e\n$st');
+      appLogger.e('[CreateOfferCubit] createFlight error', e, st);
       emit(state.copyWith(
           creatingFlight: false, flightError: e.toString()));
     }
@@ -243,13 +243,13 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
         ))
             .toList(),
       );
-      print("Offer in creation : ${offerToCreate.toJson()}");
+      appLogger.d("Offer in creation : ${offerToCreate.toJson()}");
       final created = await _offers.createOffer(offerToCreate);
       AppNotifications.offerPosted();
       emit(state.copyWith(
           creatingOffer: false, offerCreated: true, createdOffer: created));
-    } catch (e) {
-      debugPrint("Something is wrong: ${e}");
+    } catch (e, st) {
+      appLogger.e("Something is wrong", e, st);
       emit(state.copyWith(
           creatingOffer: false, offerError: e.toString()));
     }

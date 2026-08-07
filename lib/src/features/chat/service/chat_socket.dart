@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import '../../../core/utils/app_logger.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/storage/token_storage.dart';
@@ -63,7 +63,7 @@ class ChatSocket {
 
     final token = await _tokenStorage.getToken();
     final headers = _authHeaders(token);
-    debugPrint('[Chat] activating STOMP (gen $gen) → url=$_wsUrl '
+    appLogger.d('[Chat] activating STOMP (gen $gen) → url=$_wsUrl '
         'token=${token == null ? "NULL" : "present(${token.length})"} '
         'match=$_matchId');
 
@@ -82,25 +82,25 @@ class ChatSocket {
         webSocketConnectHeaders: headers,
         onConnect: (frame) {
           if (stale()) {
-            debugPrint('[Chat] (gen $gen) onConnect ignored — stale');
+            appLogger.d('[Chat] (gen $gen) onConnect ignored — stale');
             return;
           }
           _onConnect(frame);
         },
         onWebSocketError: (error) {
-          debugPrint('[Chat] ✖ onWebSocketError (gen $gen): $error');
+          appLogger.e('[Chat] ✖ onWebSocketError (gen $gen): $error');
           if (stale()) return;
           _failConnect(error);
           _scheduleReconnect();
         },
         onWebSocketDone: () {
-          debugPrint('[Chat] ✖ onWebSocketDone (gen $gen). closed=$_closed');
+          appLogger.w('[Chat] ✖ onWebSocketDone (gen $gen). closed=$_closed');
           if (stale()) return;
           _connected = false;
           _scheduleReconnect();
         },
         onStompError: (frame) {
-          debugPrint('[Chat] ✖ onStompError (gen $gen): cmd=${frame.command} '
+          appLogger.e('[Chat] ✖ onStompError (gen $gen): cmd=${frame.command} '
               'headers=${frame.headers} body=${frame.body}');
           if (stale()) return;
           _failConnect(frame.body);
@@ -111,7 +111,7 @@ class ChatSocket {
           _connected = false;
         },
         // Raw STOMP frame log — shows CONNECT/CONNECTED/ERROR/heartbeats.
-        onDebugMessage: (m) => debugPrint('[STOMP] $m'),
+        onDebugMessage: (m) => appLogger.d('[STOMP] $m'),
       ),
     );
     _client!.activate();
@@ -133,12 +133,12 @@ class ChatSocket {
     _onState?.call(ChatConnState.connected);
 
     final topic = '/topic/match/$_matchId/chat';
-    debugPrint('[Chat] STOMP connected → subscribing $topic');
+    appLogger.d('[Chat] STOMP connected → subscribing $topic');
     _client!.subscribe(
       destination: topic,
       callback: (frame) {
         final body = frame.body;
-        debugPrint('[Chat] ◀ incoming frame: $body');
+        appLogger.d('[Chat] ◀ incoming frame: $body');
         if (body == null || body.isEmpty) return;
         try {
           final decoded = jsonDecode(body);
@@ -146,10 +146,10 @@ class ChatSocket {
           if (json != null) {
             _onMessage?.call(ChatMessage.fromJson(json));
           } else {
-            debugPrint('[Chat] ⚠ could not unwrap message frame');
+            appLogger.w('[Chat] ⚠ could not unwrap message frame');
           }
         } catch (e) {
-          debugPrint('[Chat] ⚠ failed to parse frame: $e');
+          appLogger.e('[Chat] ⚠ failed to parse frame', e);
         }
       },
     );
@@ -190,11 +190,11 @@ class ChatSocket {
     if (_closed || _reconnectScheduled) return;
     _reconnectScheduled = true;
     _connected = false;
-    debugPrint('[Chat] ⟳ scheduling reconnect in 3s');
+    appLogger.d('[Chat] ⟳ scheduling reconnect in 3s');
     _onState?.call(ChatConnState.reconnecting);
     Future.delayed(const Duration(seconds: 3), () {
       if (!_closed) {
-        debugPrint('[Chat] ⟳ reconnecting now');
+        appLogger.d('[Chat] ⟳ reconnecting now');
         _activate(waitForConnect: false);
       }
     });
@@ -208,7 +208,7 @@ class ChatSocket {
     // Backend handler is @MessageMapping("/chat/{matchId}/send") → /app/chat/{id}/send
     final dest = '/app/chat/$id/send';
     final body = jsonEncode({'content': content});
-    debugPrint('[Chat] ▶ sending to $dest: $body');
+    appLogger.d('[Chat] ▶ sending to $dest: $body');
     _client!.send(
       destination: dest,
       headers: const {'content-type': 'application/json'},

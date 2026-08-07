@@ -1,6 +1,7 @@
 import '../models/offer_models.dart';
 import '../models/offer_response.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/app_logger.dart';
 
 class OfferRepository {
   final ApiClient _client;
@@ -16,10 +17,10 @@ class OfferRepository {
   // GET /api/v1/offers/browse — open offers from other carriers.
   Future<List<OfferResponse>> browseOffers() async {
     final response = await _client.get('/offers/browse');
-    print("What is this Offer browsse response: ${response}");
+
     final list =
         (response['content'] ?? response['data'] ?? []) as List<dynamic>;
-    print("What COUNT: ${list.length}");
+    appLogger.d("What COUNT: ${list.length}");
     return list
         .map((e) => OfferResponse.fromJson(e as Map<String, dynamic>))
         .toList();

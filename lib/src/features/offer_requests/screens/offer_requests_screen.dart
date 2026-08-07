@@ -7,7 +7,6 @@ import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
 import '../../home/cubit/engagement_cubit.dart';
 import '../../home/cubit/nav_cubit.dart';
-import '../../home/widgets/create_fab.dart';
 import '../cubit/offer_requests_cubit.dart';
 import '../models/offer_request_models.dart';
 import '../repository/offer_request_repository.dart';
@@ -18,14 +17,7 @@ class OfferRequestsScreen extends StatefulWidget {
   // Home wires this to open the edit bubble anchored to the + button.
   final ValueChanged<OfferRequestResponse> onEdit;
 
-  // Opens the create-request bottom sheet.
-  final VoidCallback onCreate;
-
-  const OfferRequestsScreen({
-    super.key,
-    required this.onEdit,
-    required this.onCreate,
-  });
+  const OfferRequestsScreen({super.key, required this.onEdit});
 
   @override
   State<OfferRequestsScreen> createState() => _OfferRequestsScreenState();
@@ -46,10 +38,7 @@ class _OfferRequestsScreenState extends State<OfferRequestsScreen> {
       builder: (context, state) {
         return Scaffold(
           backgroundColor: Colors.transparent,
-          floatingActionButton: CreateFab(
-            label: l10n(context).requestsTitle,
-            onTap: widget.onCreate,
-          ),
+          // The create FAB lives on the home shell so it's on every tab.
           body: Column(
             children: [
               // Status filter — hidden until there's data to filter
