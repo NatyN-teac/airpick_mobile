@@ -1,11 +1,11 @@
 {
-    "name": "airpick",
-    "short_name": "airpick",
+    "name": "GuzoMy",
+    "short_name": "GuzoMy",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "GuzoMy mobile application.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

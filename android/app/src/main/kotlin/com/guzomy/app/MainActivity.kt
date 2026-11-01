@@ -1,4 +1,4 @@
-package com.airpick.delivery.app
+package com.guzomy.app
 
 import io.flutter.embedding.android.FlutterActivity
 

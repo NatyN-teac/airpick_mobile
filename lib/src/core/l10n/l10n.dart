@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:airpick/l10n/app_localizations.dart';
+import 'package:guzomy/l10n/app_localizations.dart';
 
 /// Returns a locale that [AppLocalizations] can load, falling back to English.
 Locale resolveAppLocale(Locale locale) {

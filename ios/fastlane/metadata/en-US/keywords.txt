@@ -1,0 +1,1 @@
+courier,package,parcel,shipping,carrier,luggage,flight,crowdshipping,abroad,diaspora,gift,trip

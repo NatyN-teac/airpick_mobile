@@ -1,4 +1,4 @@
-import 'package:airpick/l10n/app_localizations.dart';
+import 'package:guzomy/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';

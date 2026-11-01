@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:airpick/l10n/app_localizations.dart';
+import 'package:guzomy/l10n/app_localizations.dart';
 import '../repository/settings_repository.dart';
 
 class LocaleCubit extends Cubit<Locale> {

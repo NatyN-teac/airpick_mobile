@@ -1,9 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:airpick/src/app/bloc/app_bloc.dart';
-import 'package:airpick/src/core/storage/token_storage.dart';
-import 'package:airpick/src/features/onboarding/repository/onboarding_repository.dart';
+import 'package:guzomy/src/app/bloc/app_bloc.dart';
+import 'package:guzomy/src/core/storage/token_storage.dart';
+import 'package:guzomy/src/features/onboarding/repository/onboarding_repository.dart';
 
 class MockOnboardingRepository extends Mock implements IOnboardingRepository {}
 class MockTokenStorage extends Mock implements TokenStorage {}

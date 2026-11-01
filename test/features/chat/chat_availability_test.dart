@@ -1,6 +1,6 @@
-import 'package:airpick/src/features/chat/cubit/chat_state.dart';
-import 'package:airpick/src/features/home/models/engagement_models.dart';
-import 'package:airpick/src/features/matches/models/match_models.dart';
+import 'package:guzomy/src/features/chat/cubit/chat_state.dart';
+import 'package:guzomy/src/features/home/models/engagement_models.dart';
+import 'package:guzomy/src/features/matches/models/match_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

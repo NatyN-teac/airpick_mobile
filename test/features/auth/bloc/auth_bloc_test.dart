@@ -1,9 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:airpick/src/features/auth/bloc/auth_bloc.dart';
-import 'package:airpick/src/features/auth/models/user_model.dart';
-import 'package:airpick/src/features/auth/repository/auth_repository.dart';
+import 'package:guzomy/src/features/auth/bloc/auth_bloc.dart';
+import 'package:guzomy/src/features/auth/models/user_model.dart';
+import 'package:guzomy/src/features/auth/repository/auth_repository.dart';
 
 class MockAuthRepository extends Mock implements IAuthRepository {}
 

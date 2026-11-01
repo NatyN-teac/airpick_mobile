@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:airpick/src/features/onboarding/bloc/onboarding_bloc.dart';
-import 'package:airpick/src/features/onboarding/repository/onboarding_repository.dart';
+import 'package:guzomy/src/features/onboarding/bloc/onboarding_bloc.dart';
+import 'package:guzomy/src/features/onboarding/repository/onboarding_repository.dart';
 
 class MockOnboardingRepository extends Mock implements IOnboardingRepository {}
 
