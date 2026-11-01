@@ -12,4 +12,8 @@ class AppConfig {
   };
 
   static String get apiBaseUrl => '$baseUrl/api/v1';
+
+  // TODO: placeholder — replace with the real support inbox before release.
+  // Shown to users whose verification is locked or whose account is blocked.
+  static const supportEmail = 'support@guzomy.app';
 }

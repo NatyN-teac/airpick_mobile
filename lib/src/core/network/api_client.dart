@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'api_exception.dart';
 import 'api_response.dart';
 import '../config/app_config.dart';
 import '../storage/token_storage.dart';
@@ -153,20 +154,24 @@ class ApiClient {
 
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
-      return Exception('Request timed out. Check your connection.');
+      return const ApiException('Request timed out. Check your connection.');
     }
 
-    return switch (statusCode) {
-      400 => Exception(message ?? 'Invalid request.$detail'),
-      401 => Exception(message ?? 'Unauthorised. Please sign in again.$detail'),
-      403 => Exception(message ?? 'Access denied (403).$detail'),
-      404 => Exception(message ?? 'Resource not found.$detail'),
-      422 => Exception(message ?? 'Validation failed.$detail'),
-      500 => Exception(
-        message ?? 'Server error. Please try again later.$detail',
-      ),
-      _ => Exception(message ?? e.message ?? 'Something went wrong.$detail'),
+    final text = switch (statusCode) {
+      400 => message ?? 'Invalid request.$detail',
+      401 => message ?? 'Unauthorised. Please sign in again.$detail',
+      403 => message ?? 'Access denied (403).$detail',
+      404 => message ?? 'Resource not found.$detail',
+      422 => message ?? 'Validation failed.$detail',
+      500 => message ?? 'Server error. Please try again later.$detail',
+      _ => message ?? e.message ?? 'Something went wrong.$detail',
     };
+    return ApiException(
+      text,
+      statusCode: statusCode,
+      errorCode: ApiException.errorCodeFrom(data),
+      details: ApiException.detailsFrom(data),
+    );
   }
 
   bool _isAuthPath(String path) =>

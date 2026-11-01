@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
 import '../../home/cubit/user_mode_cubit.dart';
@@ -77,41 +81,99 @@ class UserRepository {
     return ClosedAccountResponse.fromJson(data);
   }
 
-  // POST /api/v1/users/verification/session — JWT identifies user, no body.
-  Future<VeriffSession> createVerificationSession() async {
+  // POST /api/v1/users/verification/session — starts an attempt, or returns
+  // the caller's open one (which keeps its original document type).
+  Future<VerificationSession> createVerificationSession({
+    required VerificationDocumentType documentType,
+    required String issuingCountry,
+  }) async {
     const path = '/users/verification/session';
     try {
-      final response = await _client.post(path, const {});
-      logApi(
-        tag: 'Verification',
-        method: 'POST',
-        path: path,
-        statusCode: 201,
-        body: response,
-      );
-      if (response['success'] == false) {
-        throw Exception(
-          apiResponseMessage(response) ??
-              'Could not start verification.\n${formatApiResponseBody(response)}',
-        );
-      }
-      final data = _unwrap(response);
-      if (data == null) {
-        throw Exception(
-          'Veriff session missing from server response.\n${formatApiResponseBody(response)}',
-        );
-      }
-      final session = VeriffSession.fromJson(data);
-      if (session.sessionUrl.isEmpty) {
-        throw Exception(
-          'Veriff session URL missing.\n${formatApiResponseBody(response)}',
-        );
-      }
-      return session;
+      final response = await _client.post(path, {
+        'documentType': documentType.apiValue,
+        'issuingCountry': issuingCountry,
+      });
+      logApi(tag: 'Verification', method: 'POST', path: path, body: response);
+      return _parseSession(response, 'Could not start verification.');
     } catch (e, st) {
       logApi(tag: 'Verification', method: 'POST', path: path, error: '$e\n$st');
       rethrow;
     }
+  }
+
+  // POST /api/v1/users/verification/session/{sessionId}/files — one photo per
+  // call; re-uploading a kind replaces it.
+  Future<VerificationSession> uploadVerificationFile({
+    required String sessionId,
+    required VerificationFileKind kind,
+    required File photo,
+  }) async {
+    final path = '/users/verification/session/$sessionId/files';
+    try {
+      final formData = FormData.fromMap({
+        'kind': kind.apiValue,
+        'file': await MultipartFile.fromFile(
+          photo.path,
+          filename: photo.path.split('/').last,
+        ),
+      });
+      final response = await _client.postMultipart(path, formData);
+      logApi(tag: 'Verification', method: 'POST', path: path, body: response);
+      return _parseSession(response, 'Could not upload photo.');
+    } catch (e, st) {
+      logApi(tag: 'Verification', method: 'POST', path: path, error: '$e\n$st');
+      rethrow;
+    }
+  }
+
+  // POST /api/v1/users/verification/session/{sessionId}/submit
+  Future<VerificationStatusResponse> submitVerification({
+    required String sessionId,
+    String consentVersion = verificationConsentVersion,
+  }) async {
+    final path = '/users/verification/session/$sessionId/submit';
+    try {
+      final response = await _client.post(path, {
+        'consentVersion': consentVersion,
+      });
+      logApi(tag: 'Verification', method: 'POST', path: path, body: response);
+      return _parseStatus(response, 'Could not submit verification.');
+    } catch (e, st) {
+      logApi(tag: 'Verification', method: 'POST', path: path, error: '$e\n$st');
+      rethrow;
+    }
+  }
+
+  VerificationSession _parseSession(
+    Map<String, dynamic> response,
+    String fallback,
+  ) {
+    if (response['success'] == false) {
+      throw Exception(apiResponseMessage(response) ?? fallback);
+    }
+    final data = _unwrap(response);
+    if (data == null) {
+      throw Exception(
+        'Verification session missing.\n${formatApiResponseBody(response)}',
+      );
+    }
+    return VerificationSession.fromJson(data);
+  }
+
+  VerificationStatusResponse _parseStatus(
+    Map<String, dynamic> response,
+    String fallback,
+  ) {
+    if (response['success'] == false) {
+      throw Exception(apiResponseMessage(response) ?? fallback);
+    }
+    final data = _unwrap(response);
+    if (data == null) {
+      throw Exception(
+        'Verification status missing.\n${formatApiResponseBody(response)}',
+      );
+    }
+    return VerificationStatusResponse.fromJson(data);
   }
 
   // GET /api/v1/users/verification/status
@@ -119,26 +181,8 @@ class UserRepository {
     const path = '/users/verification/status';
     try {
       final response = await _client.get(path);
-      logApi(
-        tag: 'Verification',
-        method: 'GET',
-        path: path,
-        statusCode: 200,
-        body: response,
-      );
-      if (response['success'] == false) {
-        throw Exception(
-          apiResponseMessage(response) ??
-              'Could not load verification status.\n${formatApiResponseBody(response)}',
-        );
-      }
-      final data = _unwrap(response);
-      if (data == null) {
-        throw Exception(
-          'Verification status missing.\n${formatApiResponseBody(response)}',
-        );
-      }
-      return VerificationStatusResponse.fromJson(data);
+      logApi(tag: 'Verification', method: 'GET', path: path, body: response);
+      return _parseStatus(response, 'Could not load verification status.');
     } catch (e, st) {
       logApi(tag: 'Verification', method: 'GET', path: path, error: '$e\n$st');
       rethrow;

@@ -517,7 +517,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get avSubmittedTitle => 'ማረጋገጫ ገብቷል!';
 
   @override
-  String get avSubmittedSub => 'መታወቂያዎን እየገመገምን ነው። ለቅርብ ጊዜ ሁኔታ ወደታች ይጎትቱ።';
+  String get avSubmittedSub => 'ቡድናችን ሰነዶችዎን ይገመግማል። ሲጠናቀቅ እናሳውቅዎታለን።';
 
   @override
   String get avVerifiedTitle => 'ተረጋግጠዋል!';
@@ -532,13 +532,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get avLoadFailed => 'የማረጋገጫ ሁኔታ መጫን አልተሳካም።';
 
   @override
-  String get avPreparing => 'ደህንነቱ የተጠበቀ ክፍለ ጊዜ በማዘጋጀት ላይ…';
-
-  @override
-  String get avChecking => 'የማረጋገጫ ሁኔታ በማጣራት ላይ…';
-
-  @override
-  String get avPoweredBy => 'በVeriff የተጎላበተ · ደህንነቱ የተጠበቀ የማንነት ማረጋገጫ';
+  String get avPoweredBy => 'በGuzoMy ቡድን የሚገመገም · ፎቶዎችዎ በሚስጥር ይጠበቃሉ';
 
   @override
   String get avStatusVerifiedTitle => 'ተረጋግጠዋል';
@@ -551,8 +545,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get avStatusReviewTitle => 'ግምገማ በሂደት ላይ';
 
   @override
-  String get avStatusReviewBody =>
-      'Veriff ማስረከቢያዎን በማስኬድ ላይ ነው። ይህ አብዛኛውን ጊዜ ጥቂት ደቂቃዎችን ይወስዳል።';
+  String get avStatusReviewBody => 'ቡድናችን ሰነዶችዎን እየገመገመ ነው። ሲጠናቀቅ እናሳውቅዎታለን።';
 
   @override
   String get avStatusResubmitTitle => 'እንደገና ማስረከብ ያስፈልጋል';
@@ -569,13 +562,13 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get avStatusDefaultBody =>
-      'በVeriff የተጎላበተ ፈጣን የመታወቂያ ስካን እና ሴልፊ ማህበረሰባችንን የታመነ ያደርገዋል።';
+      'የመታወቂያዎን ፎቶ እና መታወቂያውን ይዘው የራስዎን ፎቶ (ሰልፊ) ያንሱ። ማህበረሰቡ ታማኝ እንዲሆን ቡድናችን ይገመግማቸዋል።';
 
   @override
   String get avStepPrepare => 'ተዘጋጅ';
 
   @override
-  String get avStepIdScan => 'የመታወቂያ ስካን';
+  String get avStepIdScan => 'የመታወቂያ ፎቶ';
 
   @override
   String get avStepSelfie => 'ሴልፊ';
@@ -593,25 +586,19 @@ class AppLocalizationsAm extends AppLocalizations {
   String get avTipId => 'ፓስፖርት ወይም የመንግስት መታወቂያ ያዘጋጁ';
 
   @override
-  String get avTipSelfie => 'ለሕያውነት ማረጋገጫ ፈጣን ሴልፊ ያነሳሉ';
+  String get avTipSelfie => 'መታወቂያዎን ከፊትዎ አጠገብ ይዘው ሰልፊ ያነሳሉ';
 
   @override
-  String get avTipTime => 'ወደ 2 ደቂቃ ይወስዳል';
+  String get avTipTime => 'ፎቶዎቹን ማንሳት 2 ደቂቃ ያህል ይወስዳል';
 
   @override
   String get avChipEncrypted => 'የተመሰጠረ';
-
-  @override
-  String get avChip230 => '230+ ሀገራት';
 
   @override
   String get avWhatWentWrong => 'ምን ተሳሳተ';
 
   @override
   String get avStartVerification => 'ማረጋገጫ ጀምር';
-
-  @override
-  String get avTryAgainVeriff => 'በVeriff እንደገና ይሞክሩ';
 
   @override
   String get notifTitle => 'ማሳወቂያዎች';
@@ -1137,4 +1124,198 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get matchDelivery => 'ማድረሻ';
+
+  @override
+  String get avStatusCapturingTitle => 'ማረጋገጫዎን ያጠናቅቁ';
+
+  @override
+  String get avStatusCapturingBody => 'ማረጋገጥ ጀምረዋል። ካቆሙበት ይቀጥሉ።';
+
+  @override
+  String get avStatusLockedTitle => 'ማረጋገጫ ተቆልፏል';
+
+  @override
+  String get avStatusLockedBody =>
+      'ከብዙ ሙከራዎች በኋላ ማንነትዎን ማረጋገጥ አልቻልንም። እባክዎ ለእርዳታ ድጋፍ ሰጪን ያግኙ።';
+
+  @override
+  String avStatusCooldownBody(String date) {
+    return 'በ$date እንደገና መሞከር ይችላሉ።';
+  }
+
+  @override
+  String get avContinueVerification => 'ማረጋገጫውን ይቀጥሉ';
+
+  @override
+  String get avTryAgain => 'እንደገና ይሞክሩ';
+
+  @override
+  String get avRetakePhotos => 'ፎቶዎቹን እንደገና ያንሱ';
+
+  @override
+  String get avContactSupport => 'ድጋፍ ሰጪን ያግኙ';
+
+  @override
+  String get avChipHumanReview => 'በቡድናችን የሚገመገም';
+
+  @override
+  String get avCaptureTitle => 'ማንነትዎን ያረጋግጡ';
+
+  @override
+  String get avChooseDocument => 'ሰነድዎን ይምረጡ';
+
+  @override
+  String get avChooseDocumentSub =>
+      'ዋናውንና የሚሰራ ሰነድ ይጠቀሙ። ቢያንስ ለተጨማሪ 3 ወራት የሚያገለግል መሆን አለበት።';
+
+  @override
+  String get avDocPassport => 'ፓስፖርት';
+
+  @override
+  String get avDocNationalId => 'ብሔራዊ መታወቂያ';
+
+  @override
+  String get avDocDriverLicense => 'መንጃ ፈቃድ';
+
+  @override
+  String get avDocResidencePermit => 'የመኖሪያ ፈቃድ';
+
+  @override
+  String get avIssuingCountry => 'ሰነዱን የሰጠው አገር';
+
+  @override
+  String get avIssuingCountryHint => 'አገር ይፈልጉ';
+
+  @override
+  String get avContinue => 'ቀጥል';
+
+  @override
+  String get avPhotosTitle => 'ፎቶዎችዎን ያንሱ';
+
+  @override
+  String get avPhotosSub =>
+      'አራቱም ማዕዘኖች መታየታቸውን፣ ጽሑፉ ግልጽ መሆኑንና ነጸብራቅ አለመኖሩን ያረጋግጡ።';
+
+  @override
+  String get avPhotoPassportPage => 'የፓስፖርቱ ፎቶ ያለበት ገጽ';
+
+  @override
+  String get avPhotoDocFront => 'የሰነዱ የፊት ገጽ';
+
+  @override
+  String get avPhotoDocBack => 'የሰነዱ የጀርባ ገጽ';
+
+  @override
+  String get avPhotoSelfie => 'ሰነድዎን ይዘው የሚነሱት ሰልፊ';
+
+  @override
+  String get avPhotoDocFrontHint => 'ሰነዱን ጠፍጣፋ ቦታ ላይ አስቀምጠው ፍሬሙን ይሙሉት።';
+
+  @override
+  String get avPhotoDocBackHint => 'ሰነዱን ገልብጠው ጀርባውን ያንሱ።';
+
+  @override
+  String get avPhotoSelfieHint => 'ሰነዱን ከፊትዎ አጠገብ ይያዙ። ሁለቱም በግልጽ መታየት አለባቸው።';
+
+  @override
+  String get avTakePhoto => 'ፎቶ ያንሱ';
+
+  @override
+  String get avRetake => 'እንደገና ያንሱ';
+
+  @override
+  String get avUploaded => 'ተጭኗል';
+
+  @override
+  String get avUploading => 'በመጫን ላይ…';
+
+  @override
+  String get avConsent =>
+      'ማንነቴን ለማረጋገጥ GuzoMy እነዚህን ፎቶዎችና የሰነዴን መረጃ መለያ እስካለኝ ድረስ እንዲያስቀምጥ እስማማለሁ። የGuzoMy ሰራተኞች ይገመግሟቸዋል።';
+
+  @override
+  String get avSubmitForReview => 'ለግምገማ ያስገቡ';
+
+  @override
+  String avResumedDocument(String document) {
+    return 'በ$document ማረጋገጥ ጀምረው ስለነበር በእሱ እንቀጥላለን።';
+  }
+
+  @override
+  String get avIssueAppUpdate => 'ማንነትዎን ለማረጋገጥ እባክዎ GuzoMyን ወደ አዲሱ ስሪት ያዘምኑ።';
+
+  @override
+  String get avIssueInProgress => 'ሰነዶችዎ አስቀድመው እየተገመገሙ ነው።';
+
+  @override
+  String get avIssueLocked => 'ማረጋገጫ ተቆልፏል። እባክዎ ድጋፍ ሰጪን ያግኙ።';
+
+  @override
+  String get avIssueCooldown => 'አዲስ ሙከራ ገና መጀመር አይችሉም።';
+
+  @override
+  String get avIssueSessionExpired => 'ጊዜው አልፏል። እባክዎ እንደገና ይጀምሩ።';
+
+  @override
+  String get avIssueInvalidFile => 'ይህ ፎቶ ጥቅም ላይ ሊውል አይችልም። እባክዎ እንደገና ያንሱ።';
+
+  @override
+  String get avIssueFilesMissing => 'አንዳንድ ፎቶዎች ይጎድላሉ። ከማስገባትዎ በፊት ያንሷቸው።';
+
+  @override
+  String get avIssueCamera =>
+      'ካሜራውን መክፈት አልቻልንም። GuzoMy ካሜራ እንዲጠቀም በቅንብሮች ውስጥ መፍቀዱን ያረጋግጡ።';
+
+  @override
+  String get avReasonBlurry =>
+      'ፎቶዎችዎ በቂ ግልጽ አልነበሩም። እባክዎ በጥሩ ብርሃን እንደገና ያንሷቸው።';
+
+  @override
+  String get avReasonGlare =>
+      'በሰነድዎ ላይ ነጸብራቅ ነበር። ቀጥተኛ ብርሃንን አስወግደው እንደገና ያንሱ።';
+
+  @override
+  String get avReasonCutOff => 'የሰነድዎ አራቱም ማዕዘኖች መታየት አለባቸው።';
+
+  @override
+  String get avReasonFaceNotVisible => 'በሰልፊው ላይ ፊትዎ በግልጽ አልታየም።';
+
+  @override
+  String get avReasonDocNotInSelfie => 'እባክዎ በሰልፊው ላይ ሰነድዎን ከፊትዎ አጠገብ ይያዙ።';
+
+  @override
+  String get avReasonUnsupported =>
+      'ይህ የሰነድ አይነት ተቀባይነት የለውም። እባክዎ ፓስፖርት፣ ብሔራዊ መታወቂያ፣ መንጃ ፈቃድ ወይም የመኖሪያ ፈቃድ ይጠቀሙ።';
+
+  @override
+  String get avReasonExpired => 'ሰነድዎ ጊዜው አልፎበታል። እባክዎ የሚሰራ ሰነድ ይጠቀሙ።';
+
+  @override
+  String get avReasonExpiringSoon =>
+      'ሰነድዎ ቢያንስ ለተጨማሪ 3 ወራት የሚያገለግል መሆን አለበት። እባክዎ ሌላ ሰነድ ይጠቀሙ።';
+
+  @override
+  String get avReasonUnderage => 'GuzoMyን ለመጠቀም 18 ዓመት ወይም ከዚያ በላይ መሆን አለብዎት።';
+
+  @override
+  String get avReasonNameMismatch => 'በሰነድዎ ላይ ያለው ስም ከመገለጫዎ ጋር አይዛመድም።';
+
+  @override
+  String get avReasonFaceMismatch => 'ሰነዱ የእርስዎ መሆኑን ማረጋገጥ አልቻልንም።';
+
+  @override
+  String get avReasonDuplicateAccount => 'ይህ ሰነድ አስቀድሞ ከሌላ መለያ ጋር ተገናኝቷል።';
+
+  @override
+  String get avReasonSuspectedFraud => 'ማንነትዎን ማረጋገጥ አልቻልንም። እባክዎ ድጋፍ ሰጪን ያግኙ።';
+
+  @override
+  String get avSupportEmailSubject => 'የማንነት ማረጋገጫ እርዳታ';
+
+  @override
+  String get blockedTitle => 'መለያዎ ታግዷል';
+
+  @override
+  String get blockedBody =>
+      'ማንነትዎን ማረጋገጥ ስላልቻልን መለያዎ ታግዷል። ስህተት ነው ብለው ካሰቡ ድጋፍ ሰጪን ያግኙ።';
 }

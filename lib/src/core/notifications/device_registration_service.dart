@@ -104,9 +104,17 @@ class DeviceRegistrationService {
       );
       // Re-fetch the inbox so the unread badge updates live.
       AppRefreshBus.instance.emit(RefreshTopic.notifications);
+      if (_isVerificationPush(data)) {
+        AppRefreshBus.instance.emit(RefreshTopic.verification);
+      }
     });
 
+    // Background pushes don't reach onMessage; refresh when the app resumes
+    // from a tap instead.
     _openedAppSub ??= FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      if (_isVerificationPush(message.data)) {
+        AppRefreshBus.instance.emit(RefreshTopic.verification);
+      }
       if (message.data.isNotEmpty) NotificationService.handleData(message.data);
     });
 
@@ -117,6 +125,9 @@ class DeviceRegistrationService {
       }
     });
   }
+
+  static bool _isVerificationPush(Map<String, dynamic> data) =>
+      (data['type']?.toString().toUpperCase() ?? '').startsWith('VERIFICATION_');
 
   /// Obtains the FCM token and registers it with the backend. Best-effort:
   /// failures are logged but never surfaced, so a registration hiccup can't

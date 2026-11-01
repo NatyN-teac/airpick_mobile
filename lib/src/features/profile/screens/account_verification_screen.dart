@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:guzomy/l10n/app_localizations.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/support_contact.dart';
 import '../../../core/widgets/state_message.dart';
 import '../../offers/widgets/airpick_bubble_shell.dart';
 import '../cubit/account_verification_cubit.dart';
@@ -9,7 +13,8 @@ import '../cubit/current_user_cubit.dart';
 import '../models/account_verification.dart';
 import '../repository/user_repository.dart';
 import '../widgets/profile_sub_screen_app_bar.dart';
-import '../widgets/veriff_verification_widgets.dart';
+import '../widgets/verification_widgets.dart';
+import 'verification_capture_screen.dart';
 
 class AccountVerificationScreen extends StatelessWidget {
   const AccountVerificationScreen({super.key});
@@ -38,9 +43,9 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
     with SingleTickerProviderStateMixin {
   late final AnimationController _enterCtrl;
   bool _showSuccess = false;
-  String _successTitle = 'Verification submitted!';
-  String _successSubtitle =
-      'We\'re reviewing your ID. Pull down to refresh for the latest status.';
+
+  /// Re-evaluates the cooldown so the button unlocks once `canRetryAt` passes.
+  Timer? _cooldownTicker;
 
   @override
   void initState() {
@@ -49,51 +54,30 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
       vsync: this,
       duration: const Duration(milliseconds: 650),
     )..forward();
+    _cooldownTicker = Timer.periodic(const Duration(seconds: 30), (_) {
+      final v = context.read<AccountVerificationCubit>().state.verification;
+      if (mounted && v?.canRetryAt != null) setState(() {});
+    });
   }
 
   @override
   void dispose() {
+    _cooldownTicker?.cancel();
     _enterCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _startVeriff(BuildContext context) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final locale = Localizations.localeOf(context).languageCode;
-    final l = l10n(context);
+  Future<void> _openCapture(BuildContext context) async {
     final cubit = context.read<AccountVerificationCubit>();
-
-    try {
-      final outcome = await cubit.startVeriffVerification(
-        isDark: isDark,
-        languageLocale: locale,
-      );
-      if (!context.mounted) return;
-      switch (outcome) {
-        case VeriffFlowOutcome.canceled:
-          return;
-        case VeriffFlowOutcome.submitted:
-          setState(() {
-            _successTitle = l.avSubmittedTitle;
-            _successSubtitle = l.avSubmittedSub;
-            _showSuccess = true;
-          });
-        case VeriffFlowOutcome.verified:
-          setState(() {
-            _successTitle = l.avVerifiedTitle;
-            _successSubtitle = l.avVerifiedSub;
-            _showSuccess = true;
-          });
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceFirst('Exception: ', '')),
-          behavior: SnackBarBehavior.floating,
+    final submitted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: const VerificationCaptureScreen(),
         ),
-      );
-    }
+      ),
+    );
+    if (submitted == true && mounted) setState(() => _showSuccess = true);
   }
 
   @override
@@ -106,13 +90,8 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
       backgroundColor: bg,
       appBar: ProfileSubScreenAppBar(title: l.profileVerification),
       body: BlocConsumer<AccountVerificationCubit, AccountVerificationState>(
-        listenWhen: (prev, curr) =>
-            curr.error != null &&
-            prev.error != curr.error &&
-            curr.status != AccountVerificationStatus.startingVeriff,
-        listener: (context, state) {
-          // Errors from load() only — Veriff launch errors handled in _startVeriff.
-        },
+        listenWhen: (prev, curr) => false,
+        listener: (context, state) {},
         builder: (context, state) {
           if (state.status == AccountVerificationStatus.initial ||
               state.status == AccountVerificationStatus.loading) {
@@ -138,15 +117,16 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
           }
 
           final verification = state.verification!;
-          final starting =
-              state.status == AccountVerificationStatus.startingVeriff;
-          final polling =
-              state.status == AccountVerificationStatus.pollingStatus;
-          final canStart = canStartVeriff(verification);
           final step = verificationStepFor(verification);
           final rejectionMessage = verification.isRejected
-              ? verificationRejectionMessage(verification)
+              ? verificationReasonText(l, verification)
               : null;
+          final action = _primaryAction(
+            context,
+            l,
+            verification,
+            open: () => _openCapture(context),
+          );
 
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 400),
@@ -167,8 +147,8 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                     key: const ValueKey('success'),
                     isDark: isDark,
                     onDismiss: () => Navigator.pop(context),
-                    title: _successTitle,
-                    subtitle: _successSubtitle,
+                    title: l.avSubmittedTitle,
+                    subtitle: l.avSubmittedSub,
                   )
                 : Stack(
                     key: const ValueKey('content'),
@@ -235,57 +215,12 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                           ],
                         ),
                       ),
-                      if (canStart)
-                        _VeriffStartBar(
+                      if (action != null)
+                        _VerificationActionBar(
                           isDark: isDark,
-                          loading: starting,
-                          label: verification.isRejected == true
-                              ? l.avTryAgainVeriff
-                              : l.avStartVerification,
-                          onStart: starting
-                              ? null
-                              : () => _startVeriff(context),
-                        ),
-                      if (starting || polling)
-                        ColoredBox(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          child: Center(
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 40,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 20,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.darkSurface
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const CircularProgressIndicator(
-                                    color: AppColors.primary,
-                                  ),
-                                  const SizedBox(height: 14),
-                                  Text(
-                                    starting ? l.avPreparing : l.avChecking,
-                                    style: TextStyle(
-                                      fontFamily: 'Manrope',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark
-                                          ? AppColors.darkTextPrimary
-                                          : AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          label: action.$1,
+                          icon: action.$2,
+                          onPressed: action.$3,
                         ),
                     ],
                   ),
@@ -296,24 +231,52 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
   }
 }
 
-class _VeriffStartBar extends StatelessWidget {
-  final bool isDark;
-  final bool loading;
-  final String label;
-  final VoidCallback? onStart;
+/// Bottom button for the current state: start, continue, retry, contact
+/// support, or a disabled retry while a cooldown runs. Null when there's
+/// nothing for the user to do (verified or under review).
+(String, IconData, VoidCallback?)? _primaryAction(
+  BuildContext context,
+  AppLocalizations l,
+  AccountVerification v, {
+  required VoidCallback open,
+}) {
+  if (v.isApproved || v.isUnderReview) return null;
+  if (v.isLocked) {
+    return (
+      l.avContactSupport,
+      Icons.mail_outline_rounded,
+      () => openSupportEmail(context),
+    );
+  }
+  if (v.isCoolingDown()) return (l.avTryAgain, Icons.schedule_rounded, null);
+  if (v.isCapturing) {
+    return (l.avContinueVerification, Icons.photo_camera_outlined, open);
+  }
+  if (v.isResubmissionRequested) {
+    return (l.avRetakePhotos, Icons.photo_camera_outlined, open);
+  }
+  if (v.isDeclined) return (l.avTryAgain, Icons.refresh_rounded, open);
+  return (l.avStartVerification, Icons.verified_user_outlined, open);
+}
 
-  const _VeriffStartBar({
+class _VerificationActionBar extends StatelessWidget {
+  final bool isDark;
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  const _VerificationActionBar({
     required this.isDark,
-    required this.loading,
     required this.label,
-    this.onStart,
+    required this.icon,
+    required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
-    final enabled = onStart != null && !loading;
+    final enabled = onPressed != null;
     final l = l10n(context);
 
     return Align(
@@ -353,17 +316,13 @@ class _VeriffStartBar extends StatelessWidget {
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: enabled ? onStart : null,
+                    onTap: onPressed,
                     borderRadius: BorderRadius.circular(14),
                     child: Center(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            Icons.verified_user_outlined,
-                            color: Colors.white,
-                            size: 20,
-                          ),
+                          Icon(icon, color: Colors.white, size: 20),
                           const SizedBox(width: 8),
                           Text(
                             label,

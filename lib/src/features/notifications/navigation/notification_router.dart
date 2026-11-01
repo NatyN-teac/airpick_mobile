@@ -14,6 +14,7 @@ import '../../offer_requests/screens/offer_requests_screen.dart';
 import '../../offers/repository/offer_repository.dart';
 import '../../offers/screens/offer_detail_screen.dart';
 import '../../profile/repository/user_repository.dart';
+import '../../profile/screens/account_verification_screen.dart';
 
 /// Central deep-link routing for notifications. Shared by two entry points:
 ///  1. In-app taps on a tile in NotificationsScreen (rich home context).
@@ -27,6 +28,7 @@ import '../../profile/repository/user_repository.dart';
 ///   MATCH + not-yet-eligible (pending/rejected/cancelled) → engagement activity
 ///   OFFER_REQUEST                               → offer-request detail
 ///   OFFER                                       → offer detail
+///   VERIFICATION_* (no ref needed)              → account verification
 ///   PROPOSAL / USER / none                      → no navigation
 Future<void> routeNotification(
   BuildContext ctx, {
@@ -34,10 +36,17 @@ Future<void> routeNotification(
   String? refType,
   String? refId,
 }) async {
+  final t = (type ?? '').toUpperCase();
+  if (t.startsWith('VERIFICATION_')) {
+    Navigator.of(ctx).push(
+      MaterialPageRoute(builder: (_) => const AccountVerificationScreen()),
+    );
+    return;
+  }
+
   final id = refId?.trim();
   if (id == null || id.isEmpty) return;
 
-  final t = (type ?? '').toUpperCase();
   switch ((refType ?? '').toUpperCase()) {
     case 'MATCH':
       if (t == 'MATCH_IN_PROGRESS' ||

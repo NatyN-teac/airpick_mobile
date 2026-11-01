@@ -41,10 +41,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>GuzoMy uses the camera to verify your identity and to take photos of items for requests, pickups, deliveries and chat.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>GuzoMy may use the microphone during identity verification.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>GuzoMy accesses your photos so you can attach item pictures to requests, deliveries and chat, or upload an ID image for verification.</string>
+	<string>GuzoMy accesses your photos so you can attach item pictures to requests, deliveries and chat.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

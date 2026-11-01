@@ -1077,7 +1077,7 @@ abstract class AppLocalizations {
   /// No description provided for @avSubmittedSub.
   ///
   /// In en, this message translates to:
-  /// **'We\'re reviewing your ID. Pull down to refresh for the latest status.'**
+  /// **'Our team will review your documents. We\'ll notify you when it\'s done.'**
   String get avSubmittedSub;
 
   /// No description provided for @avVerifiedTitle.
@@ -1104,22 +1104,10 @@ abstract class AppLocalizations {
   /// **'Failed to load verification status.'**
   String get avLoadFailed;
 
-  /// No description provided for @avPreparing.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing secure session…'**
-  String get avPreparing;
-
-  /// No description provided for @avChecking.
-  ///
-  /// In en, this message translates to:
-  /// **'Checking verification status…'**
-  String get avChecking;
-
   /// No description provided for @avPoweredBy.
   ///
   /// In en, this message translates to:
-  /// **'Powered by Veriff · Secure identity verification'**
+  /// **'Reviewed by the GuzoMy team · Your photos stay private'**
   String get avPoweredBy;
 
   /// No description provided for @avStatusVerifiedTitle.
@@ -1143,7 +1131,7 @@ abstract class AppLocalizations {
   /// No description provided for @avStatusReviewBody.
   ///
   /// In en, this message translates to:
-  /// **'Veriff is processing your submission. This usually takes a few minutes.'**
+  /// **'Our team is reviewing your documents. We\'ll notify you as soon as it\'s done.'**
   String get avStatusReviewBody;
 
   /// No description provided for @avStatusResubmitTitle.
@@ -1173,7 +1161,7 @@ abstract class AppLocalizations {
   /// No description provided for @avStatusDefaultBody.
   ///
   /// In en, this message translates to:
-  /// **'A quick ID scan and selfie powered by Veriff keeps our community trusted.'**
+  /// **'Take photos of your ID and a selfie holding it. Our team reviews them to keep the community trusted.'**
   String get avStatusDefaultBody;
 
   /// No description provided for @avStepPrepare.
@@ -1185,7 +1173,7 @@ abstract class AppLocalizations {
   /// No description provided for @avStepIdScan.
   ///
   /// In en, this message translates to:
-  /// **'ID scan'**
+  /// **'ID photos'**
   String get avStepIdScan;
 
   /// No description provided for @avStepSelfie.
@@ -1221,13 +1209,13 @@ abstract class AppLocalizations {
   /// No description provided for @avTipSelfie.
   ///
   /// In en, this message translates to:
-  /// **'You\'ll take a quick selfie for liveness check'**
+  /// **'You\'ll take a selfie holding your ID next to your face'**
   String get avTipSelfie;
 
   /// No description provided for @avTipTime.
   ///
   /// In en, this message translates to:
-  /// **'Takes about 2 minutes'**
+  /// **'Taking the photos takes about 2 minutes'**
   String get avTipTime;
 
   /// No description provided for @avChipEncrypted.
@@ -1235,12 +1223,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Encrypted'**
   String get avChipEncrypted;
-
-  /// No description provided for @avChip230.
-  ///
-  /// In en, this message translates to:
-  /// **'230+ countries'**
-  String get avChip230;
 
   /// No description provided for @avWhatWentWrong.
   ///
@@ -1253,12 +1235,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start verification'**
   String get avStartVerification;
-
-  /// No description provided for @avTryAgainVeriff.
-  ///
-  /// In en, this message translates to:
-  /// **'Try again with Veriff'**
-  String get avTryAgainVeriff;
 
   /// No description provided for @notifTitle.
   ///
@@ -2219,6 +2195,366 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivery'**
   String get matchDelivery;
+
+  /// No description provided for @avStatusCapturingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your verification'**
+  String get avStatusCapturingTitle;
+
+  /// No description provided for @avStatusCapturingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve started verifying. Continue where you left off.'**
+  String get avStatusCapturingBody;
+
+  /// No description provided for @avStatusLockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification locked'**
+  String get avStatusLockedTitle;
+
+  /// No description provided for @avStatusLockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t verify your identity after several attempts. Please contact support for help.'**
+  String get avStatusLockedBody;
+
+  /// No description provided for @avStatusCooldownBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can try again on {date}.'**
+  String avStatusCooldownBody(String date);
+
+  /// No description provided for @avContinueVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue verification'**
+  String get avContinueVerification;
+
+  /// No description provided for @avTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get avTryAgain;
+
+  /// No description provided for @avRetakePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake photos'**
+  String get avRetakePhotos;
+
+  /// No description provided for @avContactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get avContactSupport;
+
+  /// No description provided for @avChipHumanReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed by our team'**
+  String get avChipHumanReview;
+
+  /// No description provided for @avCaptureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity'**
+  String get avCaptureTitle;
+
+  /// No description provided for @avChooseDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your document'**
+  String get avChooseDocument;
+
+  /// No description provided for @avChooseDocumentSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an original, valid document. It must be valid for at least 3 more months.'**
+  String get avChooseDocumentSub;
+
+  /// No description provided for @avDocPassport.
+  ///
+  /// In en, this message translates to:
+  /// **'Passport'**
+  String get avDocPassport;
+
+  /// No description provided for @avDocNationalId.
+  ///
+  /// In en, this message translates to:
+  /// **'National ID'**
+  String get avDocNationalId;
+
+  /// No description provided for @avDocDriverLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver\'s license'**
+  String get avDocDriverLicense;
+
+  /// No description provided for @avDocResidencePermit.
+  ///
+  /// In en, this message translates to:
+  /// **'Residence permit'**
+  String get avDocResidencePermit;
+
+  /// No description provided for @avIssuingCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Issuing country'**
+  String get avIssuingCountry;
+
+  /// No description provided for @avIssuingCountryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a country'**
+  String get avIssuingCountryHint;
+
+  /// No description provided for @avContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get avContinue;
+
+  /// No description provided for @avPhotosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take your photos'**
+  String get avPhotosTitle;
+
+  /// No description provided for @avPhotosSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure all four corners are visible, the text is sharp and there\'s no glare.'**
+  String get avPhotosSub;
+
+  /// No description provided for @avPhotoPassportPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Passport photo page'**
+  String get avPhotoPassportPage;
+
+  /// No description provided for @avPhotoDocFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Front of document'**
+  String get avPhotoDocFront;
+
+  /// No description provided for @avPhotoDocBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back of document'**
+  String get avPhotoDocBack;
+
+  /// No description provided for @avPhotoSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie holding your document'**
+  String get avPhotoSelfie;
+
+  /// No description provided for @avPhotoDocFrontHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Lay the document flat and fill the frame.'**
+  String get avPhotoDocFrontHint;
+
+  /// No description provided for @avPhotoDocBackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn the document over and capture the back.'**
+  String get avPhotoDocBackHint;
+
+  /// No description provided for @avPhotoSelfieHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the document next to your face. Both must be clearly visible.'**
+  String get avPhotoSelfieHint;
+
+  /// No description provided for @avTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get avTakePhoto;
+
+  /// No description provided for @avRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get avRetake;
+
+  /// No description provided for @avUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get avUploaded;
+
+  /// No description provided for @avUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get avUploading;
+
+  /// No description provided for @avConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree that GuzoMy may store these photos and my document details to verify my identity, for as long as I have an account. GuzoMy staff will review them.'**
+  String get avConsent;
+
+  /// No description provided for @avSubmitForReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit for review'**
+  String get avSubmitForReview;
+
+  /// No description provided for @avResumedDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'You already started verifying with your {document}, so we\'ll continue with it.'**
+  String avResumedDocument(String document);
+
+  /// No description provided for @avIssueAppUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Please update GuzoMy to the latest version to verify your identity.'**
+  String get avIssueAppUpdate;
+
+  /// No description provided for @avIssueInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your documents are already being reviewed.'**
+  String get avIssueInProgress;
+
+  /// No description provided for @avIssueLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification is locked. Please contact support.'**
+  String get avIssueLocked;
+
+  /// No description provided for @avIssueCooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t start a new attempt yet.'**
+  String get avIssueCooldown;
+
+  /// No description provided for @avIssueSessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session timed out. Please start again.'**
+  String get avIssueSessionExpired;
+
+  /// No description provided for @avIssueInvalidFile.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo can\'t be used. Please retake it.'**
+  String get avIssueInvalidFile;
+
+  /// No description provided for @avIssueFilesMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Some photos are missing. Please take them before submitting.'**
+  String get avIssueFilesMissing;
+
+  /// No description provided for @avIssueCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t open the camera. Check that GuzoMy has camera access in Settings.'**
+  String get avIssueCamera;
+
+  /// No description provided for @avReasonBlurry.
+  ///
+  /// In en, this message translates to:
+  /// **'Your photos were not clear enough. Please retake them in good light.'**
+  String get avReasonBlurry;
+
+  /// No description provided for @avReasonGlare.
+  ///
+  /// In en, this message translates to:
+  /// **'There was glare on your document. Please avoid direct light and retake.'**
+  String get avReasonGlare;
+
+  /// No description provided for @avReasonCutOff.
+  ///
+  /// In en, this message translates to:
+  /// **'All four corners of your document must be visible.'**
+  String get avReasonCutOff;
+
+  /// No description provided for @avReasonFaceNotVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'Your face was not clearly visible in the selfie.'**
+  String get avReasonFaceNotVisible;
+
+  /// No description provided for @avReasonDocNotInSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Please hold your document next to your face in the selfie.'**
+  String get avReasonDocNotInSelfie;
+
+  /// No description provided for @avReasonUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This document type is not accepted. Please use a passport, national ID, driver\'s license or residence permit.'**
+  String get avReasonUnsupported;
+
+  /// No description provided for @avReasonExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your document has expired. Please use a valid document.'**
+  String get avReasonExpired;
+
+  /// No description provided for @avReasonExpiringSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Your document must be valid for at least 3 more months. Please use another document.'**
+  String get avReasonExpiringSoon;
+
+  /// No description provided for @avReasonUnderage.
+  ///
+  /// In en, this message translates to:
+  /// **'You must be 18 or older to use GuzoMy.'**
+  String get avReasonUnderage;
+
+  /// No description provided for @avReasonNameMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The name on your document does not match your profile.'**
+  String get avReasonNameMismatch;
+
+  /// No description provided for @avReasonFaceMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not confirm that the document belongs to you.'**
+  String get avReasonFaceMismatch;
+
+  /// No description provided for @avReasonDuplicateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'This document is already linked to another account.'**
+  String get avReasonDuplicateAccount;
+
+  /// No description provided for @avReasonSuspectedFraud.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not verify your identity. Please contact support.'**
+  String get avReasonSuspectedFraud;
+
+  /// No description provided for @avSupportEmailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification help'**
+  String get avSupportEmailSubject;
+
+  /// No description provided for @blockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account blocked'**
+  String get blockedTitle;
+
+  /// No description provided for @blockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been blocked because we couldn\'t verify your identity. If you think this is a mistake, contact support.'**
+  String get blockedBody;
 }
 
 class _AppLocalizationsDelegate

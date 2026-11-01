@@ -138,10 +138,6 @@ PODS:
     - FlutterMacOS
   - url_launcher_ios (0.0.1):
     - Flutter
-  - veriff_flutter (0.0.1):
-    - Flutter
-    - VeriffSDK (= 10.2.0)
-  - VeriffSDK (10.2.0)
 
 DEPENDENCIES:
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
@@ -158,7 +154,6 @@ DEPENDENCIES:
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
-  - veriff_flutter (from `.symlinks/plugins/veriff_flutter/ios`)
 
 SPEC REPOS:
   trunk:
@@ -182,7 +177,6 @@ SPEC REPOS:
     - PromisesObjC
     - PromisesSwift
     - RecaptchaInterop
-    - VeriffSDK
 
 EXTERNAL SOURCES:
   device_info_plus:
@@ -213,8 +207,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sign_in_with_apple/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
-  veriff_flutter:
-    :path: ".symlinks/plugins/veriff_flutter/ios"
 
 SPEC CHECKSUMS:
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
@@ -251,8 +243,6 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sign_in_with_apple: 5e34677a4e74c5f42760f41b3bbe05343e84d171
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
-  veriff_flutter: 9edf96aceb1e5192cd04f5a3a95ceb12c41b5890
-  VeriffSDK: b2ec97011869ef7d2b753bb9e6eb4e5a3880c86d
 
 PODFILE CHECKSUM: 53a6aebc29ccee84c41f92f409fc20cd4ca011f1
 

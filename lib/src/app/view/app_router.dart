@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/app_bloc.dart';
 import '../../core/notifications/app_notifications.dart';
 import '../../core/notifications/device_registration_service.dart';
+import '../../core/navigation/app_navigator.dart';
 import '../../core/session/app_session.dart';
+import '../../core/utils/app_refresh_bus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/auth/bloc/auth_bloc.dart';
 import '../../features/auth/screens/auth_screen.dart';
@@ -15,6 +17,7 @@ import '../../core/storage/token_storage.dart';
 import '../../features/profile/cubit/current_user_cubit.dart';
 import '../../features/profile/repository/user_repository.dart';
 import '../../features/profile/screens/account_verification_screen.dart';
+import '../../features/profile/screens/blocked_account_screen.dart';
 
 class AppRouter extends StatefulWidget {
   const AppRouter({super.key});
@@ -25,6 +28,9 @@ class AppRouter extends StatefulWidget {
 
 class _AppRouterState extends State<AppRouter> {
   StreamSubscription<void>? _unauthorizedSub;
+  StreamSubscription<void>? _blockedSub;
+  StreamSubscription<void>? _verificationSub;
+  bool _blockedShown = false;
 
   @override
   void initState() {
@@ -35,11 +41,37 @@ class _AppRouterState extends State<AppRouter> {
         context.read<AppBloc>().add(const AppLoggedOut());
       }
     });
+    _blockedSub = AppSession.onBlocked.listen((_) => _showBlocked());
+    // Keep the profile's verified flag (used by requireVerified) current when
+    // a reviewer decides while the verification screen isn't open.
+    _verificationSub =
+        AppRefreshBus.instance.on(RefreshTopic.verification).listen((_) {
+      if (!mounted) return;
+      context.read<CurrentUserCubit>().refreshFromServer(
+            context.read<UserRepository>(),
+            context.read<TokenStorage>(),
+          );
+    });
+  }
+
+  /// Every authenticated call fails with 403 USER_BLOCKED once the account is
+  /// blocked, so show the blocked screen once on top of everything.
+  void _showBlocked() {
+    if (_blockedShown || !mounted) return;
+    final navigator = appNavigatorKey.currentState;
+    if (navigator == null) return;
+    _blockedShown = true;
+    navigator.popUntil((route) => route.isFirst);
+    navigator
+        .push(MaterialPageRoute(builder: (_) => const BlockedAccountScreen()))
+        .whenComplete(() => _blockedShown = false);
   }
 
   @override
   void dispose() {
     _unauthorizedSub?.cancel();
+    _blockedSub?.cancel();
+    _verificationSub?.cancel();
     super.dispose();
   }
 

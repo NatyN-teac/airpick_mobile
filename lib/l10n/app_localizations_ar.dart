@@ -520,8 +520,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get avSubmittedTitle => 'تم إرسال طلب التحقق!';
 
   @override
-  String get avSubmittedSub =>
-      'نقوم بمراجعة هويتك. اسحب للأسفل للتحديث لمعرفة أحدث حالة.';
+  String get avSubmittedSub => 'سيراجع فريقنا مستنداتك. سنُعلمك عند الانتهاء.';
 
   @override
   String get avVerifiedTitle => 'تم التحقق منك!';
@@ -536,13 +535,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get avLoadFailed => 'فشل تحميل حالة التحقق.';
 
   @override
-  String get avPreparing => 'جارٍ تجهيز جلسة آمنة…';
-
-  @override
-  String get avChecking => 'جارٍ التحقق من حالة التحقق…';
-
-  @override
-  String get avPoweredBy => 'مدعوم بواسطة Veriff · تحقق آمن من الهوية';
+  String get avPoweredBy => 'يراجعها فريق GuzoMy · صورك تبقى خاصة';
 
   @override
   String get avStatusVerifiedTitle => 'تم التحقق منك';
@@ -556,7 +549,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get avStatusReviewBody =>
-      'يقوم Veriff بمعالجة طلبك. يستغرق هذا عادةً بضع دقائق.';
+      'يراجع فريقنا مستنداتك. سنُعلمك فور الانتهاء.';
 
   @override
   String get avStatusResubmitTitle => 'يلزم إعادة الإرسال';
@@ -573,13 +566,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get avStatusDefaultBody =>
-      'مسح سريع للهوية وصورة سيلفي مدعومان بـ Veriff يحافظان على ثقة مجتمعنا.';
+      'التقط صورًا لهويتك وصورة سيلفي وأنت تحملها. يراجعها فريقنا للحفاظ على مجتمع موثوق.';
 
   @override
   String get avStepPrepare => 'التحضير';
 
   @override
-  String get avStepIdScan => 'مسح الهوية';
+  String get avStepIdScan => 'صور الهوية';
 
   @override
   String get avStepSelfie => 'سيلفي';
@@ -597,25 +590,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get avTipId => 'جهّز جواز سفر أو هوية حكومية';
 
   @override
-  String get avTipSelfie => 'ستلتقط صورة سيلفي سريعة للتحقق من الحيوية';
+  String get avTipSelfie => 'ستلتقط صورة سيلفي وأنت تحمل هويتك بجانب وجهك';
 
   @override
-  String get avTipTime => 'يستغرق حوالي دقيقتين';
+  String get avTipTime => 'يستغرق التقاط الصور نحو دقيقتين';
 
   @override
   String get avChipEncrypted => 'مشفّر';
-
-  @override
-  String get avChip230 => '+230 دولة';
 
   @override
   String get avWhatWentWrong => 'ما الخطأ الذي حدث';
 
   @override
   String get avStartVerification => 'ابدأ التحقق';
-
-  @override
-  String get avTryAgainVeriff => 'حاول مرة أخرى مع Veriff';
 
   @override
   String get notifTitle => 'الإشعارات';
@@ -1148,4 +1135,207 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get matchDelivery => 'التوصيل';
+
+  @override
+  String get avStatusCapturingTitle => 'أكمل التحقق';
+
+  @override
+  String get avStatusCapturingBody => 'لقد بدأت التحقق. تابع من حيث توقفت.';
+
+  @override
+  String get avStatusLockedTitle => 'التحقق مقفل';
+
+  @override
+  String get avStatusLockedBody =>
+      'لم نتمكن من التحقق من هويتك بعد عدة محاولات. يرجى التواصل مع الدعم.';
+
+  @override
+  String avStatusCooldownBody(String date) {
+    return 'يمكنك المحاولة مرة أخرى في $date.';
+  }
+
+  @override
+  String get avContinueVerification => 'متابعة التحقق';
+
+  @override
+  String get avTryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get avRetakePhotos => 'أعد التقاط الصور';
+
+  @override
+  String get avContactSupport => 'تواصل مع الدعم';
+
+  @override
+  String get avChipHumanReview => 'يراجعها فريقنا';
+
+  @override
+  String get avCaptureTitle => 'تحقق من هويتك';
+
+  @override
+  String get avChooseDocument => 'اختر مستندك';
+
+  @override
+  String get avChooseDocumentSub =>
+      'استخدم مستندًا أصليًا وساريًا. يجب أن يكون ساريًا لمدة 3 أشهر على الأقل.';
+
+  @override
+  String get avDocPassport => 'جواز السفر';
+
+  @override
+  String get avDocNationalId => 'بطاقة الهوية الوطنية';
+
+  @override
+  String get avDocDriverLicense => 'رخصة القيادة';
+
+  @override
+  String get avDocResidencePermit => 'تصريح الإقامة';
+
+  @override
+  String get avIssuingCountry => 'بلد الإصدار';
+
+  @override
+  String get avIssuingCountryHint => 'ابحث عن بلد';
+
+  @override
+  String get avContinue => 'متابعة';
+
+  @override
+  String get avPhotosTitle => 'التقط صورك';
+
+  @override
+  String get avPhotosSub =>
+      'تأكد من ظهور الزوايا الأربع، ووضوح النص، وعدم وجود انعكاس.';
+
+  @override
+  String get avPhotoPassportPage => 'صفحة الصورة في جواز السفر';
+
+  @override
+  String get avPhotoDocFront => 'وجه المستند';
+
+  @override
+  String get avPhotoDocBack => 'ظهر المستند';
+
+  @override
+  String get avPhotoSelfie => 'سيلفي وأنت تحمل مستندك';
+
+  @override
+  String get avPhotoDocFrontHint => 'ضع المستند على سطح مستوٍ واملأ الإطار.';
+
+  @override
+  String get avPhotoDocBackHint => 'اقلب المستند والتقط صورة الظهر.';
+
+  @override
+  String get avPhotoSelfieHint =>
+      'أمسك المستند بجانب وجهك. يجب أن يظهر كلاهما بوضوح.';
+
+  @override
+  String get avTakePhoto => 'التقط صورة';
+
+  @override
+  String get avRetake => 'إعادة الالتقاط';
+
+  @override
+  String get avUploaded => 'تم الرفع';
+
+  @override
+  String get avUploading => 'جارٍ الرفع…';
+
+  @override
+  String get avConsent =>
+      'أوافق على أن يحتفظ GuzoMy بهذه الصور وبيانات مستندي للتحقق من هويتي طوال مدة وجود حسابي. سيراجعها موظفو GuzoMy.';
+
+  @override
+  String get avSubmitForReview => 'إرسال للمراجعة';
+
+  @override
+  String avResumedDocument(String document) {
+    return 'لقد بدأت التحقق باستخدام $document، لذا سنتابع به.';
+  }
+
+  @override
+  String get avIssueAppUpdate =>
+      'يرجى تحديث GuzoMy إلى أحدث إصدار للتحقق من هويتك.';
+
+  @override
+  String get avIssueInProgress => 'مستنداتك قيد المراجعة بالفعل.';
+
+  @override
+  String get avIssueLocked => 'التحقق مقفل. يرجى التواصل مع الدعم.';
+
+  @override
+  String get avIssueCooldown => 'لا يمكنك بدء محاولة جديدة بعد.';
+
+  @override
+  String get avIssueSessionExpired => 'انتهت مهلة الجلسة. يرجى البدء من جديد.';
+
+  @override
+  String get avIssueInvalidFile =>
+      'لا يمكن استخدام هذه الصورة. يرجى إعادة التقاطها.';
+
+  @override
+  String get avIssueFilesMissing => 'بعض الصور مفقودة. التقطها قبل الإرسال.';
+
+  @override
+  String get avIssueCamera =>
+      'تعذر فتح الكاميرا. تأكد من السماح لـ GuzoMy باستخدام الكاميرا في الإعدادات.';
+
+  @override
+  String get avReasonBlurry =>
+      'لم تكن صورك واضحة بما يكفي. يرجى إعادة التقاطها في إضاءة جيدة.';
+
+  @override
+  String get avReasonGlare =>
+      'كان هناك انعكاس على مستندك. تجنب الضوء المباشر وأعد الالتقاط.';
+
+  @override
+  String get avReasonCutOff => 'يجب أن تظهر الزوايا الأربع لمستندك.';
+
+  @override
+  String get avReasonFaceNotVisible =>
+      'لم يكن وجهك ظاهرًا بوضوح في صورة السيلفي.';
+
+  @override
+  String get avReasonDocNotInSelfie =>
+      'يرجى إمساك مستندك بجانب وجهك في صورة السيلفي.';
+
+  @override
+  String get avReasonUnsupported =>
+      'نوع المستند هذا غير مقبول. يرجى استخدام جواز سفر أو بطاقة هوية وطنية أو رخصة قيادة أو تصريح إقامة.';
+
+  @override
+  String get avReasonExpired =>
+      'انتهت صلاحية مستندك. يرجى استخدام مستند ساري المفعول.';
+
+  @override
+  String get avReasonExpiringSoon =>
+      'يجب أن يكون مستندك ساريًا لمدة 3 أشهر أخرى على الأقل. يرجى استخدام مستند آخر.';
+
+  @override
+  String get avReasonUnderage =>
+      'يجب أن يكون عمرك 18 عامًا أو أكثر لاستخدام GuzoMy.';
+
+  @override
+  String get avReasonNameMismatch =>
+      'الاسم الموجود في مستندك لا يطابق ملفك الشخصي.';
+
+  @override
+  String get avReasonFaceMismatch => 'لم نتمكن من التأكد من أن المستند يخصك.';
+
+  @override
+  String get avReasonDuplicateAccount => 'هذا المستند مرتبط بالفعل بحساب آخر.';
+
+  @override
+  String get avReasonSuspectedFraud =>
+      'لم نتمكن من التحقق من هويتك. يرجى التواصل مع الدعم.';
+
+  @override
+  String get avSupportEmailSubject => 'مساعدة في التحقق من الهوية';
+
+  @override
+  String get blockedTitle => 'تم حظر الحساب';
+
+  @override
+  String get blockedBody =>
+      'تم حظر حسابك لأننا لم نتمكن من التحقق من هويتك. إذا كنت تعتقد أن هذا خطأ، فتواصل مع الدعم.';
 }

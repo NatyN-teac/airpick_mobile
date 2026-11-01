@@ -1,24 +1,34 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/utils/app_logger.dart';
-import 'package:veriff_flutter/veriff_flutter.dart';
+import '../../../core/utils/app_refresh_bus.dart';
+import '../../../core/utils/time_format.dart';
 import '../cubit/current_user_cubit.dart';
 import '../models/account_verification.dart';
 import '../repository/user_repository.dart';
-import '../services/veriff_service.dart';
 
 part 'account_verification_state.dart';
 
+/// Backend accepts photos up to 10 MB.
+const _maxPhotoBytes = 10 * 1024 * 1024;
+
+/// Drives the in-house verification flow: pick a document, upload each photo
+/// the server asks for, submit, then follow the status as a reviewer decides.
 class AccountVerificationCubit extends Cubit<AccountVerificationState> {
   final UserRepository _users;
   final CurrentUserCubit _profile;
-  final VeriffService _veriff;
+  StreamSubscription<void>? _pushSub;
 
-  AccountVerificationCubit(
-    this._users,
-    this._profile, [
-    VeriffService? veriff,
-  ])  : _veriff = veriff ?? const VeriffService(),
-        super(const AccountVerificationState());
+  AccountVerificationCubit(this._users, this._profile)
+      : super(const AccountVerificationState()) {
+    // A verification push (approved / declined / resubmission) arrived.
+    _pushSub = AppRefreshBus.instance
+        .on(RefreshTopic.verification)
+        .listen((_) => refresh());
+  }
 
   /// Local snapshot first, then GET /users/verification/status.
   Future<void> load() async {
@@ -28,126 +38,211 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
       verification: local,
       clearError: true,
     ));
-
-    await _refreshStatus(fallback: local);
+    await refresh();
   }
 
-  /// Creates a Veriff session, launches the SDK, then polls backend status.
-  Future<VeriffFlowOutcome> startVeriffVerification({
-    required bool isDark,
-    String? languageLocale,
-  }) async {
-    final current =
-        state.verification ?? AccountVerification.fromProfileSnapshot(_profile.state);
-
-    emit(state.copyWith(
-      status: AccountVerificationStatus.startingVeriff,
-      clearError: true,
-    ));
-
-    try {
-      final session = await _users.createVerificationSession();
-      appLogger.d('[AccountVerificationCubit] Veriff session created: '
-          'id=${session.sessionId} url=${session.sessionUrl}');
-
-      emit(state.copyWith(
-        status: AccountVerificationStatus.loaded,
-        verification: current,
-      ));
-
-      final result = await _veriff.startVerification(
-        sessionUrl: session.sessionUrl,
-        isDark: isDark,
-        languageLocale: languageLocale,
-      );
-
-      if (result.status == Status.canceled) {
-        return VeriffFlowOutcome.canceled;
-      }
-
-      if (result.status == Status.error) {
-        throw Exception(
-          veriffErrorMessage(result.error) ??
-              'Verification ended with an error.',
-        );
-      }
-
-      emit(state.copyWith(status: AccountVerificationStatus.pollingStatus));
-      final verification = await _pollVerificationStatus();
-      _applyVerification(verification);
-
-      if (verification.isApproved) {
-        return VeriffFlowOutcome.verified;
-      }
-      return VeriffFlowOutcome.submitted;
-    } catch (e, st) {
-      appLogger.e('[AccountVerificationCubit] startVeriffVerification failed', e, st);
-      emit(state.copyWith(
-        status: AccountVerificationStatus.loaded,
-        verification: current,
-        error: e.toString().replaceFirst('Exception: ', ''),
-      ));
-      rethrow;
-    }
-  }
-
-  Future<void> refreshAfterSubmission() => _refreshStatus(
-        fallback: state.verification ??
-            AccountVerification.fromProfileSnapshot(_profile.state),
-      );
-
-  Future<void> _refreshStatus({required AccountVerification fallback}) async {
+  Future<void> refresh() async {
     try {
       final response = await _users.getVerificationStatus();
       if (isClosed) return;
       _applyVerification(response.toAccountVerification());
-    } catch (_) {
-      if (!isClosed) {
+    } catch (e, st) {
+      appLogger.e('[AccountVerificationCubit] status refresh failed', e, st);
+      if (!isClosed && state.verification == null) {
         emit(state.copyWith(
           status: AccountVerificationStatus.loaded,
-          verification: fallback,
+          verification: AccountVerification.fromProfileSnapshot(_profile.state),
         ));
       }
     }
   }
 
-  Future<AccountVerification> _pollVerificationStatus({
-    int maxAttempts = 10,
-    Duration interval = const Duration(seconds: 2),
+  /// POST /session. Returns true when an attempt is ready for capture. If the
+  /// user already had an open attempt the server returns it unchanged, with
+  /// its original document type.
+  Future<bool> startSession({
+    required VerificationDocumentType documentType,
+    required String issuingCountry,
   }) async {
-    AccountVerification latest =
-        state.verification ?? AccountVerification.fromProfileSnapshot(_profile.state);
-
-    for (var attempt = 0; attempt < maxAttempts; attempt++) {
-      if (isClosed) break;
-      try {
-        final response = await _users.getVerificationStatus();
-        latest = response.toAccountVerification();
-        _applyVerification(latest);
-
-        if (latest.isApproved || latest.isRejected) {
-          return latest;
-        }
-
-        final s = latest.verificationStatus.toLowerCase();
-        if (s == 'submitted' || s == 'review' || s == 'started') {
-          if (attempt >= maxAttempts - 1) return latest;
-          await Future.delayed(interval);
-          continue;
-        }
-
-        return latest;
-      } catch (_) {
-        if (attempt == maxAttempts - 1) rethrow;
-        await Future.delayed(interval);
-      }
+    emit(state.copyWith(action: VerificationAction.starting));
+    try {
+      final session = await _users.createVerificationSession(
+        documentType: documentType,
+        issuingCountry: issuingCountry,
+      );
+      if (isClosed) return false;
+      final resumedOther =
+          session.documentType != null && session.documentType != documentType;
+      emit(state.copyWith(
+        action: VerificationAction.none,
+        session: session,
+        resumedDocumentType: resumedOther ? session.documentType : null,
+        clearResumedDocumentType: !resumedOther,
+        verification: state.verification
+            ?.copyWith(verificationStatus: session.status),
+      ));
+      return true;
+    } on ApiException catch (e) {
+      appLogger.e('[AccountVerificationCubit] startSession failed', e);
+      await _onStartError(e);
+      return false;
+    } catch (e, st) {
+      appLogger.e('[AccountVerificationCubit] startSession failed', e, st);
+      _emitGeneric(e);
+      return false;
     }
-
-    return latest;
   }
 
+  Future<void> _onStartError(ApiException e) async {
+    switch (e.errorCode) {
+      case 'BIZ_018':
+        _emitIssue(VerificationIssue.appUpdateRequired, e.message);
+      case 'BIZ_008':
+        // Already verified — the refreshed status shows the verified state.
+        emit(state.copyWith(action: VerificationAction.none));
+        await refresh();
+      case 'BIZ_011':
+        await refresh();
+        _emitIssue(VerificationIssue.locked, e.message);
+      case 'BIZ_010':
+        await refresh();
+        _emitIssue(VerificationIssue.alreadyInProgress, e.message);
+      case 'BIZ_012':
+        final retryAt =
+            TimeFormat.parseServerTime(e.details?['canRetryAt']?.toString());
+        await refresh();
+        if (isClosed) return;
+        if (retryAt != null) {
+          emit(state.copyWith(
+            verification: state.verification?.copyWith(canRetryAt: retryAt),
+          ));
+        }
+        _emitIssue(VerificationIssue.cooldown, e.message);
+      default:
+        _emitGeneric(e);
+    }
+  }
+
+  /// POST /session/{id}/files for one [kind]. Retakes replace the old photo.
+  Future<bool> uploadPhoto(VerificationFileKind kind, File photo) async {
+    final session = state.session;
+    if (session == null) return false;
+
+    if (await photo.length() > _maxPhotoBytes) {
+      _emitIssue(VerificationIssue.invalidFile, null);
+      return false;
+    }
+
+    emit(state.copyWith(
+      action: VerificationAction.uploading,
+      uploadingKind: kind,
+    ));
+    try {
+      final updated = await _users.uploadVerificationFile(
+        sessionId: session.sessionId,
+        kind: kind,
+        photo: photo,
+      );
+      if (isClosed) return false;
+      emit(state.copyWith(
+        action: VerificationAction.none,
+        session: updated,
+        verification: state.verification
+            ?.copyWith(verificationStatus: updated.status),
+      ));
+      return true;
+    } on ApiException catch (e) {
+      appLogger.e('[AccountVerificationCubit] uploadPhoto failed', e);
+      switch (e.errorCode) {
+        case 'BIZ_013' || 'DATA_013':
+          await _onSessionGone();
+        case 'UPL_001':
+          _emitIssue(VerificationIssue.invalidFile, e.message);
+        default:
+          _emitGeneric(e);
+      }
+      return false;
+    } catch (e, st) {
+      appLogger.e('[AccountVerificationCubit] uploadPhoto failed', e, st);
+      _emitGeneric(e);
+      return false;
+    }
+  }
+
+  /// POST /session/{id}/submit with the consent version the user accepted.
+  Future<bool> submit() async {
+    final session = state.session;
+    if (session == null) return false;
+
+    emit(state.copyWith(action: VerificationAction.submitting));
+    try {
+      final response = await _users.submitVerification(
+        sessionId: session.sessionId,
+      );
+      if (isClosed) return false;
+      emit(state.copyWith(clearSession: true));
+      _applyVerification(response.toAccountVerification());
+      return true;
+    } on ApiException catch (e) {
+      appLogger.e('[AccountVerificationCubit] submit failed', e);
+      switch (e.errorCode) {
+        case 'BIZ_014':
+          final raw = e.details?['missingKinds'];
+          final missing = raw is List
+              ? raw
+                  .map((k) => VerificationFileKind.fromApi(k?.toString()))
+                  .whereType<VerificationFileKind>()
+                  .toSet()
+              : <VerificationFileKind>{};
+          emit(state.copyWith(
+            session: VerificationSession(
+              sessionId: session.sessionId,
+              status: session.status,
+              expiresAt: session.expiresAt,
+              documentType: session.documentType,
+              requiredFiles: session.requiredFiles,
+              uploadedFiles: session.requiredFiles
+                  .where((k) => !missing.contains(k))
+                  .toList(),
+            ),
+          ));
+          _emitIssue(VerificationIssue.filesMissing, e.message);
+        case 'BIZ_013' || 'DATA_013':
+          await _onSessionGone();
+        default:
+          _emitGeneric(e);
+      }
+      return false;
+    } catch (e, st) {
+      appLogger.e('[AccountVerificationCubit] submit failed', e, st);
+      _emitGeneric(e);
+      return false;
+    }
+  }
+
+  /// The 30-minute window lapsed (or the attempt was cleared): drop it so the
+  /// user starts again from the document picker.
+  Future<void> _onSessionGone() async {
+    emit(state.copyWith(clearSession: true));
+    await refresh();
+    _emitIssue(VerificationIssue.sessionExpired, null);
+  }
+
+  void _emitIssue(VerificationIssue issue, String? message) {
+    if (isClosed) return;
+    emit(state.withIssue(issue, message: message));
+  }
+
+  void _emitGeneric(Object e) => _emitIssue(
+        VerificationIssue.generic,
+        e.toString().replaceFirst('Exception: ', ''),
+      );
+
   void _applyVerification(AccountVerification verification) {
-    _syncProfile(verification);
+    _profile.updateVerification(
+      isVerified: verification.isApproved,
+      status: verification.verificationStatus,
+    );
     emit(state.copyWith(
       status: AccountVerificationStatus.loaded,
       verification: verification,
@@ -155,10 +250,9 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
     ));
   }
 
-  void _syncProfile(AccountVerification verification) {
-    _profile.updateVerification(
-      isVerified: verification.isApproved,
-      status: verification.verificationStatus,
-    );
+  @override
+  Future<void> close() {
+    _pushSub?.cancel();
+    return super.close();
   }
 }

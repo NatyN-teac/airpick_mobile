@@ -1,11 +1,18 @@
 import 'package:dio/dio.dart';
+import '../network/api_exception.dart';
 import '../network/api_response.dart';
+
+/// `403 AUTH_003 USER_BLOCKED` — the account is blocked, not the session.
+bool isUserBlockedResponse(DioException err) =>
+    err.response?.statusCode == 403 &&
+    ApiException.errorCodeFrom(err.response?.data) == 'AUTH_003';
 
 /// Detects responses that mean the JWT/session is no longer valid.
 bool isSessionExpiredResponse(DioException err) {
   final status = err.response?.statusCode;
   if (status == 401) return true;
   if (status != 403) return false;
+  if (isUserBlockedResponse(err)) return false;
 
   final message = _responseMessage(err.response?.data);
   if (message == null || message.isEmpty) {

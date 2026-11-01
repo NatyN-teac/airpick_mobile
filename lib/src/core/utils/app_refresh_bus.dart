@@ -20,6 +20,10 @@ enum RefreshTopic {
 
   /// An airport was added — airport pickers should re-fetch.
   airports,
+
+  /// A verification push arrived (approved / declined / resubmission) — the
+  /// verification status and profile should re-fetch.
+  verification,
 }
 
 class AppRefreshBus {

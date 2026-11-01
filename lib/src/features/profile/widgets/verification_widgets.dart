@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:guzomy/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/account_verification.dart';
@@ -49,11 +51,17 @@ class _VerificationHeroState extends State<VerificationHero>
     final l = l10n(context);
 
     final (icon, accent, title, subtitle) = switch (true) {
-      _ when v?.isApproved == true || v?.isVerified == true => (
+      _ when v?.isApproved == true => (
           Icons.verified_rounded,
           AppColors.success,
           l.avStatusVerifiedTitle,
           l.avStatusVerifiedBody,
+        ),
+      _ when v?.isLocked == true => (
+          Icons.lock_outline_rounded,
+          AppColors.error,
+          l.avStatusLockedTitle,
+          l.avStatusLockedBody,
         ),
       _ when v?.isUnderReview == true => (
           Icons.hourglass_top_rounded,
@@ -64,12 +72,20 @@ class _VerificationHeroState extends State<VerificationHero>
       _ when v?.isRejected == true => (
           Icons.refresh_rounded,
           AppColors.error,
-          v!.verificationStatus.toLowerCase() == 'resubmission_requested'
+          v!.isResubmissionRequested
               ? l.avStatusResubmitTitle
               : l.avStatusDeclinedTitle,
-          v.message?.isNotEmpty == true
-              ? v.message!
+          v.isCoolingDown()
+              ? l.avStatusCooldownBody(
+                  formatVerificationTime(context, v.canRetryAt!),
+                )
               : l.avStatusRejectedBody,
+        ),
+      _ when v?.isCapturing == true => (
+          Icons.photo_camera_outlined,
+          AppColors.primary,
+          l.avStatusCapturingTitle,
+          l.avStatusCapturingBody,
         ),
       _ => (
           Icons.shield_outlined,
@@ -406,8 +422,7 @@ class VerificationTrustRow extends StatelessWidget {
       alignment: WrapAlignment.center,
       children: [
         chip(Icons.lock_outline_rounded, l.avChipEncrypted),
-        chip(Icons.verified_user_outlined, 'Veriff'),
-        chip(Icons.public_outlined, l.avChip230),
+        chip(Icons.groups_outlined, l.avChipHumanReview),
       ],
     );
   }
@@ -465,21 +480,45 @@ class VerificationRejectionCard extends StatelessWidget {
 
 VerificationStep verificationStepFor(AccountVerification? v) {
   if (v == null) return VerificationStep.prepare;
-  if (v.isApproved || v.isVerified) return VerificationStep.review;
-  if (v.isUnderReview) return VerificationStep.review;
-  if (v.isRejected) return VerificationStep.prepare;
+  if (v.isApproved || v.isUnderReview) return VerificationStep.review;
   return VerificationStep.prepare;
 }
 
-bool canStartVeriff(AccountVerification? v) {
-  if (v == null) return true;
-  return v.canStartSession;
+/// Translated text for a decline / resubmission. The app keeps its own text
+/// per fixed `reasonCode` and falls back to the server's message for a code it
+/// doesn't know yet.
+String? verificationReasonText(AppLocalizations l, AccountVerification v) {
+  final known = switch (v.reasonCode) {
+    'BLURRY' => l.avReasonBlurry,
+    'GLARE' => l.avReasonGlare,
+    'DOCUMENT_CUT_OFF' => l.avReasonCutOff,
+    'FACE_NOT_VISIBLE' => l.avReasonFaceNotVisible,
+    'DOCUMENT_NOT_IN_SELFIE' => l.avReasonDocNotInSelfie,
+    'UNSUPPORTED_DOCUMENT' => l.avReasonUnsupported,
+    'DOCUMENT_EXPIRED' => l.avReasonExpired,
+    'DOCUMENT_EXPIRING_SOON' => l.avReasonExpiringSoon,
+    'UNDERAGE' => l.avReasonUnderage,
+    'NAME_MISMATCH' => l.avReasonNameMismatch,
+    'FACE_MISMATCH' => l.avReasonFaceMismatch,
+    'DUPLICATE_ACCOUNT' => l.avReasonDuplicateAccount,
+    'SUSPECTED_FRAUD' => l.avReasonSuspectedFraud,
+    _ => null,
+  };
+  if (known != null) return known;
+  final message = v.message;
+  return message != null && message.isNotEmpty ? message : null;
 }
 
-String? verificationRejectionMessage(AccountVerification v) {
-  if (v.message != null && v.message!.isNotEmpty) return v.message;
-  if (v.rejectionReason != null && v.rejectionReason!.isNotEmpty) {
-    return v.rejectionReason;
-  }
-  return null;
+String documentTypeLabel(AppLocalizations l, VerificationDocumentType type) =>
+    switch (type) {
+      VerificationDocumentType.passport => l.avDocPassport,
+      VerificationDocumentType.nationalId => l.avDocNationalId,
+      VerificationDocumentType.driverLicense => l.avDocDriverLicense,
+      VerificationDocumentType.residencePermit => l.avDocResidencePermit,
+    };
+
+/// Local date + time in the app's language, e.g. for a cooldown end.
+String formatVerificationTime(BuildContext context, DateTime time) {
+  final locale = Localizations.localeOf(context).toLanguageTag();
+  return DateFormat.yMMMd(locale).add_jm().format(time.toLocal());
 }

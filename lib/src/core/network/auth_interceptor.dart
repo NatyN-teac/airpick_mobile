@@ -36,8 +36,12 @@ class AuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    if (!_isPublic(err.requestOptions) && isSessionExpiredResponse(err)) {
-      await AppSession.expireSession(_tokenStorage);
+    if (!_isPublic(err.requestOptions)) {
+      if (isUserBlockedResponse(err)) {
+        AppSession.notifyBlocked();
+      } else if (isSessionExpiredResponse(err)) {
+        await AppSession.expireSession(_tokenStorage);
+      }
     }
     handler.next(err);
   }

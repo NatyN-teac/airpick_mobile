@@ -129,6 +129,10 @@ NotificationType _displayTypeFrom(String backendType) {
     case 'OFFER_CANCELLED':
     case 'OFFER_REQUEST_CANCELLED':
       return NotificationType.proposal;
+    case 'VERIFICATION_APPROVED':
+    case 'VERIFICATION_DECLINED':
+    case 'VERIFICATION_RESUBMISSION_REQUESTED':
+      return NotificationType.verification;
     case 'WELCOME':
     case 'ADMIN_BROADCAST':
     default:

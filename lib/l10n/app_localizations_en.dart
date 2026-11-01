@@ -525,7 +525,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avSubmittedSub =>
-      'We\'re reviewing your ID. Pull down to refresh for the latest status.';
+      'Our team will review your documents. We\'ll notify you when it\'s done.';
 
   @override
   String get avVerifiedTitle => 'You\'re verified!';
@@ -541,13 +541,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get avLoadFailed => 'Failed to load verification status.';
 
   @override
-  String get avPreparing => 'Preparing secure session…';
-
-  @override
-  String get avChecking => 'Checking verification status…';
-
-  @override
-  String get avPoweredBy => 'Powered by Veriff · Secure identity verification';
+  String get avPoweredBy =>
+      'Reviewed by the GuzoMy team · Your photos stay private';
 
   @override
   String get avStatusVerifiedTitle => 'You\'re verified';
@@ -561,7 +556,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avStatusReviewBody =>
-      'Veriff is processing your submission. This usually takes a few minutes.';
+      'Our team is reviewing your documents. We\'ll notify you as soon as it\'s done.';
 
   @override
   String get avStatusResubmitTitle => 'Resubmission needed';
@@ -578,13 +573,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avStatusDefaultBody =>
-      'A quick ID scan and selfie powered by Veriff keeps our community trusted.';
+      'Take photos of your ID and a selfie holding it. Our team reviews them to keep the community trusted.';
 
   @override
   String get avStepPrepare => 'Prepare';
 
   @override
-  String get avStepIdScan => 'ID scan';
+  String get avStepIdScan => 'ID photos';
 
   @override
   String get avStepSelfie => 'Selfie';
@@ -602,25 +597,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get avTipId => 'Have a passport or government ID ready';
 
   @override
-  String get avTipSelfie => 'You\'ll take a quick selfie for liveness check';
+  String get avTipSelfie =>
+      'You\'ll take a selfie holding your ID next to your face';
 
   @override
-  String get avTipTime => 'Takes about 2 minutes';
+  String get avTipTime => 'Taking the photos takes about 2 minutes';
 
   @override
   String get avChipEncrypted => 'Encrypted';
-
-  @override
-  String get avChip230 => '230+ countries';
 
   @override
   String get avWhatWentWrong => 'What went wrong';
 
   @override
   String get avStartVerification => 'Start verification';
-
-  @override
-  String get avTryAgainVeriff => 'Try again with Veriff';
 
   @override
   String get notifTitle => 'Notifications';
@@ -1158,4 +1148,213 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matchDelivery => 'Delivery';
+
+  @override
+  String get avStatusCapturingTitle => 'Finish your verification';
+
+  @override
+  String get avStatusCapturingBody =>
+      'You\'ve started verifying. Continue where you left off.';
+
+  @override
+  String get avStatusLockedTitle => 'Verification locked';
+
+  @override
+  String get avStatusLockedBody =>
+      'We couldn\'t verify your identity after several attempts. Please contact support for help.';
+
+  @override
+  String avStatusCooldownBody(String date) {
+    return 'You can try again on $date.';
+  }
+
+  @override
+  String get avContinueVerification => 'Continue verification';
+
+  @override
+  String get avTryAgain => 'Try again';
+
+  @override
+  String get avRetakePhotos => 'Retake photos';
+
+  @override
+  String get avContactSupport => 'Contact support';
+
+  @override
+  String get avChipHumanReview => 'Reviewed by our team';
+
+  @override
+  String get avCaptureTitle => 'Verify your identity';
+
+  @override
+  String get avChooseDocument => 'Choose your document';
+
+  @override
+  String get avChooseDocumentSub =>
+      'Use an original, valid document. It must be valid for at least 3 more months.';
+
+  @override
+  String get avDocPassport => 'Passport';
+
+  @override
+  String get avDocNationalId => 'National ID';
+
+  @override
+  String get avDocDriverLicense => 'Driver\'s license';
+
+  @override
+  String get avDocResidencePermit => 'Residence permit';
+
+  @override
+  String get avIssuingCountry => 'Issuing country';
+
+  @override
+  String get avIssuingCountryHint => 'Search for a country';
+
+  @override
+  String get avContinue => 'Continue';
+
+  @override
+  String get avPhotosTitle => 'Take your photos';
+
+  @override
+  String get avPhotosSub =>
+      'Make sure all four corners are visible, the text is sharp and there\'s no glare.';
+
+  @override
+  String get avPhotoPassportPage => 'Passport photo page';
+
+  @override
+  String get avPhotoDocFront => 'Front of document';
+
+  @override
+  String get avPhotoDocBack => 'Back of document';
+
+  @override
+  String get avPhotoSelfie => 'Selfie holding your document';
+
+  @override
+  String get avPhotoDocFrontHint => 'Lay the document flat and fill the frame.';
+
+  @override
+  String get avPhotoDocBackHint =>
+      'Turn the document over and capture the back.';
+
+  @override
+  String get avPhotoSelfieHint =>
+      'Hold the document next to your face. Both must be clearly visible.';
+
+  @override
+  String get avTakePhoto => 'Take photo';
+
+  @override
+  String get avRetake => 'Retake';
+
+  @override
+  String get avUploaded => 'Uploaded';
+
+  @override
+  String get avUploading => 'Uploading…';
+
+  @override
+  String get avConsent =>
+      'I agree that GuzoMy may store these photos and my document details to verify my identity, for as long as I have an account. GuzoMy staff will review them.';
+
+  @override
+  String get avSubmitForReview => 'Submit for review';
+
+  @override
+  String avResumedDocument(String document) {
+    return 'You already started verifying with your $document, so we\'ll continue with it.';
+  }
+
+  @override
+  String get avIssueAppUpdate =>
+      'Please update GuzoMy to the latest version to verify your identity.';
+
+  @override
+  String get avIssueInProgress => 'Your documents are already being reviewed.';
+
+  @override
+  String get avIssueLocked => 'Verification is locked. Please contact support.';
+
+  @override
+  String get avIssueCooldown => 'You can\'t start a new attempt yet.';
+
+  @override
+  String get avIssueSessionExpired =>
+      'Your session timed out. Please start again.';
+
+  @override
+  String get avIssueInvalidFile =>
+      'This photo can\'t be used. Please retake it.';
+
+  @override
+  String get avIssueFilesMissing =>
+      'Some photos are missing. Please take them before submitting.';
+
+  @override
+  String get avIssueCamera =>
+      'We couldn\'t open the camera. Check that GuzoMy has camera access in Settings.';
+
+  @override
+  String get avReasonBlurry =>
+      'Your photos were not clear enough. Please retake them in good light.';
+
+  @override
+  String get avReasonGlare =>
+      'There was glare on your document. Please avoid direct light and retake.';
+
+  @override
+  String get avReasonCutOff =>
+      'All four corners of your document must be visible.';
+
+  @override
+  String get avReasonFaceNotVisible =>
+      'Your face was not clearly visible in the selfie.';
+
+  @override
+  String get avReasonDocNotInSelfie =>
+      'Please hold your document next to your face in the selfie.';
+
+  @override
+  String get avReasonUnsupported =>
+      'This document type is not accepted. Please use a passport, national ID, driver\'s license or residence permit.';
+
+  @override
+  String get avReasonExpired =>
+      'Your document has expired. Please use a valid document.';
+
+  @override
+  String get avReasonExpiringSoon =>
+      'Your document must be valid for at least 3 more months. Please use another document.';
+
+  @override
+  String get avReasonUnderage => 'You must be 18 or older to use GuzoMy.';
+
+  @override
+  String get avReasonNameMismatch =>
+      'The name on your document does not match your profile.';
+
+  @override
+  String get avReasonFaceMismatch =>
+      'We could not confirm that the document belongs to you.';
+
+  @override
+  String get avReasonDuplicateAccount =>
+      'This document is already linked to another account.';
+
+  @override
+  String get avReasonSuspectedFraud =>
+      'We could not verify your identity. Please contact support.';
+
+  @override
+  String get avSupportEmailSubject => 'Identity verification help';
+
+  @override
+  String get blockedTitle => 'Account blocked';
+
+  @override
+  String get blockedBody =>
+      'Your account has been blocked because we couldn\'t verify your identity. If you think this is a mistake, contact support.';
 }

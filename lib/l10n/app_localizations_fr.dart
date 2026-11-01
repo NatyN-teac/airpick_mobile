@@ -532,7 +532,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get avSubmittedSub =>
-      'Nous examinons votre pièce d’identité. Tirez vers le bas pour actualiser le statut.';
+      'Notre équipe va examiner vos documents. Nous vous préviendrons dès que ce sera fait.';
 
   @override
   String get avVerifiedTitle => 'Vous êtes vérifié !';
@@ -548,14 +548,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get avLoadFailed => 'Échec du chargement du statut de vérification.';
 
   @override
-  String get avPreparing => 'Préparation d’une session sécurisée…';
-
-  @override
-  String get avChecking => 'Vérification du statut…';
-
-  @override
   String get avPoweredBy =>
-      'Propulsé par Veriff · Vérification d’identité sécurisée';
+      'Vérifié par l\'équipe GuzoMy · Vos photos restent privées';
 
   @override
   String get avStatusVerifiedTitle => 'Vous êtes vérifié';
@@ -569,7 +563,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get avStatusReviewBody =>
-      'Veriff traite votre soumission. Cela prend généralement quelques minutes.';
+      'Notre équipe examine vos documents. Nous vous préviendrons dès que ce sera fait.';
 
   @override
   String get avStatusResubmitTitle => 'Nouvelle soumission requise';
@@ -586,13 +580,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get avStatusDefaultBody =>
-      'Un scan rapide de votre pièce d’identité et un selfie propulsés par Veriff garantissent la confiance de notre communauté.';
+      'Prenez en photo votre pièce d\'identité et un selfie en la tenant. Notre équipe les examine pour garder une communauté de confiance.';
 
   @override
   String get avStepPrepare => 'Préparer';
 
   @override
-  String get avStepIdScan => 'Scan ID';
+  String get avStepIdScan => 'Photos ID';
 
   @override
   String get avStepSelfie => 'Selfie';
@@ -613,25 +607,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get avTipSelfie =>
-      'Vous prendrez un selfie rapide pour la vérification de vivacité';
+      'Vous prendrez un selfie en tenant votre pièce d\'identité près de votre visage';
 
   @override
-  String get avTipTime => 'Prend environ 2 minutes';
+  String get avTipTime => 'La prise des photos prend environ 2 minutes';
 
   @override
   String get avChipEncrypted => 'Chiffré';
-
-  @override
-  String get avChip230 => '230+ pays';
 
   @override
   String get avWhatWentWrong => 'Ce qui n’a pas fonctionné';
 
   @override
   String get avStartVerification => 'Commencer la vérification';
-
-  @override
-  String get avTryAgainVeriff => 'Réessayer avec Veriff';
 
   @override
   String get notifTitle => 'Notifications';
@@ -1177,4 +1165,217 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get matchDelivery => 'Livraison';
+
+  @override
+  String get avStatusCapturingTitle => 'Terminez votre vérification';
+
+  @override
+  String get avStatusCapturingBody =>
+      'Vous avez commencé la vérification. Reprenez là où vous vous étiez arrêté.';
+
+  @override
+  String get avStatusLockedTitle => 'Vérification bloquée';
+
+  @override
+  String get avStatusLockedBody =>
+      'Nous n\'avons pas pu vérifier votre identité après plusieurs tentatives. Veuillez contacter le support.';
+
+  @override
+  String avStatusCooldownBody(String date) {
+    return 'Vous pourrez réessayer le $date.';
+  }
+
+  @override
+  String get avContinueVerification => 'Continuer la vérification';
+
+  @override
+  String get avTryAgain => 'Réessayer';
+
+  @override
+  String get avRetakePhotos => 'Reprendre les photos';
+
+  @override
+  String get avContactSupport => 'Contacter le support';
+
+  @override
+  String get avChipHumanReview => 'Vérifié par notre équipe';
+
+  @override
+  String get avCaptureTitle => 'Vérifiez votre identité';
+
+  @override
+  String get avChooseDocument => 'Choisissez votre document';
+
+  @override
+  String get avChooseDocumentSub =>
+      'Utilisez un document original et valide. Il doit être valable encore au moins 3 mois.';
+
+  @override
+  String get avDocPassport => 'Passeport';
+
+  @override
+  String get avDocNationalId => 'Carte d\'identité nationale';
+
+  @override
+  String get avDocDriverLicense => 'Permis de conduire';
+
+  @override
+  String get avDocResidencePermit => 'Titre de séjour';
+
+  @override
+  String get avIssuingCountry => 'Pays de délivrance';
+
+  @override
+  String get avIssuingCountryHint => 'Rechercher un pays';
+
+  @override
+  String get avContinue => 'Continuer';
+
+  @override
+  String get avPhotosTitle => 'Prenez vos photos';
+
+  @override
+  String get avPhotosSub =>
+      'Vérifiez que les quatre coins sont visibles, que le texte est net et qu\'il n\'y a pas de reflet.';
+
+  @override
+  String get avPhotoPassportPage => 'Page photo du passeport';
+
+  @override
+  String get avPhotoDocFront => 'Recto du document';
+
+  @override
+  String get avPhotoDocBack => 'Verso du document';
+
+  @override
+  String get avPhotoSelfie => 'Selfie avec votre document';
+
+  @override
+  String get avPhotoDocFrontHint =>
+      'Posez le document à plat et remplissez le cadre.';
+
+  @override
+  String get avPhotoDocBackHint =>
+      'Retournez le document et photographiez le verso.';
+
+  @override
+  String get avPhotoSelfieHint =>
+      'Tenez le document près de votre visage. Les deux doivent être bien visibles.';
+
+  @override
+  String get avTakePhoto => 'Prendre la photo';
+
+  @override
+  String get avRetake => 'Reprendre';
+
+  @override
+  String get avUploaded => 'Envoyée';
+
+  @override
+  String get avUploading => 'Envoi…';
+
+  @override
+  String get avConsent =>
+      'J\'accepte que GuzoMy conserve ces photos et les informations de mon document pour vérifier mon identité, tant que j\'ai un compte. Le personnel de GuzoMy les examinera.';
+
+  @override
+  String get avSubmitForReview => 'Envoyer pour vérification';
+
+  @override
+  String avResumedDocument(String document) {
+    return 'Vous avez déjà commencé avec votre $document, nous continuons donc avec celui-ci.';
+  }
+
+  @override
+  String get avIssueAppUpdate =>
+      'Veuillez mettre à jour GuzoMy vers la dernière version pour vérifier votre identité.';
+
+  @override
+  String get avIssueInProgress => 'Vos documents sont déjà en cours d\'examen.';
+
+  @override
+  String get avIssueLocked =>
+      'La vérification est bloquée. Veuillez contacter le support.';
+
+  @override
+  String get avIssueCooldown =>
+      'Vous ne pouvez pas encore faire une nouvelle tentative.';
+
+  @override
+  String get avIssueSessionExpired =>
+      'Votre session a expiré. Veuillez recommencer.';
+
+  @override
+  String get avIssueInvalidFile =>
+      'Cette photo ne peut pas être utilisée. Veuillez la reprendre.';
+
+  @override
+  String get avIssueFilesMissing =>
+      'Certaines photos manquent. Prenez-les avant d\'envoyer.';
+
+  @override
+  String get avIssueCamera =>
+      'Impossible d\'ouvrir l\'appareil photo. Vérifiez que GuzoMy y a accès dans les Réglages.';
+
+  @override
+  String get avReasonBlurry =>
+      'Vos photos n\'étaient pas assez nettes. Veuillez les reprendre avec un bon éclairage.';
+
+  @override
+  String get avReasonGlare =>
+      'Il y avait un reflet sur votre document. Évitez la lumière directe et reprenez la photo.';
+
+  @override
+  String get avReasonCutOff =>
+      'Les quatre coins de votre document doivent être visibles.';
+
+  @override
+  String get avReasonFaceNotVisible =>
+      'Votre visage n\'était pas bien visible sur le selfie.';
+
+  @override
+  String get avReasonDocNotInSelfie =>
+      'Veuillez tenir votre document près de votre visage sur le selfie.';
+
+  @override
+  String get avReasonUnsupported =>
+      'Ce type de document n\'est pas accepté. Veuillez utiliser un passeport, une carte d\'identité nationale, un permis de conduire ou un titre de séjour.';
+
+  @override
+  String get avReasonExpired =>
+      'Votre document a expiré. Veuillez utiliser un document valide.';
+
+  @override
+  String get avReasonExpiringSoon =>
+      'Votre document doit être valable encore au moins 3 mois. Veuillez utiliser un autre document.';
+
+  @override
+  String get avReasonUnderage =>
+      'Vous devez avoir 18 ans ou plus pour utiliser GuzoMy.';
+
+  @override
+  String get avReasonNameMismatch =>
+      'Le nom sur votre document ne correspond pas à votre profil.';
+
+  @override
+  String get avReasonFaceMismatch =>
+      'Nous n\'avons pas pu confirmer que le document vous appartient.';
+
+  @override
+  String get avReasonDuplicateAccount =>
+      'Ce document est déjà lié à un autre compte.';
+
+  @override
+  String get avReasonSuspectedFraud =>
+      'Nous n\'avons pas pu vérifier votre identité. Veuillez contacter le support.';
+
+  @override
+  String get avSupportEmailSubject => 'Aide pour la vérification d\'identité';
+
+  @override
+  String get blockedTitle => 'Compte bloqué';
+
+  @override
+  String get blockedBody =>
+      'Votre compte a été bloqué car nous n\'avons pas pu vérifier votre identité. Si vous pensez qu\'il s\'agit d\'une erreur, contactez le support.';
 }
