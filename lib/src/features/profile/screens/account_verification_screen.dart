@@ -11,10 +11,13 @@ import '../../offers/widgets/airpick_bubble_shell.dart';
 import '../cubit/account_verification_cubit.dart';
 import '../cubit/current_user_cubit.dart';
 import '../models/account_verification.dart';
+import '../../../core/network/api_client.dart';
+import '../repository/demo_verification_repository.dart';
 import '../repository/user_repository.dart';
 import '../widgets/profile_sub_screen_app_bar.dart';
 import '../widgets/verification_widgets.dart';
 import 'verification_capture_screen.dart';
+import 'verification_demo_panel.dart';
 
 class AccountVerificationScreen extends StatelessWidget {
   const AccountVerificationScreen({super.key});
@@ -23,8 +26,11 @@ class AccountVerificationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (ctx) => AccountVerificationCubit(
-        ctx.read<UserRepository>(),
+        verificationDemoEnabled
+            ? DemoVerificationRepository.shared(ctx.read<ApiClient>())
+            : ctx.read<UserRepository>(),
         ctx.read<CurrentUserCubit>(),
+        syncProfile: !verificationDemoEnabled,
       )..load(),
       child: const _AccountVerificationView(),
     );
@@ -89,6 +95,12 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
     return Scaffold(
       backgroundColor: bg,
       appBar: ProfileSubScreenAppBar(title: l.profileVerification),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+      floatingActionButton: verificationDemoEnabled
+          ? VerificationDemoButton(
+              onReset: () => setState(() => _showSuccess = false),
+            )
+          : null,
       body: BlocConsumer<AccountVerificationCubit, AccountVerificationState>(
         listenWhen: (prev, curr) => false,
         listener: (context, state) {},

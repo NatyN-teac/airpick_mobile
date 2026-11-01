@@ -20,10 +20,18 @@ const _maxPhotoBytes = 10 * 1024 * 1024;
 class AccountVerificationCubit extends Cubit<AccountVerificationState> {
   final UserRepository _users;
   final CurrentUserCubit _profile;
+
+  /// False in the debug demo so fake statuses don't overwrite the real
+  /// profile's verified flag.
+  final bool _syncProfile;
   StreamSubscription<void>? _pushSub;
 
-  AccountVerificationCubit(this._users, this._profile)
-      : super(const AccountVerificationState()) {
+  AccountVerificationCubit(
+    this._users,
+    this._profile, {
+    bool syncProfile = true,
+  })  : _syncProfile = syncProfile,
+        super(const AccountVerificationState()) {
     // A verification push (approved / declined / resubmission) arrived.
     _pushSub = AppRefreshBus.instance
         .on(RefreshTopic.verification)
@@ -239,10 +247,12 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
       );
 
   void _applyVerification(AccountVerification verification) {
-    _profile.updateVerification(
-      isVerified: verification.isApproved,
-      status: verification.verificationStatus,
-    );
+    if (_syncProfile) {
+      _profile.updateVerification(
+        isVerified: verification.isApproved,
+        status: verification.verificationStatus,
+      );
+    }
     emit(state.copyWith(
       status: AccountVerificationStatus.loaded,
       verification: verification,

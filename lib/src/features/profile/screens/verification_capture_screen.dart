@@ -14,6 +14,7 @@ import '../../countries/repository/country_repository.dart';
 import '../../countries/widgets/country_picker_field.dart';
 import '../cubit/account_verification_cubit.dart';
 import '../models/account_verification.dart';
+import '../repository/demo_verification_repository.dart';
 import '../widgets/profile_sub_screen_app_bar.dart';
 import '../widgets/verification_widgets.dart';
 
@@ -33,7 +34,9 @@ class VerificationCaptureScreen extends StatelessWidget {
           curr.issue != null && prev.issueSeq != curr.issueSeq,
       listener: (context, state) => _showIssue(context, state),
       child: Scaffold(
-        backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
+        backgroundColor: isDark
+            ? AppColors.darkBackground
+            : AppColors.background,
         appBar: ProfileSubScreenAppBar(title: l.avCaptureTitle),
         body: BlocBuilder<AccountVerificationCubit, AccountVerificationState>(
           buildWhen: (prev, curr) =>
@@ -100,7 +103,9 @@ class _DocumentStepState extends State<_DocumentStep> {
 
   Future<void> _loadCountries() async {
     try {
-      final countries = await context.read<CountryRepository>().fetchCountries();
+      final countries = await context
+          .read<CountryRepository>()
+          .fetchCountries();
       if (!mounted) return;
       setState(() {
         // Only countries we can send as an alpha-3 issuingCountry.
@@ -122,9 +127,9 @@ class _DocumentStepState extends State<_DocumentStep> {
     final country = _country;
     if (country == null) return;
     context.read<AccountVerificationCubit>().startSession(
-          documentType: _type,
-          issuingCountry: iso3CountryCode(country.countryCode)!,
-        );
+      documentType: _type,
+      issuingCountry: iso3CountryCode(country.countryCode)!,
+    );
   }
 
   @override
@@ -157,10 +162,7 @@ class _DocumentStepState extends State<_DocumentStep> {
                   onTap: starting ? null : () => setState(() => _type = type),
                 ),
               const SizedBox(height: 20),
-              Text(
-                l.avIssuingCountry,
-                style: _labelStyle(isDark),
-              ),
+              Text(l.avIssuingCountry, style: _labelStyle(isDark)),
               const SizedBox(height: 8),
               CountryPickerField(
                 isDark: isDark,
@@ -251,8 +253,8 @@ class _DocumentOption extends StatelessWidget {
                   color: selected
                       ? AppColors.primary
                       : (isDark
-                          ? AppColors.darkTextTertiary
-                          : AppColors.textTertiary),
+                            ? AppColors.darkTextTertiary
+                            : AppColors.textTertiary),
                   size: 20,
                 ),
               ],
@@ -287,7 +289,10 @@ class _PhotosStepState extends State<_PhotosStep> {
     XFile? shot;
     try {
       shot = await _picker.pickImage(
-        source: ImageSource.camera,
+        // The debug demo runs on Simulators, which have no camera.
+        source: verificationDemoEnabled
+            ? ImageSource.gallery
+            : ImageSource.camera,
         preferredCameraDevice: kind == VerificationFileKind.selfieWithDoc
             ? CameraDevice.front
             : CameraDevice.rear,
@@ -377,8 +382,9 @@ class _PhotosStepState extends State<_PhotosStep> {
             _BottomAction(
               label: l.avSubmitForReview,
               loading: submitting,
-              onPressed:
-                  session.isComplete && _consent && !state.isBusy ? _submit : null,
+              onPressed: session.isComplete && _consent && !state.isBusy
+                  ? _submit
+                  : null,
               isDark: isDark,
             ),
           ],
@@ -391,13 +397,12 @@ class _PhotosStepState extends State<_PhotosStep> {
     AppLocalizations l,
     VerificationFileKind kind,
     bool isPassport,
-  ) =>
-      switch (kind) {
-        VerificationFileKind.docFront =>
-          isPassport ? l.avPhotoPassportPage : l.avPhotoDocFront,
-        VerificationFileKind.docBack => l.avPhotoDocBack,
-        VerificationFileKind.selfieWithDoc => l.avPhotoSelfie,
-      };
+  ) => switch (kind) {
+    VerificationFileKind.docFront =>
+      isPassport ? l.avPhotoPassportPage : l.avPhotoDocFront,
+    VerificationFileKind.docBack => l.avPhotoDocBack,
+    VerificationFileKind.selfieWithDoc => l.avPhotoSelfie,
+  };
 
   static String _kindHint(AppLocalizations l, VerificationFileKind kind) =>
       switch (kind) {
@@ -434,8 +439,9 @@ class _PhotoTile extends StatelessWidget {
     final border = uploaded
         ? AppColors.success.withValues(alpha: 0.5)
         : (isDark ? AppColors.darkBorder : AppColors.border);
-    final textSecondary =
-        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -547,7 +553,9 @@ class _ConsentRow extends StatelessWidget {
             Checkbox(
               value: value,
               activeColor: AppColors.primary,
-              onChanged: onChanged == null ? null : (v) => onChanged!(v ?? false),
+              onChanged: onChanged == null
+                  ? null
+                  : (v) => onChanged!(v ?? false),
             ),
             Expanded(
               child: Padding(
@@ -575,11 +583,11 @@ class _ConsentRow extends StatelessWidget {
 // ── Shared bits ──────────────────────────────────────────────────────────────
 
 TextStyle _labelStyle(bool isDark) => TextStyle(
-      fontFamily: 'Manrope',
-      fontSize: 13,
-      fontWeight: FontWeight.w700,
-      color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
-    );
+  fontFamily: 'Manrope',
+  fontSize: 13,
+  fontWeight: FontWeight.w700,
+  color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+);
 
 class _SectionTitle extends StatelessWidget {
   final String title;
@@ -641,7 +649,11 @@ class _InfoBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline_rounded, color: AppColors.info, size: 20),
+          const Icon(
+            Icons.info_outline_rounded,
+            color: AppColors.info,
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
