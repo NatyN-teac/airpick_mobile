@@ -239,7 +239,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileVerificationSub =>
-      'Vérifiez votre identité avec un passeport';
+      'Vérifiez votre identité avec votre pièce d\'identité';
 
   @override
   String get profileLanguage => 'Langue';

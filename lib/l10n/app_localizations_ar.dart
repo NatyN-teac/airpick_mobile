@@ -236,7 +236,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileVerification => 'التحقق من الحساب';
 
   @override
-  String get profileVerificationSub => 'تحقّق من هويتك باستخدام جواز السفر';
+  String get profileVerificationSub => 'تحقق من هويتك باستخدام مستند هويتك';
 
   @override
   String get profileLanguage => 'اللغة';

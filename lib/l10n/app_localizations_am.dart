@@ -234,7 +234,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get profileVerification => 'የመለያ ማረጋገጫ';
 
   @override
-  String get profileVerificationSub => 'ማንነትዎን በፓስፖርት ያረጋግጡ';
+  String get profileVerificationSub => 'ማንነትዎን በመታወቂያዎ ያረጋግጡ';
 
   @override
   String get profileLanguage => 'ቋንቋ';

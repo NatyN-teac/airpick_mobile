@@ -543,7 +543,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileVerificationSub.
   ///
   /// In en, this message translates to:
-  /// **'Verify your identity with a passport'**
+  /// **'Verify your identity with your ID'**
   String get profileVerificationSub;
 
   /// No description provided for @profileLanguage.

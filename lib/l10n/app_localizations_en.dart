@@ -237,7 +237,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileVerification => 'Account verification';
 
   @override
-  String get profileVerificationSub => 'Verify your identity with a passport';
+  String get profileVerificationSub => 'Verify your identity with your ID';
 
   @override
   String get profileLanguage => 'Language';
