@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -283,16 +284,25 @@ class _PhotosStepState extends State<_PhotosStep> {
   final Map<VerificationFileKind, File> _previews = {};
   bool _consent = false;
 
+  /// Camera only, so users can't submit saved photos of someone else's ID.
+  /// The one exception is the debug demo on a Simulator or emulator, which
+  /// has no camera.
+  static Future<ImageSource> _photoSource() async {
+    if (!verificationDemoEnabled) return ImageSource.camera;
+    final info = DeviceInfoPlugin();
+    final physical = Platform.isIOS
+        ? (await info.iosInfo).isPhysicalDevice
+        : (await info.androidInfo).isPhysicalDevice;
+    return physical ? ImageSource.camera : ImageSource.gallery;
+  }
+
   Future<void> _capture(VerificationFileKind kind) async {
     final l = l10n(context);
     final cubit = context.read<AccountVerificationCubit>();
     XFile? shot;
     try {
       shot = await _picker.pickImage(
-        // The debug demo runs on Simulators, which have no camera.
-        source: verificationDemoEnabled
-            ? ImageSource.gallery
-            : ImageSource.camera,
+        source: await _photoSource(),
         preferredCameraDevice: kind == VerificationFileKind.selfieWithDoc
             ? CameraDevice.front
             : CameraDevice.rear,
