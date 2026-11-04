@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +16,6 @@ import '../../countries/repository/country_repository.dart';
 import '../../countries/widgets/country_picker_field.dart';
 import '../cubit/account_verification_cubit.dart';
 import '../models/account_verification.dart';
-import '../repository/demo_verification_repository.dart';
 import '../widgets/profile_sub_screen_app_bar.dart';
 import '../widgets/verification_widgets.dart';
 
@@ -285,10 +285,10 @@ class _PhotosStepState extends State<_PhotosStep> {
   bool _consent = false;
 
   /// Camera only, so users can't submit saved photos of someone else's ID.
-  /// The one exception is the debug demo on a Simulator or emulator, which
+  /// The one exception is a debug build on a Simulator or emulator, which
   /// has no camera.
   static Future<ImageSource> _photoSource() async {
-    if (!verificationDemoEnabled) return ImageSource.camera;
+    if (!kDebugMode) return ImageSource.camera;
     final info = DeviceInfoPlugin();
     final physical = Platform.isIOS
         ? (await info.iosInfo).isPhysicalDevice
