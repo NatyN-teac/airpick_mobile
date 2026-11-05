@@ -67,8 +67,10 @@ flutter_native_splash:
   color: "#ffffff"
   color_dark: "#0F172A"
   image: assets/logo_me.png
+  image_dark: assets/logo_me_dark.png
   android_12:
     image: assets/logo_me.png
+    image_dark: assets/logo_me_dark.png
     color: "#ffffff"
     color_dark: "#0F172A"
 
@@ -78,6 +80,7 @@ flutter:
 
   assets:
     - assets/logo_me.png
+    - assets/logo_me_dark.png
     - assets/logo-white.png
     - assets/logo-long.png
     - assets/onboarding/community.png

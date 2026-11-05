@@ -200,7 +200,11 @@ class _LoadingViewState extends State<_LoadingView>
               opacity: _fade,
               child: ScaleTransition(
                 scale: _logoScale,
-                child: Image.asset('assets/logo_me.png', width: 64, height: 64),
+                child: Image.asset(
+                  isDark ? 'assets/logo_me_dark.png' : 'assets/logo_me.png',
+                  width: 64,
+                  height: 64,
+                ),
               ),
             ),
             const SizedBox(height: 14),
