@@ -1209,7 +1209,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get avIssuingCountry => 'Issuing country';
 
   @override
-  String get avIssuingCountryHint => 'Search for a country';
+  String get avIssuingCountryHint => 'Select a country';
+
+  @override
+  String get countryPickerTitle => 'Select a country';
+
+  @override
+  String get countryPickerSearch => 'Search countries';
+
+  @override
+  String get countryPickerEmpty => 'No countries found';
 
   @override
   String get avContinue => 'Continue';

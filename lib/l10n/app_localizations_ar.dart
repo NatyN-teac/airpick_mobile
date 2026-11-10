@@ -1195,7 +1195,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get avIssuingCountry => 'بلد الإصدار';
 
   @override
-  String get avIssuingCountryHint => 'ابحث عن بلد';
+  String get avIssuingCountryHint => 'اختر بلدًا';
+
+  @override
+  String get countryPickerTitle => 'اختر بلدًا';
+
+  @override
+  String get countryPickerSearch => 'ابحث عن الدول';
+
+  @override
+  String get countryPickerEmpty => 'لم يتم العثور على أي بلد';
 
   @override
   String get avContinue => 'متابعة';

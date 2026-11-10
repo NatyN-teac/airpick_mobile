@@ -1226,7 +1226,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get avIssuingCountry => 'Pays de délivrance';
 
   @override
-  String get avIssuingCountryHint => 'Rechercher un pays';
+  String get avIssuingCountryHint => 'Sélectionner un pays';
+
+  @override
+  String get countryPickerTitle => 'Sélectionner un pays';
+
+  @override
+  String get countryPickerSearch => 'Rechercher un pays';
+
+  @override
+  String get countryPickerEmpty => 'Aucun pays trouvé';
 
   @override
   String get avContinue => 'Continuer';

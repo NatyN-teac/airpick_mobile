@@ -2307,8 +2307,26 @@ abstract class AppLocalizations {
   /// No description provided for @avIssuingCountryHint.
   ///
   /// In en, this message translates to:
-  /// **'Search for a country'**
+  /// **'Select a country'**
   String get avIssuingCountryHint;
+
+  /// No description provided for @countryPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a country'**
+  String get countryPickerTitle;
+
+  /// No description provided for @countryPickerSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search countries'**
+  String get countryPickerSearch;
+
+  /// No description provided for @countryPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No countries found'**
+  String get countryPickerEmpty;
 
   /// No description provided for @avContinue.
   ///

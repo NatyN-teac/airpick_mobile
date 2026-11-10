@@ -1184,7 +1184,16 @@ class AppLocalizationsAm extends AppLocalizations {
   String get avIssuingCountry => 'ሰነዱን የሰጠው አገር';
 
   @override
-  String get avIssuingCountryHint => 'አገር ይፈልጉ';
+  String get avIssuingCountryHint => 'አገር ይምረጡ';
+
+  @override
+  String get countryPickerTitle => 'አገር ይምረጡ';
+
+  @override
+  String get countryPickerSearch => 'አገሮችን ይፈልጉ';
+
+  @override
+  String get countryPickerEmpty => 'ምንም አገር አልተገኘም';
 
   @override
   String get avContinue => 'ቀጥል';
