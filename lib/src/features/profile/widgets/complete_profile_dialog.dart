@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../countries/widgets/country_name_field.dart';
 import '../../settings/repository/settings_repository.dart';
 import '../cubit/current_user_cubit.dart';
 import '../models/user_profile_detail.dart';
@@ -162,7 +163,13 @@ class _CompleteProfileDialogState extends State<_CompleteProfileDialog> {
               const SizedBox(height: 12),
               _dobField(isDark, textPrimary, textSecondary),
               const SizedBox(height: 12),
-              _field('Country of residence', _country, isDark),
+              CountryNameField(
+                controller: _country,
+                isDark: isDark,
+                hint: 'Country of residence',
+                enabled: !_busy,
+                onChanged: (_) => setState(() {}),
+              ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Text(

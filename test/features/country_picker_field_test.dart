@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:guzomy/l10n/app_localizations.dart';
 import 'package:guzomy/src/features/countries/models/country.dart';
+import 'package:guzomy/src/features/countries/models/iso3_country_codes.dart';
+import 'package:guzomy/src/features/countries/repository/country_repository.dart';
 import 'package:guzomy/src/features/countries/widgets/country_picker_field.dart';
 
 const _countries = [
@@ -69,5 +71,17 @@ void main() {
     expect(find.text('Kenya'), findsOneWidget);
     expect(find.text('Ethiopia'), findsNothing);
     expect(find.text('France'), findsNothing);
+  });
+
+  test('server countries are merged with the full world list', () {
+    final merged = mergeWithWorldCountries(const [
+      Country(id: 'uuid-et', name: 'Ethiopia', countryCode: 'ET'),
+    ]);
+    // Server entry kept (its id), no duplicate Ethiopia, the rest filled in.
+    expect(merged.where((c) => c.countryCode == 'ET').single.id, 'uuid-et');
+    expect(merged.length, greaterThan(240));
+    expect(merged.map((c) => c.name), contains('Zimbabwe'));
+    // Every country can be sent as an alpha-3 issuing country.
+    expect(merged.where((c) => iso3CountryCode(c.countryCode) == null), isEmpty);
   });
 }

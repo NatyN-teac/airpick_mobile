@@ -5,6 +5,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_message.dart';
+import '../../countries/widgets/country_name_field.dart';
 import '../../offers/widgets/airpick_bubble_shell.dart';
 import '../../offers/widgets/form_widgets.dart';
 import '../cubit/current_user_cubit.dart';
@@ -492,11 +493,10 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                   _state,
                                   hint: l.optional,
                                 ),
-                                _field(
+                                _countryField(
                                   0.52,
                                   isDark,
                                   '${l.country} *',
-                                  _country,
                                   hint: l.country,
                                 ),
                                 const SizedBox(height: 28),
@@ -542,6 +542,33 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                       ],
                     ),
             ),
+    );
+  }
+
+  Widget _countryField(
+    double start,
+    bool isDark,
+    String label, {
+    required String hint,
+  }) {
+    return _AnimatedBlock(
+      animation: _enterCtrl,
+      interval: Interval(start, start + 0.2, curve: Curves.easeOutCubic),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FormLabel(label, isDark: isDark),
+            const SizedBox(height: 6),
+            CountryNameField(
+              controller: _country,
+              isDark: isDark,
+              hint: hint,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
