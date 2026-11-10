@@ -1,10 +1,6 @@
-import 'dart:convert';
-import 'dart:math';
-import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/utils/app_logger.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../exceptions/auth_exceptions.dart';
 
 class FirebaseAuthService {
@@ -56,62 +52,29 @@ class FirebaseAuthService {
     }
   }
 
+  // Sign in with Apple goes through FlutterFire's native flow
+  // (ASAuthorizationController inside the firebase_auth plugin), which builds
+  // the nonce and the credential with Firebase's own
+  // `appleCredentialWithIDToken:rawNonce:fullName:`. The hand-built
+  // `OAuthProvider('apple.com').credential(...)` path was rejected by Firebase
+  // on TestFlight builds with "Invalid OAuth response from apple.com".
+  // The Apple button is only shown on iOS / macOS.
   Future<String> signInWithApple() async {
-    final rawNonce = _generateNonce();
-    final nonce = _sha256(rawNonce);
+    final provider = AppleAuthProvider()
+      ..addScope('email')
+      ..addScope('name');
 
     try {
-      final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-        nonce: nonce,
-      );
-
-      final identityToken = appleCredential.identityToken;
-      if (identityToken == null || identityToken.isEmpty) {
-        throw const AuthConfigurationException(
-          'Apple did not return an identity token.',
-        );
-      }
-
-      final oauthCredential = OAuthProvider(
-        'apple.com',
-      ).credential(idToken: identityToken, rawNonce: rawNonce);
-
-      final userCredential = await _auth.signInWithCredential(oauthCredential);
-
-      // Apple only returns the user's name on the very first authorization.
-      // When present, persist it to the Firebase profile so downstream
-      // registration has a display name instead of a blank.
-      final fullName =
-          appleCredential.givenName != null ||
-              appleCredential.familyName != null
-          ? [
-              appleCredential.givenName,
-              appleCredential.familyName,
-            ].where((p) => p != null && p.isNotEmpty).join(' ')
-          : null;
-      if (fullName != null &&
-          fullName.isNotEmpty &&
-          (userCredential.user?.displayName == null ||
-              userCredential.user!.displayName!.isEmpty)) {
-        await userCredential.user?.updateDisplayName(fullName);
-      }
-
+      final userCredential = await _auth.signInWithProvider(provider);
       return await _getFirebaseToken(userCredential);
-    } on SignInWithAppleAuthorizationException catch (e) {
-      if (e.code == AuthorizationErrorCode.canceled) {
+    } on FirebaseAuthException catch (e) {
+      appLogger.w('[Auth] Apple sign-in failed: ${e.code} ${e.message}');
+      if (e.code == 'canceled' || e.code == 'web-context-canceled') {
         throw const AuthCancelledException('Apple');
       }
-      throw AuthConfigurationException('Apple sign-in failed: ${e.message}');
-    } on SignInWithAppleNotSupportedException catch (e) {
       throw AuthConfigurationException(
-        'Apple sign-in is not available on this device: ${e.message}',
+        'Apple sign-in failed: ${e.message ?? e.code}',
       );
-    } on SignInWithAppleException catch (e) {
-      throw AuthConfigurationException('Apple sign-in failed: $e');
     }
   }
 
@@ -126,20 +89,5 @@ class FirebaseAuthService {
       );
     }
     return token;
-  }
-
-  String _generateNonce([int length = 32]) {
-    const charset =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._';
-    final random = Random.secure();
-    return List.generate(
-      length,
-      (_) => charset[random.nextInt(charset.length)],
-    ).join();
-  }
-
-  String _sha256(String input) {
-    final bytes = utf8.encode(input);
-    return sha256.convert(bytes).toString();
   }
 }
