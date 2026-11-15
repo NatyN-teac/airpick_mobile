@@ -26,7 +26,8 @@ class AppRouter extends StatefulWidget {
   State<AppRouter> createState() => _AppRouterState();
 }
 
-class _AppRouterState extends State<AppRouter> {
+class _AppRouterState extends State<AppRouter>
+    with WidgetsBindingObserver {
   StreamSubscription<void>? _unauthorizedSub;
   StreamSubscription<void>? _blockedSub;
   StreamSubscription<void>? _verificationSub;
@@ -35,6 +36,7 @@ class _AppRouterState extends State<AppRouter> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _unauthorizedSub = AppSession.onUnauthorized.listen((_) {
       if (mounted) {
         context.read<CurrentUserCubit>().clear();
@@ -67,8 +69,21 @@ class _AppRouterState extends State<AppRouter> {
         .whenComplete(() => _blockedShown = false);
   }
 
+  // A reviewer may approve the user while the app sits in the background and
+  // the push is missed or never tapped. Re-check on return so the verified
+  // flag (Unverified badge, requireVerified) doesn't stay stale.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) return;
+    final currentUser = context.read<CurrentUserCubit>();
+    final profile = currentUser.state;
+    if (profile == null || profile.isVerified) return;
+    currentUser.refreshVerification(context.read<UserRepository>()).ignore();
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _unauthorizedSub?.cancel();
     _blockedSub?.cancel();
     _verificationSub?.cancel();

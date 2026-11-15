@@ -94,7 +94,7 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
     } catch (e, st) {
       appLogger.e('[CreateOfferRequestCubit] loadCountries error', e, st);
       emit(state.copyWith(
-          countriesLoading: false, countriesError: e.toString()));
+          countriesLoading: false, countriesError: e.toString().replaceFirst('Exception: ', '')));
     }
   }
 
@@ -110,7 +110,7 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
       emit(state.copyWith(availableItems: list, itemsLoading: false));
     } catch (e, st) {
       appLogger.e('[CreateOfferRequestCubit] loadItems error', e, st);
-      emit(state.copyWith(itemsLoading: false, itemsError: e.toString()));
+      emit(state.copyWith(itemsLoading: false, itemsError: e.toString().replaceFirst('Exception: ', '')));
     }
   }
 
@@ -232,7 +232,7 @@ class CreateOfferRequestCubit extends Cubit<CreateOfferRequestState> {
       emit(state.copyWith(submitting: false, created: true, result: result));
     } catch (e, st) {
       appLogger.e('[CreateOfferRequestCubit] submit error', e, st);
-      emit(state.copyWith(submitting: false, error: e.toString()));
+      emit(state.copyWith(submitting: false, error: e.toString().replaceFirst('Exception: ', '')));
     }
   }
 }

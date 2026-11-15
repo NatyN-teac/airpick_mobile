@@ -278,6 +278,8 @@
   "reqPartialProposals": "مقترحات جزئية",
   "preferredDate": "التاريخ المفضّل",
   "reqNoItems": "لا توجد عناصر",
+  "reqItemReviewNotice": "يتضمن هذا الطلب عنصرًا أضفته غير موجود في قائمتنا بعد. يراجعه فريقنا، وسيرى الناقلون طلبك بمجرد الموافقة عليه.",
+  "reqItemReviewShort": "بانتظار مراجعة العنصر",
   "reqHasProposalsLocked": "يحتوي هذا الطلب على مقترحات ولم يعد من الممكن تعديله أو حذفه.",
   "reqStatusLocked": "هذا الطلب {status} ولم يعد من الممكن تعديله أو حذفه.",
   "createProposalSent": "تم إرسال المقترح",

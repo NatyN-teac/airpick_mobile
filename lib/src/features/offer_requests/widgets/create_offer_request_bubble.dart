@@ -298,27 +298,20 @@ class _OfferRequestForm extends StatelessWidget {
                         : AppColors.textTertiary,
                   ),
                 )
-              else ...[
-                SizedBox(
-                  height: 160,
-                  child: ListView.builder(
-                    itemCount: state.items.length,
-                    itemBuilder: (_, i) {
-                      final draft = state.items[i];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _ItemDraftRow(
-                          draft: draft,
-                          isDark: isDark,
-                          onQuantityChanged: (q) =>
-                              cubit.updateQuantity(draft.id, q),
-                          onRemove: () => cubit.removeItem(draft.id),
-                        ),
-                      );
-                    },
+              else
+                // Sized to its rows: the form itself scrolls, so a fixed-height
+                // list here only left a gap under short item lists.
+                for (final draft in state.items)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _ItemDraftRow(
+                      draft: draft,
+                      isDark: isDark,
+                      onQuantityChanged: (q) =>
+                          cubit.updateQuantity(draft.id, q),
+                      onRemove: () => cubit.removeItem(draft.id),
+                    ),
                   ),
-                ),
-              ],
               const SizedBox(height: 10),
 
               // ── Special note ──────────────────────────────────────

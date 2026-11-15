@@ -926,6 +926,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get reqNoItems => 'Aucun article';
 
   @override
+  String get reqItemReviewNotice =>
+      'Cette demande contient un article que vous avez ajouté et qui ne figure pas encore dans notre liste. Notre équipe l’examine, et les transporteurs verront votre demande une fois l’article approuvé.';
+
+  @override
+  String get reqItemReviewShort => 'Article en cours de vérification';
+
+  @override
   String get reqHasProposalsLocked =>
       'Cette demande a des propositions et ne peut plus être modifiée ou supprimée.';
 

@@ -1770,6 +1770,18 @@ abstract class AppLocalizations {
   /// **'No items'**
   String get reqNoItems;
 
+  /// Request detail: why a request is in PENDING_ITEM_APPROVAL
+  ///
+  /// In en, this message translates to:
+  /// **'This request includes an item you added that isn\'t in our list yet. Our team is reviewing it, and carriers will see your request once it\'s approved.'**
+  String get reqItemReviewNotice;
+
+  /// My Requests card: short note for PENDING_ITEM_APPROVAL
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for item review'**
+  String get reqItemReviewShort;
+
   /// No description provided for @reqHasProposalsLocked.
   ///
   /// In en, this message translates to:

@@ -202,21 +202,17 @@ class OfferFormStep extends StatelessWidget {
                 // Total price strip
                 _TotalPriceBar(state: state, isDark: isDark),
                 const SizedBox(height: 8),
-                // List — 2 cards visible, rest scrollable
-                SizedBox(
-                  height: 190,
-                  child: ListView.builder(
-                    itemCount: state.items.length,
-                    itemBuilder: (_, i) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _ItemRow(
-                          key: ValueKey(state.items[i].id),
-                          item: state.items[i],
-                          isDark: isDark,
-                          cubit: cubit),
-                    ),
+                // Sized to its rows: the form itself scrolls, so a fixed-height
+                // list here only left a gap under short item lists.
+                for (final item in state.items)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _ItemRow(
+                        key: ValueKey(item.id),
+                        item: item,
+                        isDark: isDark,
+                        cubit: cubit),
                   ),
-                ),
               ],
               const SizedBox(height: 16),
 

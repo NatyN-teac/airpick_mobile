@@ -143,11 +143,15 @@ class _HomeViewState extends State<_HomeView> {
   }
 
   // Opens the mode-appropriate create form as a bottom sheet.
-  void _onCreateTap(BuildContext context) {
+  Future<void> _onCreateTap(BuildContext context) async {
     final mode = context.read<UserModeCubit>().state;
     if (mode == UserMode.carrier) {
       // Offers require a verified identity — show an offer-specific message.
-      if (!requireVerified(context, action: l10n(context).verifyActionCreateOffer)) {
+      if (!await requireVerified(
+            context,
+            action: l10n(context).verifyActionCreateOffer,
+          ) ||
+          !context.mounted) {
         return;
       }
       final offersCubit = context.read<OffersCubit>();
@@ -161,10 +165,11 @@ class _HomeViewState extends State<_HomeView> {
       );
     } else {
       // Requests need the same verified identity as offers do.
-      if (!requireVerified(
-        context,
-        action: l10n(context).verifyActionCreateRequest,
-      )) {
+      if (!await requireVerified(
+            context,
+            action: l10n(context).verifyActionCreateRequest,
+          ) ||
+          !context.mounted) {
         return;
       }
       _openRequestBubble(context);

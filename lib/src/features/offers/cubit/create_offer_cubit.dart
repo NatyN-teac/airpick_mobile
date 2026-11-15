@@ -41,7 +41,7 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
       emit(state.copyWith(airports: list, airportsLoading: false));
     } catch (e) {
       emit(state.copyWith(
-          airportsLoading: false, airportsError: e.toString()));
+          airportsLoading: false, airportsError: e.toString().replaceFirst('Exception: ', '')));
     }
   }
 
@@ -57,7 +57,7 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
       emit(state.copyWith(availableItems: list, itemsLoading: false));
     } catch (e, st) {
       appLogger.e('[CreateOfferCubit] loadItems error', e, st);
-      emit(state.copyWith(itemsLoading: false, itemsError: e.toString()));
+      emit(state.copyWith(itemsLoading: false, itemsError: e.toString().replaceFirst('Exception: ', '')));
     }
   }
 
@@ -155,7 +155,7 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
     } catch (e, st) {
       appLogger.e('[CreateOfferCubit] createFlight error', e, st);
       emit(state.copyWith(
-          creatingFlight: false, flightError: e.toString()));
+          creatingFlight: false, flightError: e.toString().replaceFirst('Exception: ', '')));
     }
   }
 
@@ -251,7 +251,7 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
     } catch (e, st) {
       appLogger.e("Something is wrong", e, st);
       emit(state.copyWith(
-          creatingOffer: false, offerError: e.toString()));
+          creatingOffer: false, offerError: e.toString().replaceFirst('Exception: ', '')));
     }
   }
 

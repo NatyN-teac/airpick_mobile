@@ -278,6 +278,8 @@
   "reqPartialProposals": "ከፊል ሀሳቦች",
   "preferredDate": "የሚመረጥ ቀን",
   "reqNoItems": "ምንም እቃ የለም",
+  "reqItemReviewNotice": "ይህ ጥያቄ እርስዎ ያከሉት እና እስካሁን በዝርዝራችን ውስጥ የሌለ ዕቃ ይዟል። ቡድናችን እየገመገመው ነው፤ ዕቃው ሲጸድቅ ተጓዦች ጥያቄዎን ያያሉ።",
+  "reqItemReviewShort": "ዕቃው በግምገማ ላይ ነው",
   "reqHasProposalsLocked": "ይህ ጥያቄ ሀሳቦች አሉት እና ከዚህ በኋላ ማስተካከል ወይም መሰረዝ አይቻልም።",
   "reqStatusLocked": "ይህ ጥያቄ {status} ነው እና ከዚህ በኋላ ማስተካከል ወይም መሰረዝ አይቻልም።",
   "createProposalSent": "ሀሳብ ተልኳል",

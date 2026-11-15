@@ -136,14 +136,14 @@ class _SearchScreenState extends State<SearchScreen> {
       // Search is country-based; city isn't supported server-side, so the
       // (deprecated) city scope falls back to a source-country search.
       _SearchScope.sourceCountry || _SearchScope.sourceCity =>
-        repo.searchOpenRequests(sourceCountry: query),
+        repo.browseOfferRequests(sourceCountry: query),
       _SearchScope.destinationCountry =>
-        repo.searchOpenRequests(destinationCountry: query),
+        repo.browseOfferRequests(destinationCountry: query),
       // "Anywhere" — match the query against source OR destination country and
       // merge the unique results.
       _SearchScope.anywhere => _mergeUnique([
-        repo.searchOpenRequests(sourceCountry: query),
-        repo.searchOpenRequests(destinationCountry: query),
+        repo.browseOfferRequests(sourceCountry: query),
+        repo.browseOfferRequests(destinationCountry: query),
       ], (r) => r.id),
     };
   }

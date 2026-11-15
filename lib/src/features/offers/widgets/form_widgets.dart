@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/time_format.dart';
 import '../../airports/models/airport.dart';
 
 // ── Label ─────────────────────────────────────────────────────────────────────
@@ -359,9 +360,7 @@ class DateTimeTile extends StatelessWidget {
   String get _display {
     if (isTime) {
       if (timeValue == null) return '––:––';
-      final h = timeValue!.hour.toString().padLeft(2, '0');
-      final m = timeValue!.minute.toString().padLeft(2, '0');
-      return '$h:$m';
+      return TimeFormat.clock12Of(timeValue!.hour, timeValue!.minute);
     }
     if (value == null) return '––/––/––';
     return '${value!.day.toString().padLeft(2, '0')}/'

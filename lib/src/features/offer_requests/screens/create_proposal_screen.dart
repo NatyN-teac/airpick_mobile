@@ -18,12 +18,12 @@ import '../repository/offer_request_repository.dart';
 // Opens the proposal flow. A flight is created first, then the proposal.
 // [onSent] fires after a successful submission (e.g. to drop the now-non-open
 // request from the browse list).
-void openCreateProposal(
+Future<void> openCreateProposal(
   BuildContext context,
   OfferRequestResponse request, {
   VoidCallback? onSent,
-}) {
-  if (!requireVerified(context)) return;
+}) async {
+  if (!await requireVerified(context) || !context.mounted) return;
 
   Navigator.of(context).push(
     MaterialPageRoute(

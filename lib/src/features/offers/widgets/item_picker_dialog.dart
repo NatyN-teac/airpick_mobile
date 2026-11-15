@@ -64,6 +64,17 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
   String? _createError;
   final Set<String> _selectedIds = {};
 
+  // Items added via "Add custom" while the picker is open. widget.availableItems
+  // is the list from when the picker opened, so without these a freshly created
+  // item would be ticked but dropped from the Done result.
+  final List<ItemModel> _createdItems = [];
+
+  List<ItemModel> get _allItems => [
+        ..._createdItems,
+        ...widget.availableItems
+            .where((i) => !_createdItems.any((c) => c.id == i.id)),
+      ];
+
   @override
   void dispose() {
     _searchCtrl.dispose();
@@ -98,6 +109,7 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
     if (item != null) {
       setState(() {
         _creating = false;
+        _createdItems.add(item);
         _selectedIds.add(item.id);
         _showCreate = false;
         _nameCtrl.clear();
@@ -135,7 +147,7 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
     final surface = isDark ? AppColors.darkBackground : AppColors.surface;
     final border = isDark ? AppColors.darkBorder : AppColors.border;
 
-    final filtered = _filtered(widget.availableItems);
+    final filtered = _filtered(_allItems);
     final grouped = _grouped(filtered);
 
     return Dialog(
@@ -294,7 +306,7 @@ class _ItemPickerDialogState extends State<ItemPickerDialog> {
                       onTap: _selectedIds.isEmpty
                           ? null
                           : () {
-                              final selected = widget.availableItems
+                              final selected = _allItems
                                   .where((i) => _selectedIds.contains(i.id))
                                   .toList();
                               Navigator.of(context).pop(selected);

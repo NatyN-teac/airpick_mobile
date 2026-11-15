@@ -903,6 +903,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reqNoItems => 'لا توجد عناصر';
 
   @override
+  String get reqItemReviewNotice =>
+      'يتضمن هذا الطلب عنصرًا أضفته غير موجود في قائمتنا بعد. يراجعه فريقنا، وسيرى الناقلون طلبك بمجرد الموافقة عليه.';
+
+  @override
+  String get reqItemReviewShort => 'بانتظار مراجعة العنصر';
+
+  @override
   String get reqHasProposalsLocked =>
       'يحتوي هذا الطلب على مقترحات ولم يعد من الممكن تعديله أو حذفه.';
 

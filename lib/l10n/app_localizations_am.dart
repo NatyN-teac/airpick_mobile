@@ -892,6 +892,13 @@ class AppLocalizationsAm extends AppLocalizations {
   String get reqNoItems => 'ምንም እቃ የለም';
 
   @override
+  String get reqItemReviewNotice =>
+      'ይህ ጥያቄ እርስዎ ያከሉት እና እስካሁን በዝርዝራችን ውስጥ የሌለ ዕቃ ይዟል። ቡድናችን እየገመገመው ነው፤ ዕቃው ሲጸድቅ ተጓዦች ጥያቄዎን ያያሉ።';
+
+  @override
+  String get reqItemReviewShort => 'ዕቃው በግምገማ ላይ ነው';
+
+  @override
   String get reqHasProposalsLocked =>
       'ይህ ጥያቄ ሀሳቦች አሉት እና ከዚህ በኋላ ማስተካከል ወይም መሰረዝ አይቻልም።';
 

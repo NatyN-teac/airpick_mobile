@@ -586,6 +586,14 @@
   "@preferredDate": {},
   "reqNoItems": "No items",
   "@reqNoItems": {},
+  "reqItemReviewNotice": "This request includes an item you added that isn't in our list yet. Our team is reviewing it, and carriers will see your request once it's approved.",
+  "@reqItemReviewNotice": {
+    "description": "Request detail: why a request is in PENDING_ITEM_APPROVAL"
+  },
+  "reqItemReviewShort": "Waiting for item review",
+  "@reqItemReviewShort": {
+    "description": "My Requests card: short note for PENDING_ITEM_APPROVAL"
+  },
   "reqHasProposalsLocked": "This request has proposals and can no longer be edited or deleted.",
   "@reqHasProposalsLocked": {},
   "reqStatusLocked": "This request is {status} and can no longer be edited or deleted.",

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import '../../../core/utils/time_format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/skeleton_list.dart';
 import '../../../core/widgets/state_message.dart';
@@ -198,7 +198,7 @@ class _ChatTile extends StatelessWidget {
               children: [
                 if (summary.lastMessageAt != null)
                   Text(
-                    DateFormat('HH:mm').format(summary.lastMessageAt!),
+                    TimeFormat.clock12(summary.lastMessageAt!),
                     style: TextStyle(
                       fontFamily: 'Manrope',
                       fontSize: 10,

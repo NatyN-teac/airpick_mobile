@@ -56,6 +56,26 @@ class CurrentUserCubit extends Cubit<ProfileSnapshot?> {
     );
   }
 
+  /// Re-reads GET /users/verification/status and stores the result, so an
+  /// approval made while the app stayed open is picked up without a push.
+  /// Returns whether the user is verified; on a network error it keeps the
+  /// local value.
+  Future<bool> refreshVerification(UserRepository users) async {
+    try {
+      final verification = (await users.getVerificationStatus())
+          .toAccountVerification();
+      if (isClosed) return verification.isApproved;
+      updateVerification(
+        isVerified: verification.isApproved,
+        status: verification.verificationStatus,
+      );
+      return verification.isApproved;
+    } catch (e, st) {
+      appLogger.e('[CurrentUserCubit] verification refresh failed', e, st);
+      return state?.isVerified ?? false;
+    }
+  }
+
   void clear() {
     _profileSyncGen++;
     emit(null);

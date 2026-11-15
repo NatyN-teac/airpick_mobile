@@ -93,6 +93,13 @@ class TimeFormat {
     return '$y year${y == 1 ? '' : 's'} ago';
   }
 
+  /// 12-hour clock time shown to users, e.g. `9:05 AM`, `10:00 PM`.
+  static String clock12(DateTime dt) => DateFormat('h:mm a').format(dt);
+
+  /// [clock12] for a bare hour/minute (e.g. a picked `TimeOfDay`).
+  static String clock12Of(int hour, int minute) =>
+      clock12(DateTime(2000, 1, 1, hour, minute));
+
   /// Short absolute date, e.g. `Jan 5`.
   static String shortDate(String? iso) {
     final dt = parseServerTime(iso);

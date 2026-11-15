@@ -914,6 +914,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reqNoItems => 'No items';
 
   @override
+  String get reqItemReviewNotice =>
+      'This request includes an item you added that isn\'t in our list yet. Our team is reviewing it, and carriers will see your request once it\'s approved.';
+
+  @override
+  String get reqItemReviewShort => 'Waiting for item review';
+
+  @override
   String get reqHasProposalsLocked =>
       'This request has proposals and can no longer be edited or deleted.';
 

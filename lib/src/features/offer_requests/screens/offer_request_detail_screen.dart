@@ -221,6 +221,38 @@ class _OfferRequestDetailScreenState extends State<OfferRequestDetailScreen> {
                 ),
               ),
 
+            // ── Why it's pending: a new item awaits review ─────────
+            if (request.status == 'PENDING_ITEM_APPROVAL') ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.hourglass_top_rounded,
+                        size: 15, color: AppColors.warning),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l.reqItemReviewNotice,
+                        style: const TextStyle(
+                          fontFamily: 'Manrope',
+                          fontSize: 11,
+                          color: AppColors.warning,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // ── Lock notice when not editable ──────────────────────
             if (!request.canDelete) ...[
               const SizedBox(height: 20),

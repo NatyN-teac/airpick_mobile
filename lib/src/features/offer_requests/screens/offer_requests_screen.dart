@@ -671,6 +671,33 @@ class _OfferRequestCard extends StatelessWidget {
             ),
           ),
 
+          // ── Pending: a new item the user added awaits review ─────
+          if (request.status == 'PENDING_ITEM_APPROVAL')
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.hourglass_top_rounded,
+                    size: 12,
+                    color: AppColors.warning,
+                  ),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      l10n(context).reqItemReviewShort,
+                      style: const TextStyle(
+                        fontFamily: 'Manrope',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.warning,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           // ── Route date strip ─────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),

@@ -3,19 +3,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../../features/profile/cubit/current_user_cubit.dart';
+import '../../features/profile/repository/user_repository.dart';
 import '../../features/profile/screens/account_verification_screen.dart';
 
 /// Returns true if the user is verified and the action can proceed.
 /// If not verified, shows a bottom sheet explaining the requirement and
 /// offering a shortcut to the verification screen, then returns false.
 ///
+/// The saved profile can be stale: a reviewer may approve the user while the
+/// app stays open and the push never arrives. So when the local flag says
+/// "not verified", the server is asked before the sheet is shown.
+///
 /// [action] is folded into the explanation so the message reflects the exact
 /// scenario, e.g. `requireVerified(context, action: 'create an offer')`.
-bool requireVerified(BuildContext context, {String? action}) {
-  final profile = context.read<CurrentUserCubit>().state;
-  if (profile?.isVerified == true) return true;
+Future<bool> requireVerified(BuildContext context, {String? action}) async {
+  final currentUser = context.read<CurrentUserCubit>();
+  if (currentUser.state?.isVerified == true) return true;
 
-  _showVerificationRequired(context, action: action);
+  final verified = await currentUser.refreshVerification(
+    context.read<UserRepository>(),
+  );
+  if (verified) return true;
+
+  if (context.mounted) _showVerificationRequired(context, action: action);
   return false;
 }
 
@@ -24,10 +34,12 @@ void _showVerificationRequired(BuildContext context, {String? action}) {
   final actionText = action ?? l.verifyActionDefault;
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final bg = isDark ? AppColors.darkSurface : Colors.white;
-  final textPrimary =
-      isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-  final textSecondary =
-      isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+  final textPrimary = isDark
+      ? AppColors.darkTextPrimary
+      : AppColors.textPrimary;
+  final textSecondary = isDark
+      ? AppColors.darkTextSecondary
+      : AppColors.textSecondary;
 
   showModalBottomSheet<void>(
     context: context,

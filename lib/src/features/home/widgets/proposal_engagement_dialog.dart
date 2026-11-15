@@ -181,7 +181,7 @@ class _ProposalEngagementDialogBodyState
   }
 
   Future<void> _accept() async {
-    if (!requireVerified(context)) return;
+    if (!await requireVerified(context) || !mounted) return;
     if (!_hasValidReceiver) {
       _snack(
         _receiverNeeded

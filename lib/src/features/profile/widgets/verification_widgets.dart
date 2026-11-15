@@ -520,5 +520,6 @@ String documentTypeLabel(AppLocalizations l, VerificationDocumentType type) =>
 /// Local date + time in the app's language, e.g. for a cooldown end.
 String formatVerificationTime(BuildContext context, DateTime time) {
   final locale = Localizations.localeOf(context).toLanguageTag();
-  return DateFormat.yMMMd(locale).add_jm().format(time.toLocal());
+  // Always a 12-hour clock (app-wide), even in locales that default to 24h.
+  return DateFormat.yMMMd(locale).addPattern('h:mm a').format(time.toLocal());
 }
