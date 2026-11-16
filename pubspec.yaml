@@ -2,7 +2,7 @@ name: guzomy
 description: "GuzoMy mobile application."
 publish_to: 'none'
 
-version: 1.0.0+64
+version: 1.0.0+65
 
 environment:
   sdk: ^3.11.5
