@@ -181,10 +181,14 @@ class VerificationStepTimeline extends StatelessWidget {
   final VerificationStep activeStep;
   final bool isDark;
 
+  /// Verified: every step, Review included, shows as done.
+  final bool allComplete;
+
   const VerificationStepTimeline({
     super.key,
     required this.activeStep,
     required this.isDark,
+    this.allComplete = false,
   });
 
   @override
@@ -217,8 +221,8 @@ class VerificationStepTimeline extends StatelessWidget {
           _StepDot(
             label: steps[i].$1,
             icon: steps[i].$2,
-            isActive: i == activeIndex,
-            isComplete: i < activeIndex,
+            isActive: !allComplete && i == activeIndex,
+            isComplete: allComplete || i < activeIndex,
             isDark: isDark,
           ),
         ],

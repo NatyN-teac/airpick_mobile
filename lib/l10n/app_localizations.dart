@@ -2585,6 +2585,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account has been blocked because we couldn\'t verify your identity. If you think this is a mistake, contact support.'**
   String get blockedBody;
+
+  /// User details: shown to verified users, whose details are read-only
+  ///
+  /// In en, this message translates to:
+  /// **'Your details are verified, so they can\'t be changed.'**
+  String get udVerifiedLocked;
 }
 
 class _AppLocalizationsDelegate

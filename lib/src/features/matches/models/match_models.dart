@@ -141,6 +141,8 @@ class MatchResponse {
   final String? deliveryArea;
   final bool hasPickupPhoto;
   final String? pickupPhotoUploadedAt;
+  final bool hasDeliveryPhoto;
+  final String? deliveryPhotoUploadedAt;
   final String? carrierId;
   final String? shipperId;
   final String? createdAt;
@@ -161,6 +163,8 @@ class MatchResponse {
     this.deliveryArea,
     this.hasPickupPhoto = false,
     this.pickupPhotoUploadedAt,
+    this.hasDeliveryPhoto = false,
+    this.deliveryPhotoUploadedAt,
     this.carrierId,
     this.shipperId,
     this.createdAt,
@@ -191,6 +195,8 @@ class MatchResponse {
           (json['deliveryArea'] ?? offer?['deliveryArea'])?.toString(),
       hasPickupPhoto: json['hasPickupPhoto'] as bool? ?? false,
       pickupPhotoUploadedAt: json['pickupPhotoUploadedAt']?.toString(),
+      hasDeliveryPhoto: json['hasDeliveryPhoto'] as bool? ?? false,
+      deliveryPhotoUploadedAt: json['deliveryPhotoUploadedAt']?.toString(),
       flight: flight,
       expectedDeliveryAt: _parseExpectedDelivery(flight, json),
       matchedItems: (json['matchedItems'] as List<dynamic>? ?? [])

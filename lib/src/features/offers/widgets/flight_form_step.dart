@@ -29,16 +29,6 @@ class FlightFormStep extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Flight type toggle ─────────────────────────────────
-              _SegmentedToggle(
-                isDark: isDark,
-                value: state.flightType,
-                onChanged: cubit.setFlightType,
-                leftLabel: l.oneWay,
-                rightLabel: l.roundTrip,
-              ),
-              const SizedBox(height: 16),
-
               // ── From / To airports ─────────────────────────────────
               if (state.airportsLoading)
                 const Center(
@@ -455,106 +445,6 @@ class FlightFormStep extends StatelessWidget {
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
-}
-
-// ── Segmented toggle ──────────────────────────────────────────────────────────
-
-class _SegmentedToggle extends StatelessWidget {
-  final bool isDark;
-  final FlightType value;
-  final ValueChanged<FlightType> onChanged;
-  final String leftLabel, rightLabel;
-
-  const _SegmentedToggle({
-    required this.isDark,
-    required this.value,
-    required this.onChanged,
-    required this.leftLabel,
-    required this.rightLabel,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = isDark ? AppColors.darkBackground : AppColors.surface;
-    return Container(
-      height: 38,
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          _Segment(
-            label: leftLabel,
-            active: value == FlightType.oneWay,
-            isDark: isDark,
-            onTap: () => onChanged(FlightType.oneWay),
-          ),
-          _Segment(
-            label: rightLabel,
-            active: value == FlightType.roundTrip,
-            isDark: isDark,
-            onTap: () => onChanged(FlightType.roundTrip),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Segment extends StatelessWidget {
-  final String label;
-  final bool active, isDark;
-  final VoidCallback onTap;
-
-  const _Segment({
-    required this.label,
-    required this.active,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          margin: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            color: active
-                ? (isDark ? AppColors.darkSurface : Colors.white)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: active
-                ? [
-                    BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 4,
-                        offset: const Offset(0, 1))
-                  ]
-                : null,
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Manrope',
-                fontSize: 12,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                color: active
-                    ? AppColors.primary
-                    : (isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.textSecondary),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _AirportError extends StatelessWidget {

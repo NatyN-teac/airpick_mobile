@@ -110,7 +110,8 @@ class ItemModel extends Equatable {
       measurementUnit: MeasurementUnitX.fromApi(
         json['measurementUnit'] as String,
       ),
-      isApproved: json['isApproved'] as bool? ?? true,
+      isApproved: (json['isApproved'] as bool? ?? true) &&
+          json['status']?.toString().toUpperCase() != 'PENDING_ITEM_APPROVAL',
       isManuallyCreated: json['isManuallyCreated'] as bool? ?? false,
     );
   }

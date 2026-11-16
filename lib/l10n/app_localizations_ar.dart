@@ -1354,4 +1354,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get blockedBody =>
       'تم حظر حسابك لأننا لم نتمكن من التحقق من هويتك. إذا كنت تعتقد أن هذا خطأ، فتواصل مع الدعم.';
+
+  @override
+  String get udVerifiedLocked => 'تم التحقق من بياناتك، لذا لا يمكن تغييرها.';
 }

@@ -1394,4 +1394,8 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get blockedBody =>
       'Votre compte a été bloqué car nous n\'avons pas pu vérifier votre identité. Si vous pensez qu\'il s\'agit d\'une erreur, contactez le support.';
+
+  @override
+  String get udVerifiedLocked =>
+      'Vos informations sont vérifiées et ne peuvent plus être modifiées.';
 }

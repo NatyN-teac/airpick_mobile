@@ -31,6 +31,17 @@ class _DeliveryTrackListScreenState extends State<DeliveryTrackListScreen> {
   DeliveryTrackFilter _filter = DeliveryTrackFilter.all;
 
   @override
+  void initState() {
+    super.initState();
+    // Always fetch fresh data on entry; the cached list stays visible while
+    // it loads, so there's no need to pull to refresh.
+    context.read<DeliveryTrackCubit>().load(
+          mode: context.read<UserModeCubit>().state,
+          force: true,
+        );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;

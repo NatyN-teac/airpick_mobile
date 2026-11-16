@@ -413,5 +413,6 @@
   "avReasonSuspectedFraud": "Nous n'avons pas pu vérifier votre identité. Veuillez contacter le support.",
   "avSupportEmailSubject": "Aide pour la vérification d'identité",
   "blockedTitle": "Compte bloqué",
-  "blockedBody": "Votre compte a été bloqué car nous n'avons pas pu vérifier votre identité. Si vous pensez qu'il s'agit d'une erreur, contactez le support."
+  "blockedBody": "Votre compte a été bloqué car nous n'avons pas pu vérifier votre identité. Si vous pensez qu'il s'agit d'une erreur, contactez le support.",
+  "udVerifiedLocked": "Vos informations sont vérifiées et ne peuvent plus être modifiées."
 }

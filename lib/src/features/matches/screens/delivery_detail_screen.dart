@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/app_refresh_bus.dart';
 import '../models/delivery_track_models.dart';
 import '../models/match_models.dart';
 import '../repository/match_repository.dart';
+import '../widgets/proof_photo_sheet.dart';
 
 /// Opens the delivery detail where a carrier progresses a match through pickup →
 /// in-transit → delivered. The sender sees the same view, read-only.
@@ -50,6 +52,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   late MatchResponse _match = widget.match;
   bool _busy = false;
   bool _loadingId = false;
+  bool _loadingDeliveryPhoto = false;
 
   // 0=awaiting pickup, 1=picked up, 2=in transit, 3=carrier delivered
   // (awaiting sender confirmation), 4=confirmed/complete.
@@ -65,21 +68,24 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     return from?.isNotEmpty == true ? from : to;
   }
 
-  Future<void> _runAction(Future<MatchResponse> Function() action) async {
+  /// Runs [action] and adopts the returned match. True when it succeeded.
+  Future<bool> _runAction(Future<MatchResponse> Function() action) async {
     setState(() => _busy = true);
     try {
       final updated = await action();
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() {
         _match = updated;
         _busy = false;
       });
       // Keep the delivery list's chip + progress bar in sync.
       AppRefreshBus.instance.emit(RefreshTopic.deliveries);
+      return true;
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() => _busy = false);
       _snack(e.toString().replaceFirst('Exception: ', ''), isError: true);
+      return false;
     }
   }
 
@@ -88,26 +94,85 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     if (source == null || !mounted) return;
     final file = await _picker.pickImage(source: source, imageQuality: 85);
     if (file == null || !mounted) return;
-    await _runAction(
+    final ok = await _runAction(
       () => widget.repository.uploadPickupPhoto(_match.id, File(file.path)),
     );
-    if (mounted) _snack('Pickup confirmed');
+    if (ok && mounted) _snack('Pickup confirmed');
   }
 
   Future<void> _startDelivery() async {
-    await _runAction(() => widget.repository.startMatch(_match.id));
-    if (mounted) _snack('Delivery started');
+    final ok = await _runAction(() => widget.repository.startMatch(_match.id));
+    if (ok && mounted) _snack('Delivery started');
+  }
+
+  // Proof of delivery: the carrier photographs the drop-off while in transit.
+  // Uploading only attaches the photo; "Mark as delivered" then completes.
+  Future<void> _addDeliveryPhoto() async {
+    final path = await ProofPhotoSheet.show(
+      context,
+      title: 'Proof of delivery',
+      description:
+          'Photograph the items at drop-off. You can mark the delivery as '
+          'done once the photo is uploaded.',
+      actionLabel: 'Upload photo',
+    );
+    if (path == null || !mounted) return;
+    final uploaded = await _runAction(
+      () => widget.repository.uploadDeliveryPhoto(_match.id, File(path)),
+    );
+    if (uploaded && mounted) _snack('Delivery photo added');
   }
 
   Future<void> _markDelivered() async {
-    await _runAction(() => widget.repository.completeMatch(_match.id));
-    if (mounted) _snack('Marked as delivered — awaiting confirmation');
+    setState(() => _busy = true);
+    try {
+      final updated = await widget.repository.completeMatch(_match.id);
+      if (!mounted) return;
+      setState(() {
+        _match = updated;
+        _busy = false;
+      });
+      AppRefreshBus.instance.emit(RefreshTopic.deliveries);
+      _snack('Marked as delivered — awaiting confirmation');
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      if (e.errorCode == 'DELIVERY_PHOTO_REQUIRED' ||
+          e.errorCode == 'BIZ_019') {
+        // The server has no photo for this match — take the carrier back to
+        // the photo step instead of a generic failure.
+        _snack('Add a delivery photo first', isError: true);
+        await _addDeliveryPhoto();
+        return;
+      }
+      _snack(e.message, isError: true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      _snack(e.toString().replaceFirst('Exception: ', ''), isError: true);
+    }
+  }
+
+  // Fresh signed URL each time — they expire.
+  Future<void> _viewDeliveryPhoto() async {
+    setState(() => _loadingDeliveryPhoto = true);
+    try {
+      final url = await widget.repository.getDeliveryPhotoUrl(_match.id);
+      if (!mounted) return;
+      setState(() => _loadingDeliveryPhoto = false);
+      await showSignedPhotoViewer(context, url, title: 'Delivery photo');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loadingDeliveryPhoto = false);
+      _snack(e.toString().replaceFirst('Exception: ', ''), isError: true);
+    }
   }
 
   // Sender confirms the carrier's delivery, completing the match.
   Future<void> _confirmDelivery() async {
-    await _runAction(() => widget.repository.confirmDelivery(_match.id));
-    if (mounted) _snack('Delivery confirmed');
+    final ok =
+        await _runAction(() => widget.repository.confirmDelivery(_match.id));
+    if (ok && mounted) _snack('Delivery confirmed');
   }
 
   // Fetch a fresh short-lived signed URL for the receiver's ID and open it
@@ -263,6 +328,14 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
               onView: _viewReceiverId,
             ),
           ],
+          if (_match.hasDeliveryPhoto) ...[
+            const SizedBox(height: 24),
+            _ViewPhotoButton(
+              label: 'View delivery photo',
+              loading: _loadingDeliveryPhoto,
+              onPressed: _viewDeliveryPhoto,
+            ),
+          ],
           const SizedBox(height: 24),
           _buildAction(isDark, textSecondary),
         ],
@@ -294,10 +367,31 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
           busy: _busy,
           onPressed: _startDelivery,
         ),
-      2 => _ActionButton(
-          label: 'Mark as delivered',
+      2 when !_match.hasDeliveryPhoto => _ActionButton(
+          label: 'Add delivery photo',
           busy: _busy,
-          onPressed: _markDelivered,
+          onPressed: _addDeliveryPhoto,
+        ),
+      2 => Column(
+          children: [
+            _ActionButton(
+              label: 'Mark as delivered',
+              busy: _busy,
+              onPressed: _markDelivered,
+            ),
+            const SizedBox(height: 6),
+            TextButton(
+              onPressed: _busy ? null : _addDeliveryPhoto,
+              child: const Text(
+                'Retake photo',
+                style: TextStyle(
+                  fontFamily: 'Manrope',
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
         ),
       _ => _ReadOnlyNote(stage: _stage, isDark: isDark),
     };
@@ -400,6 +494,47 @@ class _ActionButton extends StatelessWidget {
             : Text(label,
                 style: const TextStyle(
                     fontFamily: 'Manrope', fontWeight: FontWeight.w700)),
+      ),
+    );
+  }
+}
+
+class _ViewPhotoButton extends StatelessWidget {
+  final String label;
+  final bool loading;
+  final VoidCallback onPressed;
+  const _ViewPhotoButton({
+    required this.label,
+    required this.loading,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 46,
+      child: OutlinedButton.icon(
+        onPressed: loading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        icon: loading
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: AppColors.primary),
+              )
+            : const Icon(Icons.photo_outlined, size: 18),
+        label: Text(
+          label,
+          style: const TextStyle(
+              fontFamily: 'Manrope', fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }
@@ -577,6 +712,23 @@ Future<void> showReceiverIdViewer(
   final title = receiver?.fullName.isNotEmpty == true
       ? receiver!.fullName
       : 'Receiver ID';
+  return showSignedPhotoViewer(
+    context,
+    url,
+    title: title,
+    errorText: 'Could not load the ID photo. The link may have expired — '
+        'close and try again.',
+  );
+}
+
+/// Full-screen, zoomable viewer for a private photo behind a signed URL.
+Future<void> showSignedPhotoViewer(
+  BuildContext context,
+  String url, {
+  required String title,
+  String errorText = 'Could not load the photo. The link may have expired — '
+      'close and try again.',
+}) {
   return Navigator.of(context).push(
     MaterialPageRoute(
       fullscreenDialog: true,
@@ -616,13 +768,12 @@ Future<void> showReceiverIdViewer(
                 if (progress == null) return child;
                 return const CircularProgressIndicator(color: Colors.white);
               },
-              errorBuilder: (ctx, error, stack) => const Padding(
-                padding: EdgeInsets.all(24),
+              errorBuilder: (ctx, error, stack) => Padding(
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Could not load the ID photo. The link may have expired — '
-                  'close and try again.',
+                  errorText,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontFamily: 'Manrope', color: Colors.white70, height: 1.4),
                 ),
               ),

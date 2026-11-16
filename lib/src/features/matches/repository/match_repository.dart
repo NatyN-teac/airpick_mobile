@@ -55,7 +55,8 @@ class MatchRepository {
   }
 
   // PATCH /api/v1/matches/{matchId}/complete — carrier marks delivered
-  // (IN_PROGRESS → CARRIER_DELIVERED); awaits sender confirmation.
+  // (IN_PROGRESS → CARRIER_DELIVERED); awaits sender confirmation. Needs the
+  // delivery photo uploaded first, else 400 DELIVERY_PHOTO_REQUIRED.
   Future<MatchResponse> completeMatch(String matchId) async {
     final response = await _client.patch(
       '/matches/$matchId/complete',
@@ -117,6 +118,32 @@ class MatchRepository {
     );
 
     return MatchResponse.fromJson(_payload(response));
+  }
+
+  // POST /api/v1/matches/{matchId}/delivery-photo — carrier's proof of delivery.
+  // Only while IN_PROGRESS; re-uploading replaces the previous photo. Status
+  // doesn't change — `complete` needs this photo to exist.
+  Future<MatchResponse> uploadDeliveryPhoto(String matchId, File photo) async {
+    final name = photo.path.split('/').last;
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(photo.path, filename: name),
+    });
+    final response = await _client.postMultipart(
+      '/matches/$matchId/delivery-photo',
+      formData,
+    );
+
+    return MatchResponse.fromJson(_payload(response));
+  }
+
+  // GET /api/v1/matches/{matchId}/delivery-photo/url — short-lived signed URL
+  // to view the delivery photo (carrier or shipper). Fetch it right before use.
+  Future<String> getDeliveryPhotoUrl(String matchId) async {
+    final response = await _client.get('/matches/$matchId/delivery-photo/url');
+    final data = _payload(response);
+    final url = data['signedUrl'] ?? data['url'];
+    if (url is String && url.isNotEmpty) return url;
+    throw Exception('No delivery photo available for this match.');
   }
 
   // GET /api/v1/matches/me/track/shipper — active deliveries (shipper view).

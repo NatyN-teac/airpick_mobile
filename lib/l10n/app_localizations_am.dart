@@ -1334,4 +1334,7 @@ class AppLocalizationsAm extends AppLocalizations {
   @override
   String get blockedBody =>
       'ማንነትዎን ማረጋገጥ ስላልቻልን መለያዎ ታግዷል። ስህተት ነው ብለው ካሰቡ ድጋፍ ሰጪን ያግኙ።';
+
+  @override
+  String get udVerifiedLocked => 'መረጃዎ ስለተረጋገጠ ሊቀየር አይችልም።';
 }

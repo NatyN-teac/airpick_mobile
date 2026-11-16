@@ -52,7 +52,11 @@ class CreateOfferCubit extends Cubit<CreateOfferState> {
     emit(state.copyWith(itemsLoading: true, itemsError: null));
     try {
       appLogger.d('[CreateOfferCubit] GET /items...');
-      final list = await _items.fetchItems();
+      // Items still awaiting admin approval aren't offered in the picker.
+      // One the user adds in this form is still kept (see createAndSelectItem).
+      final list = (await _items.fetchItems())
+          .where((i) => i.isApproved)
+          .toList();
       appLogger.d('[CreateOfferCubit] items loaded: ${list.length}');
       emit(state.copyWith(availableItems: list, itemsLoading: false));
     } catch (e, st) {

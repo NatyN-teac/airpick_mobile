@@ -483,10 +483,15 @@ class _HomeTabState extends State<_HomeTab> {
                               ),
                             )
                           else
-                            _SectionHeader(
-                              title: sectionTitle,
-                              isDark: isDark,
-                              onSeeAll: () => openBrowseSeeAll(context),
+                            BlocBuilder<BrowseOfferRequestsCubit,
+                                BrowseOfferRequestsState>(
+                              builder: (context, reqState) => _SectionHeader(
+                                title: sectionTitle,
+                                isDark: isDark,
+                                onSeeAll: reqState.requests.isEmpty
+                                    ? null
+                                    : () => openBrowseSeeAll(context),
+                              ),
                             ),
                           const SizedBox(height: 14),
                           if (mode == UserMode.sender)

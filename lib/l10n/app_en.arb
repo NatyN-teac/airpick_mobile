@@ -880,5 +880,9 @@
   "blockedTitle": "Account blocked",
   "@blockedTitle": {},
   "blockedBody": "Your account has been blocked because we couldn't verify your identity. If you think this is a mistake, contact support.",
-  "@blockedBody": {}
+  "@blockedBody": {},
+  "udVerifiedLocked": "Your details are verified, so they can't be changed.",
+  "@udVerifiedLocked": {
+    "description": "User details: shown to verified users, whose details are read-only"
+  }
 }

@@ -1373,4 +1373,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get blockedBody =>
       'Your account has been blocked because we couldn\'t verify your identity. If you think this is a mistake, contact support.';
+
+  @override
+  String get udVerifiedLocked =>
+      'Your details are verified, so they can\'t be changed.';
 }

@@ -8,49 +8,10 @@ import '../cubit/engagement_cubit.dart';
 import '../models/engagement_models.dart';
 import 'engagements_list_screen.dart';
 
-enum EngagementActivityFilter { sent, received, matched }
-
-extension _FilterX on EngagementActivityFilter {
-  String label(AppLocalizations l) => switch (this) {
-        EngagementActivityFilter.sent => l.tabSent,
-        EngagementActivityFilter.received => l.tabReceived,
-        EngagementActivityFilter.matched => l.tabMatched,
-      };
-
-  EngagementKind get kind => switch (this) {
-        EngagementActivityFilter.sent => EngagementKind.proposalSent,
-        EngagementActivityFilter.received => EngagementKind.proposalReceived,
-        EngagementActivityFilter.matched => EngagementKind.match,
-      };
-
-  String emptyMessage(AppLocalizations l) => switch (this) {
-        EngagementActivityFilter.sent => l.emptyProposalsSent,
-        EngagementActivityFilter.received => l.emptyProposalsReceived,
-        EngagementActivityFilter.matched => l.emptyMatches,
-      };
-}
-
-class EngagementActivityScreen extends StatefulWidget {
-  final EngagementActivityFilter initialFilter;
-
-  const EngagementActivityScreen({
-    super.key,
-    this.initialFilter = EngagementActivityFilter.sent,
-  });
-
-  @override
-  State<EngagementActivityScreen> createState() =>
-      _EngagementActivityScreenState();
-}
-
-class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
-  late EngagementActivityFilter _filter;
-
-  @override
-  void initState() {
-    super.initState();
-    _filter = widget.initialFilter;
-  }
+/// "View all": every proposal sent, proposal received and match in one list,
+/// newest first. Each card carries a Sent / Received / Matched tag.
+class EngagementActivityScreen extends StatelessWidget {
+  const EngagementActivityScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -105,14 +66,7 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: _FilterBar(
-              selected: _filter,
-              isDark: isDark,
-              onChanged: (f) => setState(() => _filter = f),
-            ),
-          ),
+          const SizedBox(height: 8),
           Expanded(
             child: BlocBuilder<EngagementCubit, EngagementState>(
               builder: (context, state) {
@@ -120,8 +74,7 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
                   return const SkeletonList(count: 5);
                 }
 
-                final items =
-                    state.response?.itemsOfKind(_filter.kind) ?? const [];
+                final items = state.response?.allItems() ?? const [];
 
                 if (items.isEmpty) {
                   return RefreshIndicator(
@@ -134,7 +87,7 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
                         const SizedBox(height: 120),
                         Center(
                           child: Text(
-                            _filter.emptyMessage(l10n(context)),
+                            l10n(context).engEmptyActive,
                             style: TextStyle(
                               fontFamily: 'Manrope',
                               fontSize: 13,
@@ -168,93 +121,6 @@ class _EngagementActivityScreenState extends State<EngagementActivityScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FilterBar extends StatelessWidget {
-  final EngagementActivityFilter selected;
-  final bool isDark;
-  final ValueChanged<EngagementActivityFilter> onChanged;
-
-  const _FilterBar({
-    required this.selected,
-    required this.isDark,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: EngagementActivityFilter.values
-            .map((f) => _FilterChip(
-                  label: f.label(l10n(context)),
-                  selected: selected == f,
-                  isDark: isDark,
-                  onTap: () => onChanged(f),
-                ))
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.secondary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          alignment: Alignment.center,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                label,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.fade,
-                style: TextStyle(
-                  fontFamily: 'Manrope',
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: selected
-                      ? Colors.white
-                      : (isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.textSecondary),
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -332,23 +198,19 @@ class _ActivityCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: item.status.color.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            item.status.label,
-                            style: TextStyle(
-                              fontFamily: 'Manrope',
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: item.status.color,
-                            ),
-                          ),
+                        _Tag(
+                          label: _kindLabel(l10n(context), item.kind),
+                          color: textSecondary,
                         ),
+                        // A proposal's status only repeats its kind ("Proposal
+                        // sent"), so only matches show it, e.g. "In progress".
+                        if (item.kind == EngagementKind.match) ...[
+                          const SizedBox(width: 6),
+                          _Tag(
+                            label: item.status.label,
+                            color: item.status.color,
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -370,6 +232,38 @@ class _ActivityCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+String _kindLabel(AppLocalizations l, EngagementKind kind) => switch (kind) {
+      EngagementKind.proposalSent => l.tabSent,
+      EngagementKind.proposalReceived => l.tabReceived,
+      EngagementKind.match => l.tabMatched,
+    };
+
+class _Tag extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _Tag({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: color,
         ),
       ),
     );

@@ -203,6 +203,8 @@ class _AccountVerificationViewState extends State<_AccountVerificationView>
                                         VerificationStepTimeline(
                                           activeStep: step,
                                           isDark: isDark,
+                                          allComplete:
+                                              verification.isApproved,
                                         ),
                                         const SizedBox(height: 24),
                                         VerificationChecklistCard(

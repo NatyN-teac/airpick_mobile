@@ -222,8 +222,12 @@ class _UserDetailScreenState extends State<UserDetailScreen>
     }
   }
 
+  // Verified users can't change their details — the fields are read-only and
+  // there's no Save bar. Set from CurrentUserCubit on every build.
+  bool _locked = false;
+
   Future<void> _save() async {
-    if (!_hasChanges || _saving) return;
+    if (_locked || !_hasChanges || _saving) return;
 
     final validationError = _validateRequiredFields();
     if (validationError != null) {
@@ -311,6 +315,7 @@ class _UserDetailScreenState extends State<UserDetailScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkBackground : AppColors.background;
     final l = l10n(context);
+    _locked = context.watch<CurrentUserCubit>().state?.isVerified ?? false;
 
     return Scaffold(
       backgroundColor: bg,
@@ -399,6 +404,16 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                     ),
                                   ),
                                 ],
+                                if (_locked) ...[
+                                  const SizedBox(height: 12),
+                                  _AnimatedBlock(
+                                    animation: _enterCtrl,
+                                    interval: const Interval(0.1, 0.3),
+                                    child: _LockedNotice(
+                                      text: l.udVerifiedLocked,
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 24),
                                 _AnimatedBlock(
                                   animation: _enterCtrl,
@@ -444,11 +459,14 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                         isDark: isDark,
                                       ),
                                       const SizedBox(height: 6),
-                                      DateTimeTile(
-                                        isDark: isDark,
-                                        label: l.dateOfBirth,
-                                        value: _dob,
-                                        onTap: _pickDob,
+                                      AbsorbPointer(
+                                        absorbing: _locked,
+                                        child: DateTimeTile(
+                                          isDark: isDark,
+                                          label: l.dateOfBirth,
+                                          value: _dob,
+                                          onTap: _pickDob,
+                                        ),
                                       ),
                                       if (_dob != null) ...[
                                         const SizedBox(height: 6),
@@ -519,12 +537,15 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                                     children: [
                                       FormLabel(l.bio, isDark: isDark),
                                       const SizedBox(height: 6),
-                                      FormTextField(
-                                        isDark: isDark,
-                                        hint: l.bioHint,
-                                        controller: _bio,
-                                        maxLines: 4,
-                                        onChanged: (_) {},
+                                      AbsorbPointer(
+                                        absorbing: _locked,
+                                        child: FormTextField(
+                                          isDark: isDark,
+                                          hint: l.bioHint,
+                                          controller: _bio,
+                                          maxLines: 4,
+                                          onChanged: (_) {},
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -533,12 +554,13 @@ class _UserDetailScreenState extends State<UserDetailScreen>
                             ),
                           ),
                         ),
-                        _SaveBar(
-                          saving: _saving,
-                          hasChanges: _hasChanges,
-                          onSave: _save,
-                          isDark: isDark,
-                        ),
+                        if (!_locked)
+                          _SaveBar(
+                            saving: _saving,
+                            hasChanges: _hasChanges,
+                            onSave: _save,
+                            isDark: isDark,
+                          ),
                       ],
                     ),
             ),
@@ -561,10 +583,13 @@ class _UserDetailScreenState extends State<UserDetailScreen>
           children: [
             FormLabel(label, isDark: isDark),
             const SizedBox(height: 6),
-            CountryNameField(
-              controller: _country,
-              isDark: isDark,
-              hint: hint,
+            AbsorbPointer(
+              absorbing: _locked,
+              child: CountryNameField(
+                controller: _country,
+                isDark: isDark,
+                hint: hint,
+              ),
             ),
           ],
         ),
@@ -589,11 +614,14 @@ class _UserDetailScreenState extends State<UserDetailScreen>
           children: [
             FormLabel(label, isDark: isDark),
             const SizedBox(height: 6),
-            FormTextField(
-              isDark: isDark,
-              hint: hint,
-              controller: controller,
-              onChanged: (_) {},
+            AbsorbPointer(
+              absorbing: _locked,
+              child: FormTextField(
+                isDark: isDark,
+                hint: hint,
+                controller: controller,
+                onChanged: (_) {},
+              ),
             ),
           ],
         ),
@@ -673,6 +701,45 @@ class _SectionHeader extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Explains why a verified user's details are read-only.
+class _LockedNotice extends StatelessWidget {
+  final String text;
+  const _LockedNotice({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.success.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.lock_outline_rounded,
+            size: 18,
+            color: AppColors.success,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 12,
+                height: 1.4,
+                color: AppColors.success,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
